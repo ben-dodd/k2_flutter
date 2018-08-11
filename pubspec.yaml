@@ -5,9 +5,16 @@ dependencies:
   flutter:
     sdk: flutter
 
+  sqflite: '0.8.2'
+  path_provider: '^0.3.1'
+  redux: '^3.0.0'
+  flutter_redux: '^0.5.0'
+  flutter_fab_dialer: '^0.0.5'
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
+  rxdart: '0.16.7'
 
 dev_dependencies:
   flutter_test:

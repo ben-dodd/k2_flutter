@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class JobsPage extends StatefulWidget {
-  JobsPage({Key key, this.title}) : super(key: key);
+class TrainingFragment extends StatefulWidget {
+  TrainingFragment() : super();
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -12,13 +12,13 @@ class JobsPage extends StatefulWidget {
   // used by the build method of the State. Fields in a Widget subclass are
   // always marked "final".
 
-  final String title;
+//  final String title;
 
   @override
-  _JobsPageState createState() => new _JobsPageState();
+  _TrainingFragmentState createState() => new _TrainingFragmentState();
 }
 
-class _JobsPageState extends State<JobsPage> {
+class _TrainingFragmentState extends State<TrainingFragment> {
   int _counter = 0;
 
   void _incrementCounter() {
@@ -41,11 +41,6 @@ class _JobsPageState extends State<JobsPage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return new Scaffold(
-      appBar: new AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: new Text(widget.title),
-      ),
       body: new Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
