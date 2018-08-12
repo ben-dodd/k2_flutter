@@ -1,13 +1,26 @@
 import 'package:meta/meta.dart';
+import 'package:json_annotation/json_annotation.dart';
 
-class Job {
+/// This allows the `User` class to access private members in
+/// the generated file. The value for this is *.g.dart, where
+/// the star denotes the source file name.
+part 'job_object.g.dart';
+
+/// An annotation for the code generator to know that this class needs the
+/// JSON serialization logic to be generated.
+@JsonSerializable()
+
+/// Every json_serializable class must have the serializer mixin.
+/// It makes the generated toJson() method to be usable for the class.
+/// The mixin's name follows the source class, in this case, User.
+class Job extends Object with _$JobSerializerMixin {
   static final db_job_number = "jobNumber";
   static final db_address = "address";
   static final db_description = "description";
   static final db_client_name = "clientName";
   static final db_state = "state";
   static final db_type = "type";
-  static final db_status = "status"; // Is this just an API thing, probably don't need it in the DB
+  static final db_last_modified = "lastModified";
 
   String
       jobNumber,
@@ -15,8 +28,8 @@ class Job {
       description,
       clientName,
       state,
-      type,
-      status;
+      type;
+  var lastModified;
 
   Job({
     @required this.jobNumber,
@@ -25,8 +38,13 @@ class Job {
     this.clientName,
     this.state,
     this.type,
-    this.status,
+    this.lastModified,
   });
+
+  /// A necessary factory constructor for creating a new User instance
+  /// from a map. Pass the map to the generated _$UserFromJson constructor.
+  /// The constructor is named after the source class, in this case User.
+  factory Job.fromJson(Map<String, dynamic> json) => _$JobFromJson(json);
 
   // Get from Database
   Job.fromMap(Map<String, dynamic> map): this(
@@ -36,7 +54,7 @@ class Job {
     clientName: map[db_client_name],
     state: map[db_state],
     type: map[db_type],
-    status: map[db_status],
+    lastModified: map[db_last_modified],
   );
 
   // Load to Database
@@ -48,7 +66,7 @@ class Job {
       db_client_name: clientName,
       db_state: state,
       db_type: type,
-      db_status: status,
+      db_last_modified: lastModified,
     };
   }
 }

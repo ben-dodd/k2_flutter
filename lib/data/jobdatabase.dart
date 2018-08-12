@@ -30,10 +30,11 @@ class JobDatabase {
     return await _init();
   }
 
+  // Create table
   Future _init() async {
     // Get a location using path_provider
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentsDirectory.path, "demo.db");
+    String path = join(documentsDirectory.path, "job.db");
     db = await openDatabase(path, version: 1,
         onCreate: (Database db, int version) async {
           // When creating the db, create the table
@@ -45,7 +46,7 @@ class JobDatabase {
                   "${Job.db_client_name} TEXT,"
                   "${Job.db_state} TEXT,"
                   "${Job.db_type} TEXT,"
-                  "${Job.db_status} TEXT"
+                  "${Job.db_last_modified} TEXT"
                   ")");
         });
     didInit = true;
@@ -79,22 +80,23 @@ class JobDatabase {
     List<Job> jobs = [];
     for (Map<String, dynamic> item in result) {
       jobs.add(new Job.fromMap(item));
+      print(jobs.length.toString());
     }
     return jobs;
   }
 
-  //TODO escape not allowed characters eg. ' " '
-  /// Inserts or replaces the book.
+  /// Inserts or replaces the job.
   Future updateJob(Job job) async {
     var db = await _getDb();
     await db.rawInsert(
         'INSERT OR REPLACE INTO '
-            '$tableName(${Job.db_job_number}, ${Job.db_address}, ${Job.db_description}, ${Job.db_client_name}, ${Job.db_state}, ${Job.db_type}, ${Job.db_status})'
+            '$tableName(${Job.db_job_number}, ${Job.db_address}, ${Job.db_description}, ${Job.db_client_name}, ${Job.db_state}, ${Job.db_type}, ${Job.db_last_modified})'
             ' VALUES(?, ?, ?, ?, ?, ?, ?)',
-        [job.jobNumber, job.address, job.description, job.clientName, job.state, job.type, job.status]);
-
+        [job.jobNumber, job.address, job.description, job.clientName, job.state, job.type, job.lastModified]);
+    print('Job updated ' + job.jobNumber);
   }
 
+  // Close db
   Future close() async {
     var db = await _getDb();
     return db.close();
