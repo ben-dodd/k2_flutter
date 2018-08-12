@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:k2e/data/jobrepository.dart';
 import 'package:k2e/model/jobs/job_object.dart';
+import 'package:k2e/styles.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
 
-class TimeLogFragment extends StatefulWidget {
-  TimeLogFragment() : super();
+class PhotoNotesFragment extends StatefulWidget {
+  PhotoNotesFragment() : super();
   @override
-  _TimeLogFragmentState createState() => new _TimeLogFragmentState();
+  _PhotoNotesFragmentState createState() => new _PhotoNotesFragmentState();
 }
 
-class _TimeLogFragmentState extends State<TimeLogFragment> {
+class _PhotoNotesFragmentState extends State<PhotoNotesFragment> {
 
   final Job job = JobRepository.get().currentJob;
 
@@ -22,17 +23,13 @@ class _TimeLogFragmentState extends State<TimeLogFragment> {
     return new Scaffold(
         body:
         new Container(
-            padding: new EdgeInsets.all(8.0),
+            padding: new EdgeInsets.all(24.0),
             alignment: Alignment.center,
             child: Column(
                 children: <Widget> [
-                  Text('Log Time'),
-                  Icon(Icons.directions_car), // travel
-                  Icon(Icons.build), // site work
-                  Icon(Icons.colorize), // sample analysis
-                  Icon(Icons.insert_chart), // report
-                  Icon(Icons.check_circle), // review
-                  Icon(Icons.assignment_ind), // ktp
+                  Text('Notepad', style: Styles.h1,),
+                  Text('Add any notes and photos in this page that don''t relate specifically to a task.',
+                  style: Styles.comment),
                 ]
             )
         )

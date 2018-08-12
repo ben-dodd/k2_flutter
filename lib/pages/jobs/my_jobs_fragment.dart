@@ -5,7 +5,7 @@ import 'package:k2e/model/jobs/job_object.dart';
 import 'package:k2e/pages/jobs/wfm_fragment.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/widgets/job_card.dart';
-import 'package:k2e/pages/tasks/unsupported_job_type.dart';
+import 'package:k2e/pages/tasks/basic_job_fragment.dart';
 
 // This page lists all your current jobs
 // From here you can click on the Fab Menu to add more jobs
@@ -91,7 +91,7 @@ class _MyJobsFragmentState extends State<MyJobsFragment> {
                       job: _jobs[index],
                       onCardClick: () {
                           JobRepository.get().currentJob = _jobs[index];
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => UnsupportedJobType()));
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => BasicJobFragment()));
                       }
                   );
                 }

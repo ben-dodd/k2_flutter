@@ -5,13 +5,13 @@ import 'package:k2e/styles.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
 
-class JobDetailsFragment extends StatefulWidget {
-  JobDetailsFragment() : super();
+class MapBasicFragment extends StatefulWidget {
+  MapBasicFragment() : super();
   @override
-  _JobDetailsFragment createState() => new _JobDetailsFragment();
+  _MapBasicFragment createState() => new _MapBasicFragment();
 }
 
-class _JobDetailsFragment extends State<JobDetailsFragment> {
+class _MapBasicFragment extends State<MapBasicFragment> {
 
   final Job job = JobRepository.get().currentJob;
 
@@ -24,17 +24,12 @@ class _JobDetailsFragment extends State<JobDetailsFragment> {
         body:
         new Container(
             padding: new EdgeInsets.all(24.0),
-            alignment: AlignmentDirectional.topStart,
+            alignment: Alignment.center,
             child: Column(
                 children: <Widget> [
-                  Text(job.clientName
-                  ,style: Styles.h1),
-                  TextField(decoration: InputDecoration(
-                      border: InputBorder.none,
-                      hintText: job.address,
-                  )),
-                  Text(job.description,
-                  style: Styles.comment),
+                  Text('Draw Map', style: Styles.h1,),
+                  Text('This page is for drawing a basic map. No sample locations are supported in the basic job fragment.',
+                      style: Styles.comment),
                 ]
             )
         )
