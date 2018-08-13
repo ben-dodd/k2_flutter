@@ -408,6 +408,13 @@
             </list>
           </value>
         </entry>
+        <entry key="uuid">
+          <value>
+            <list>
+              <option value="/Applications/flutter/.pub-cache/hosted/pub.dartlang.org/uuid-1.0.0/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="vector_math">
           <value>
             <list>
@@ -488,6 +495,7 @@
       <root url="file:///Applications/flutter/.pub-cache/hosted/pub.dartlang.org/synchronized-1.5.1+1/lib" />
       <root url="file:///Applications/flutter/.pub-cache/hosted/pub.dartlang.org/typed_data-1.1.5/lib" />
       <root url="file:///Applications/flutter/.pub-cache/hosted/pub.dartlang.org/utf-0.9.0+5/lib" />
+      <root url="file:///Applications/flutter/.pub-cache/hosted/pub.dartlang.org/uuid-1.0.0/lib" />
       <root url="file:///Applications/flutter/.pub-cache/hosted/pub.dartlang.org/vector_math-2.0.6/lib" />
       <root url="file:///Applications/flutter/.pub-cache/hosted/pub.dartlang.org/watcher-0.9.7+8/lib" />
       <root url="file:///Applications/flutter/.pub-cache/hosted/pub.dartlang.org/yaml-2.1.15/lib" />

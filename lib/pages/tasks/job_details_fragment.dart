@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:k2e/data/jobrepository.dart';
-import 'package:k2e/model/jobs/job_object.dart';
+import 'package:k2e/data/datamanager.dart';
+import 'package:k2e/data/repos/job_repo.dart';
+import 'package:k2e/model/jobs/job.dart';
+import 'package:k2e/model/jobs/job_header.dart';
 import 'package:k2e/styles.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
@@ -13,7 +15,7 @@ class JobDetailsFragment extends StatefulWidget {
 
 class _JobDetailsFragment extends State<JobDetailsFragment> {
 
-  final Job job = JobRepository.get().currentJob;
+  final Job job = DataManager.get().currentJob;
 
   @override
   Widget build(BuildContext context) {
@@ -27,13 +29,13 @@ class _JobDetailsFragment extends State<JobDetailsFragment> {
             alignment: AlignmentDirectional.topStart,
             child: Column(
                 children: <Widget> [
-                  Text(job.clientName
+                  Text(job.jobHeader.clientName
                   ,style: Styles.h1),
                   TextField(decoration: InputDecoration(
                       border: InputBorder.none,
-                      hintText: job.address,
+                      hintText: job.jobHeader.address,
                   )),
-                  Text(job.description,
+                  Text(job.jobHeader.description,
                   style: Styles.comment),
                 ]
             )

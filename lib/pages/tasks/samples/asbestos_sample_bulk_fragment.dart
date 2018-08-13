@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/data/repos/job_repo.dart';
+import 'package:k2e/model/entities/areas/room.dart';
 import 'package:k2e/model/jobs/job.dart';
-import 'package:k2e/model/jobs/job_header.dart';
 import 'package:k2e/styles.dart';
 
-// The base page for any type of job. Shows address, has cover photo,
+class AsbestosSampleBulkFragment extends StatefulWidget {
+  AsbestosSampleBulkFragment() : super();
 
-class MapBasicFragment extends StatefulWidget {
-  MapBasicFragment() : super();
+  final Room room = DataManager.get().currentRoom; // current room, last added room if not in room page
+  final Job job = DataManager.get().currentJob;
+
   @override
-  _MapBasicFragmentState createState() => new _MapBasicFragmentState();
+  _AsbestosSampleBulkFragmentState createState() => new _AsbestosSampleBulkFragmentState();
 }
 
-class _MapBasicFragmentState extends State<MapBasicFragment> {
-
-  final Job job = DataManager.get().currentJob;
+class _AsbestosSampleBulkFragmentState extends State<AsbestosSampleBulkFragment> {
 
   @override
   Widget build(BuildContext context) {
@@ -29,8 +28,8 @@ class _MapBasicFragmentState extends State<MapBasicFragment> {
             alignment: Alignment.center,
             child: Column(
                 children: <Widget> [
-                  Text('Draw Map', style: Styles.h1,),
-                  Text('This page is for drawing a basic map. No sample locations are supported in the basic job fragment.',
+                  Text('Asbestos Samples', style: Styles.h1,),
+                  Text('Here are all your samples!',
                       style: Styles.comment),
                 ]
             )

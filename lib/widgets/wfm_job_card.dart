@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:k2e/model/jobs/job_object.dart';
+import 'package:k2e/model/jobs/job_header.dart';
 
 class WfmJobCard extends StatefulWidget {
 
   WfmJobCard({
-    this.job,
+    this.jobHeader,
     @required this.onCardClick
   });
 
-  final Job job;
+  final JobHeader jobHeader;
 
   final VoidCallback onCardClick;
 
@@ -21,8 +21,8 @@ class _WfmJobState extends State<WfmJobCard>{
   Widget build(BuildContext context) {
     return new ListTile(
       leading: const Icon(Icons.lightbulb_outline),
-      title: Text(widget.job.jobNumber),
-      subtitle: Text(widget.job.address),
+      title: Text(widget.jobHeader.jobNumber),
+      subtitle: Text(widget.jobHeader.address),
       onTap: widget.onCardClick,
     );
   }

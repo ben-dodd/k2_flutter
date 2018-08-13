@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_fab_dialer/flutter_fab_dialer.dart';
-import 'package:k2e/data/jobrepository.dart';
-import 'package:k2e/model/jobs/job_object.dart';
+import 'package:k2e/data/repos/job_repo.dart';
+import 'package:k2e/model/jobs/job_header.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/widgets/fab_menu.dart';
 import 'package:k2e/widgets/wfm_job_card.dart';
@@ -19,15 +19,15 @@ class WfmFragment extends StatefulWidget {
 }
 
 class _WfmFragmentState extends State<WfmFragment> {
-  List<Job> _jobs = new List();
+  List<JobHeader> _jobs = new List();
 
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    if (JobRepository.get().wfmJobCache.length == 0) {
-      JobRepository.get().getAllJobs()
+    if (JobRepo.get().wfmJobCache.length == 0) {
+      JobRepo.get().getAllWfmJobs()
           .then((jobs) {
         setState(() {
           _jobs = jobs.body;
@@ -36,7 +36,7 @@ class _WfmFragmentState extends State<WfmFragment> {
       });
     } else {
       setState(() {
-        _jobs = JobRepository
+        _jobs = JobRepo
             .get()
             .wfmJobCache;
         _isLoading = false;
@@ -45,7 +45,7 @@ class _WfmFragmentState extends State<WfmFragment> {
   }
 
   Future<Null> _refreshWfmJobs() async{
-    await JobRepository.get().getAllJobs().then((jobs) { _jobs = jobs.body; });
+    await JobRepo.get().getAllWfmJobs().then((jobs) { _jobs = jobs.body; });
   }
 
   @override
@@ -78,13 +78,13 @@ class _WfmFragmentState extends State<WfmFragment> {
                       itemCount: _jobs.length,
                       itemBuilder: (context, index) {
                         return WfmJobCard(
-                            job: _jobs[index],
+                            jobHeader: _jobs[index],
                             onCardClick: () async {
                               setState(() {_isLoading = true;});
-                              await JobRepository.get()
+                              await JobRepo.get()
                                   .updateJob(_jobs[index]);
                               // TODO do not add existing jobs to job list
-                              JobRepository.get().myJobCache.add(_jobs[index]);
+                              JobRepo.get().myJobCache.add(_jobs[index]);
                               setState(() {
                                 _isLoading = false;
                               });

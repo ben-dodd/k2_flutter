@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:k2e/model/jobs/job_object.dart';
+import 'package:k2e/model/jobs/job_header.dart';
 
 class JobCard extends StatefulWidget {
 
   JobCard({
-    this.job,
+    this.jobHeader,
     @required this.onCardClick,
     @required this.onCardLongPress,
   });
 
-  final Job job;
+  final JobHeader jobHeader;
 
   final VoidCallback onCardClick;
   final VoidCallback onCardLongPress;
@@ -24,8 +24,8 @@ class _JobCardState extends State<JobCard>{
   Widget build(BuildContext context) {
     return new ListTile(
       leading: const Icon(Icons.whatshot),
-      title: Text(widget.job.jobNumber),
-      subtitle: Text(widget.job.address),
+      title: Text(widget.jobHeader.jobNumber),
+      subtitle: Text(widget.jobHeader.address),
       // Tap -> go through to job task
       onTap: widget.onCardClick,
       // Long tap -> add options to sync or delete

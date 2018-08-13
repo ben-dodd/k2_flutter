@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:k2e/model/jobs/job_object.dart';
+import 'package:k2e/model/jobs/job_header.dart';
 
-class JobDatabase {
-  static final JobDatabase _jobDatabase = new JobDatabase._internal();
+class JobHeaderDatabase {
+  static final JobHeaderDatabase _jobHeaderDatabase = new JobHeaderDatabase._internal();
 
   final String tableName = "Jobs";
 
@@ -14,11 +14,11 @@ class JobDatabase {
 
   bool didInit = false;
 
-  static JobDatabase get() {
-    return _jobDatabase;
+  static JobHeaderDatabase get() {
+    return _jobHeaderDatabase;
   }
 
-  JobDatabase._internal();
+  JobHeaderDatabase._internal();
 
   /// Use this method to access the database, because initialization of the database (it has to go through the method channel)
   Future<Database> _getDb() async{
@@ -40,59 +40,61 @@ class JobDatabase {
           // When creating the db, create the table
           await db.execute(
               "CREATE TABLE $tableName ("
-                  "${Job.db_job_number} STRING PRIMARY KEY,"
-                  "${Job.db_address} TEXT,"
-                  "${Job.db_description} TEXT,"
-                  "${Job.db_client_name} TEXT,"
-                  "${Job.db_state} TEXT,"
-                  "${Job.db_type} TEXT,"
-                  "${Job.db_last_modified} TEXT"
+                  "jobNumber STRING PRIMARY KEY,"
+                  "address TEXT,"
+                  "description TEXT,"
+                  "clientName TEXT,"
+                  "state TEXT,"
+                  "type TEXT,"
+                  "imagePath TEXT,"
+                  "lastModified TEXT,"
+                  "lastSynced TEXT"
                   ")");
         });
     didInit = true;
   }
 
   /// Get a Job by its jobNumber, if there is not entry for that jobNumber, returns null.
-  Future<Job> getJobByNumber(String jobNumber) async{
+  Future<JobHeader> getJobByNumber(String jobNumber) async{
     var db = await _getDb();
-    var result = await db.rawQuery('SELECT * FROM $tableName WHERE ${Job.db_job_number} = "$jobNumber"');
+    var result = await db.rawQuery('SELECT * FROM $tableName WHERE jobNumber = "$jobNumber"');
     if(result.length == 0)return null;
-    return new Job.fromMap(result[0]);
+    return new JobHeader.fromJson(result[0]);
   }
 
   /// Get all jobs by a list of jobnumbers, will return a list with all the jobs found
-  Future<List<Job>> getJobsByNumbers(List<String> jobNumbers) async{
+  Future<List<JobHeader>> getJobsByNumbers(List<String> jobNumbers) async{
     var db = await _getDb();
     // Building SELECT * FROM TABLE WHERE ID IN (id1, id2, ..., idn)
     var jobNumbersString = jobNumbers.map((it) => '"$it"').join(',');
-    var result = await db.rawQuery('SELECT * FROM $tableName WHERE ${Job.db_job_number} IN ($jobNumbersString)');
-    List<Job> jobs = [];
+    var result = await db.rawQuery('SELECT * FROM $tableName WHERE jobNumber IN ($jobNumbersString)');
+    List<JobHeader> jobs = [];
     for(Map<String, dynamic> item in result) {
-      jobs.add(new Job.fromMap(item));
+      jobs.add(new JobHeader.fromJson(item));
     }
     return jobs;
   }
 
   // Get all jobs in database
-  Future<List<Job>> getJobs() async{
+  Future<List<JobHeader>> getJobs() async{
     var db = await _getDb();
     var result = await db.rawQuery('SELECT * FROM $tableName');
-    List<Job> jobs = [];
+    List<JobHeader> jobs = [];
     for (Map<String, dynamic> item in result) {
-      jobs.add(new Job.fromMap(item));
+      jobs.add(new JobHeader.fromJson(item));
       print(jobs.length.toString());
     }
     return jobs;
   }
 
   /// Inserts or replaces the job.
-  Future updateJob(Job job) async {
+  Future updateJob(JobHeader job) async {
     var db = await _getDb();
     await db.rawInsert(
         'INSERT OR REPLACE INTO '
-            '$tableName(${Job.db_job_number}, ${Job.db_address}, ${Job.db_description}, ${Job.db_client_name}, ${Job.db_state}, ${Job.db_type}, ${Job.db_last_modified})'
-            ' VALUES(?, ?, ?, ?, ?, ?, ?)',
-        [job.jobNumber, job.address, job.description, job.clientName, job.state, job.type, job.lastModified]);
+            '$tableName(jobNumber, address, description, clientName, state, type, imagePath, lastModified, lastSynced)'
+            ' VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [job.jobNumber, job.address, job.description, job.clientName, job.state, job.type, job.imagePath, job.lastModified, job.lastSynced]);
     print('Job updated ' + job.jobNumber);
   }
 

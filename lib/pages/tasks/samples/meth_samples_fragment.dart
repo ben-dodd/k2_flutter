@@ -7,13 +7,13 @@ import 'package:k2e/styles.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
 
-class MapBasicFragment extends StatefulWidget {
-  MapBasicFragment() : super();
+class MethSamplesFragment extends StatefulWidget {
+  MethSamplesFragment() : super();
   @override
-  _MapBasicFragmentState createState() => new _MapBasicFragmentState();
+  _MethSamplesFragmentState createState() => new _MethSamplesFragmentState();
 }
 
-class _MapBasicFragmentState extends State<MapBasicFragment> {
+class _MethSamplesFragmentState extends State<MethSamplesFragment> {
 
   final Job job = DataManager.get().currentJob;
 
@@ -29,8 +29,8 @@ class _MapBasicFragmentState extends State<MapBasicFragment> {
             alignment: Alignment.center,
             child: Column(
                 children: <Widget> [
-                  Text('Draw Map', style: Styles.h1,),
-                  Text('This page is for drawing a basic map. No sample locations are supported in the basic job fragment.',
+                  Text('Meth Samples', style: Styles.h1,),
+                  Text('Meth samples list!',
                       style: Styles.comment),
                 ]
             )

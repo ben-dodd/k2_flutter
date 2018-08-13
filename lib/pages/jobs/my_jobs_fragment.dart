@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_fab_dialer/flutter_fab_dialer.dart';
-import 'package:k2e/data/jobrepository.dart';
-import 'package:k2e/model/jobs/job_object.dart';
+import 'package:k2e/data/datamanager.dart';
+import 'package:k2e/data/repos/job_repo.dart';
+import 'package:k2e/model/jobs/job.dart';
+import 'package:k2e/model/jobs/job_header.dart';
 import 'package:k2e/pages/jobs/wfm_fragment.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/widgets/job_card.dart';
@@ -27,21 +29,21 @@ class _MyJobsFragmentState extends State<MyJobsFragment> {
       new MaterialPageRoute(builder: (context) => WfmFragment()),
     );
     setState((){
-      _jobs = JobRepository.get().myJobCache;
+      _jobs = JobRepo.get().myJobCache;
       Scaffold.of(context).showSnackBar(
       new SnackBar(
           content: new Text(result)));
     });
   }
 
-  List<Job> _jobs = new List();
+  List<JobHeader> _jobs = new List();
 
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-      JobRepository.get().getMyJobs()
+      JobRepo.get().getMyJobs()
           .then((jobs) {
         setState(() {
           _jobs = jobs;
@@ -88,9 +90,10 @@ class _MyJobsFragmentState extends State<MyJobsFragment> {
                 itemCount: _jobs.length,
                 itemBuilder: (context, index) {
                   return JobCard(
-                      job: _jobs[index],
+                      jobHeader: _jobs[index],
                       onCardClick: () {
-                          JobRepository.get().currentJob = _jobs[index];
+                          DataManager.get().currentJob = new Job(_jobs[index]);
+//                          JobRepo.get().currentJob = _jobs[index];
                           Navigator.push(context, MaterialPageRoute(builder: (context) => BasicJobFragment()));
                       }
                   );

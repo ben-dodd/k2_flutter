@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:k2e/data/jobrepository.dart';
-import 'package:k2e/model/jobs/job_object.dart';
+import 'package:k2e/data/datamanager.dart';
+import 'package:k2e/data/repos/job_repo.dart';
+import 'package:k2e/model/jobs/job.dart';
+import 'package:k2e/model/jobs/job_header.dart';
 import 'package:k2e/styles.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
@@ -13,7 +15,7 @@ class PhotoNotesFragment extends StatefulWidget {
 
 class _PhotoNotesFragmentState extends State<PhotoNotesFragment> {
 
-  final Job job = JobRepository.get().currentJob;
+  final Job job = DataManager.get().currentJob;
 
   @override
   Widget build(BuildContext context) {
