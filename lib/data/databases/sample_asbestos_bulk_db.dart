@@ -1,12 +1,10 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:k2e/model/entities/areas/room.dart';
-import 'package:k2e/model/entities/areas/super_room.dart';
+
 import 'package:k2e/model/entities/samples/sample_asbestos_bulk.dart';
 import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:k2e/model/jobs/job_header.dart';
+import 'package:sqflite/sqflite.dart';
 
 class SampleAsbestosBulkDatabase {
   static final SampleAsbestosBulkDatabase _SampleAsbestosBulkDatabase = new SampleAsbestosBulkDatabase._internal();
@@ -79,7 +77,7 @@ class SampleAsbestosBulkDatabase {
   }
 
   /// Inserts or replaces the job.
-  Future updateJob(SampleAsbestosBulk sample) async {
+  Future updateSample(SampleAsbestosBulk sample) async {
     var db = await _getDb();
     await db.rawInsert(
         'INSERT OR REPLACE INTO '
@@ -102,7 +100,7 @@ class SampleAsbestosBulkDatabase {
             'dryWeight,'
             'resultVersion,'
             'hasSynced)'
-            ' VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,)',
+            ' VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [sample.uuid,
         sample.asbestosItemUuid,
         sample.description,
@@ -121,7 +119,7 @@ class SampleAsbestosBulkDatabase {
         sample.dryWeight,
         sample.resultVersion,
         sample.hasSynced]);
-    print('Sample updated ' + sample.jobNumber + '-' + sample.sampleNumber);
+    print('Sample updated ' + sample.jobNumber + '-' + sample.sampleNumber.toString() + ': ' + sample.description);
   }
 
   // Close db

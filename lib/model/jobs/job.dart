@@ -1,6 +1,5 @@
 // Master job class for holding all information on an asbestos job
-import 'dart:async';
-
+import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/model/entities/areas/room.dart';
 import 'package:k2e/model/entities/areas/super_room.dart';
 import 'package:k2e/model/entities/materials/acm.dart';
@@ -20,12 +19,16 @@ class Job {
   List<Item> items;
   List<MaterialNote> materialNotes;
 
+  int highestSampleNumber = 0; // the highest sample number in the current job
+
   Job(JobHeader job) {
     this.jobHeader = job;
+    rooms = new List();
+    superRooms = new List();
+    acms = new List();
+    asbestosBulkSamples = new List();
+    asbestosAirSamples = new List();
+    items = new List();
+    materialNotes = new List();
   }
-}
-
-// Loads Asbestos Job
-Future loadJob() async {
-
 }

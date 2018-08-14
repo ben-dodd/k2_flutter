@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/data/repos/job_repo.dart';
 import 'package:k2e/model/jobs/job.dart';
-import 'package:k2e/model/jobs/job_header.dart';
 import 'package:k2e/styles.dart';
-import 'package:path/path.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
 

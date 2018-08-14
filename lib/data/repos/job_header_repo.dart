@@ -3,15 +3,15 @@ import 'dart:convert';
 
 import 'package:k2e/strings.dart';
 import 'package:k2e/utils/custom_classes.dart';
-import 'package:k2e/data/databases/job_db.dart';
+import 'package:k2e/data/databases/job_header_db.dart';
 import 'package:k2e/model/jobs/job_header.dart';
 import 'package:http/http.dart' as http;
 
 final int NO_INTERNET = 404;
 
-class JobRepo {
+class JobHeaderRepo {
 
-  static final JobRepo _repo = new JobRepo._internal();
+  static final JobHeaderRepo _repo = new JobHeaderRepo._internal();
 
   JobHeaderDatabase database;
 
@@ -20,11 +20,11 @@ class JobRepo {
   JobHeader currentJob; // this holds the job object for the currently viewed job
 //  List<Samples>
 
-  static JobRepo get() {
+  static JobHeaderRepo get() {
     return _repo;
   }
 
-  JobRepo._internal() {
+  JobHeaderRepo._internal() {
     database = JobHeaderDatabase.get();
   }
 

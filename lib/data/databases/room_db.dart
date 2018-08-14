@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:k2e/model/entities/areas/room.dart';
-import 'package:k2e/model/entities/areas/super_room.dart';
 import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:k2e/model/jobs/job_header.dart';
+import 'package:sqflite/sqflite.dart';
 
 class RoomDatabase {
   static final RoomDatabase _RoomDatabase = new RoomDatabase._internal();
@@ -55,7 +54,7 @@ class RoomDatabase {
   }
 
   /// Get all superrooms linked to the jobNumber
-  Future<List<Room>> getRoomsByNumber(String jobNumber) async{
+  Future<List<Room>> getRoomsByJobNumber(String jobNumber) async{
     var db = await _getDb();
     var result = await db.rawQuery('SELECT * FROM $tableName WHERE jobNumber = "$jobNumber"');
     if(result.length == 0)return null;

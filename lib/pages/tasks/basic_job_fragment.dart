@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_fab_dialer/flutter_fab_dialer.dart';
 import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/data/repos/job_repo.dart';
+import 'package:k2e/data/repos/sample_asbestos_bulk_repo.dart';
+import 'package:k2e/model/entities/samples/sample_asbestos_bulk.dart';
 import 'package:k2e/model/jobs/job.dart';
-import 'package:k2e/model/jobs/job_header.dart';
 import 'package:k2e/pages/tasks/documents/documents_fragment.dart';
 import 'package:k2e/pages/tasks/job_details_fragment.dart';
 import 'package:k2e/pages/tasks/map/map_basic_fragment.dart';
 import 'package:k2e/pages/tasks/photo_notes/photo_notes_fragment.dart';
 import 'package:k2e/pages/tasks/rooms/room_fragment.dart';
+import 'package:k2e/pages/tasks/samples/asbestos_sample_bulk_fragment.dart';
 import 'package:k2e/pages/tasks/samples/asbestos_samples_fragment.dart';
 import 'package:k2e/pages/tasks/samples/meth_samples_fragment.dart';
 import 'package:k2e/pages/tasks/timelog/time_log_fragment.dart';
@@ -47,8 +48,23 @@ class _BasicJobFragmentState extends State<BasicJobFragment> {
 //    });
   }
 
-  void _addACM() async {
-
+  void _addACMBulkSample() async {
+    SampleAsbestosBulk result = await Navigator.of(context).push(
+      new MaterialPageRoute(builder: (context) => AsbestosSampleBulkFragment(null)),
+    );
+    setState((){
+      if (result != null) {
+        SampleAsbestosBulkRepo.get().updateJob(result);
+        DataManager
+            .get()
+            .currentJob
+            .asbestosBulkSamples
+            .add(result);
+      }
+//      Scaffold.of(context).showSnackBar(
+//          new SnackBar(
+//              content: new Text(result.jobNumber + '-' + result.sampleNumber.toString() + " created")));
+    });
   }
 
   @override
@@ -165,8 +181,8 @@ class _BasicJobFragmentState extends State<BasicJobFragment> {
           CompanyColors.accent,
           4.0,
           "Add New ACM",
-          _addACM,
-          "Add New ACM",
+          _addACMBulkSample,
+          "Add New ACM Bulk Sample",
           CompanyColors.accent,
           Colors.white),
     ];

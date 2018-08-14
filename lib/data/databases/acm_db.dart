@@ -1,16 +1,12 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:k2e/model/entities/areas/room.dart';
-import 'package:k2e/model/entities/areas/super_room.dart';
 import 'package:k2e/model/entities/materials/acm.dart';
-import 'package:k2e/model/entities/samples/sample_asbestos_bulk.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:k2e/model/jobs/job_header.dart';
 
-class ACMDatabase {
-  static final ACMDatabase _ACMDatabase = new ACMDatabase._internal();
+class AcmDatabase {
+  static final AcmDatabase _ACMDatabase = new AcmDatabase._internal();
 
   final String tableName = "ACM";
 
@@ -18,11 +14,11 @@ class ACMDatabase {
 
   bool didInit = false;
 
-  static ACMDatabase get() {
+  static AcmDatabase get() {
     return _ACMDatabase;
   }
 
-  ACMDatabase._internal();
+  AcmDatabase._internal();
 
   /// Use this method to access the database, because initialization of the database (it has to go through the method channel)
   Future<Database> _getDb() async{
@@ -86,19 +82,19 @@ class ACMDatabase {
   }
 
   /// Get all superrooms linked to the jobNumber
-  Future<List<SampleAsbestosBulk>> getSamplesByJobNumber(String jobNumber) async{
+  Future<List<ACM>> getAcmByJobNumber(String jobNumber) async{
     var db = await _getDb();
     var result = await db.rawQuery('SELECT * FROM $tableName WHERE jobNumber = "$jobNumber"');
     if(result.length == 0)return null;
-    List<SampleAsbestosBulk> samples = [];
+    List<ACM> acm = [];
     for(Map<String, dynamic> item in result) {
-      samples.add(new SampleAsbestosBulk.fromJson(item));
+      acm.add(new ACM.fromJson(item));
     }
-    return samples;
+    return acm;
   }
 
   /// Inserts or replaces the job.
-  Future updateJob(ACM acm) async {
+  Future updateAcm(ACM acm) async {
     var db = await _getDb();
     await db.rawInsert(
         'INSERT OR REPLACE INTO '

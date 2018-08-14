@@ -1,11 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_fab_dialer/flutter_fab_dialer.dart';
-import 'package:k2e/data/repos/job_repo.dart';
+import 'package:k2e/data/repos/job_header_repo.dart';
 import 'package:k2e/model/jobs/job_header.dart';
-import 'package:k2e/theme.dart';
-import 'package:k2e/widgets/fab_menu.dart';
 import 'package:k2e/widgets/wfm_job_card.dart';
 
 // This page lists all your current jobs
@@ -26,8 +23,8 @@ class _WfmFragmentState extends State<WfmFragment> {
   @override
   void initState() {
     super.initState();
-    if (JobRepo.get().wfmJobCache.length == 0) {
-      JobRepo.get().getAllWfmJobs()
+    if (JobHeaderRepo.get().wfmJobCache.length == 0) {
+      JobHeaderRepo.get().getAllWfmJobs()
           .then((jobs) {
         setState(() {
           _jobs = jobs.body;
@@ -36,7 +33,7 @@ class _WfmFragmentState extends State<WfmFragment> {
       });
     } else {
       setState(() {
-        _jobs = JobRepo
+        _jobs = JobHeaderRepo
             .get()
             .wfmJobCache;
         _isLoading = false;
@@ -45,7 +42,7 @@ class _WfmFragmentState extends State<WfmFragment> {
   }
 
   Future<Null> _refreshWfmJobs() async{
-    await JobRepo.get().getAllWfmJobs().then((jobs) { _jobs = jobs.body; });
+    await JobHeaderRepo.get().getAllWfmJobs().then((jobs) { _jobs = jobs.body; });
   }
 
   @override
@@ -66,11 +63,15 @@ class _WfmFragmentState extends State<WfmFragment> {
             child: new Stack(
                 children: <Widget>[
                   _isLoading?
-                    new Container(alignment: AlignmentDirectional.center,
-                        child: Column(
+                    new Center(
+                            child: Column(
                         children: <Widget>[
                           new CircularProgressIndicator(),
-                          Text('Loading jobs from WorkflowMax...')]))
+                          Container(
+                            height: 40.0,
+                            child:
+                              Text('Loading jobs from WorkflowMax...')
+                          )]))
 
                 : new Container(),
                   ListView.builder(
@@ -81,10 +82,10 @@ class _WfmFragmentState extends State<WfmFragment> {
                             jobHeader: _jobs[index],
                             onCardClick: () async {
                               setState(() {_isLoading = true;});
-                              await JobRepo.get()
+                              await JobHeaderRepo.get()
                                   .updateJob(_jobs[index]);
                               // TODO do not add existing jobs to job list
-                              JobRepo.get().myJobCache.add(_jobs[index]);
+                              JobHeaderRepo.get().myJobCache.add(_jobs[index]);
                               setState(() {
                                 _isLoading = false;
                               });
