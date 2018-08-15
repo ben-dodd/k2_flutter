@@ -9,7 +9,7 @@ import 'package:k2e/pages/tasks/job_details_fragment.dart';
 import 'package:k2e/pages/tasks/map/map_basic_fragment.dart';
 import 'package:k2e/pages/tasks/photo_notes/photo_notes_fragment.dart';
 import 'package:k2e/pages/tasks/rooms/room_fragment.dart';
-import 'package:k2e/pages/tasks/samples/asbestos_sample_bulk_fragment.dart';
+import 'package:k2e/pages/tasks/samples/edit_asbestos_sample_bulk.dart';
 import 'package:k2e/pages/tasks/samples/asbestos_samples_fragment.dart';
 import 'package:k2e/pages/tasks/samples/meth_samples_fragment.dart';
 import 'package:k2e/pages/tasks/timelog/time_log_fragment.dart';
@@ -50,7 +50,7 @@ class _BasicJobFragmentState extends State<BasicJobFragment> {
 
   void _addACMBulkSample() async {
     SampleAsbestosBulk result = await Navigator.of(context).push(
-      new MaterialPageRoute(builder: (context) => AsbestosSampleBulkFragment(null)),
+      new MaterialPageRoute(builder: (context) => EditAsbestosSampleBulk(null)),
     );
     setState((){
       if (result != null) {

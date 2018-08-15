@@ -46,7 +46,7 @@ class SampleAsbestosBulkDatabase {
                   "description TEXT,"
                   "material TEXT,"
                   "jobNumber TEXT,"
-                  "sampleNumber TEXT,"
+                  "sampleNumber INTEGER,"
                   "clientName TEXT,"
                   "address TEXT,"
                   "samplerUuid TEXT,"

@@ -5,22 +5,22 @@ import 'package:k2e/model/entities/samples/sample_asbestos_bulk.dart';
 import 'package:uuid/uuid.dart';
 import 'package:validator/validator.dart';
 
-class AsbestosSampleBulkFragment extends StatefulWidget {
-  AsbestosSampleBulkFragment(SampleAsbestosBulk sample) : super();
+class EditAsbestosSampleBulk extends StatefulWidget {
+  final SampleAsbestosBulk sample;
+  EditAsbestosSampleBulk(this.sample) : super();
 
   @override
-  _AsbestosSampleBulkFragmentState createState() => new _AsbestosSampleBulkFragmentState();
+  _EditAsbestosSampleBulkState createState() => new _EditAsbestosSampleBulkState();
 }
 
-class _AsbestosSampleBulkFragmentState extends State<AsbestosSampleBulkFragment> {
+class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
 //  bool _isLoading = false;
   String _title;
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
 
-  SampleAsbestosBulk sample;
-
   @override
   Widget build(BuildContext context) {
+    SampleAsbestosBulk sample = widget.sample;
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
 
@@ -30,7 +30,8 @@ class _AsbestosSampleBulkFragmentState extends State<AsbestosSampleBulkFragment>
       sample.jobNumber = DataManager.get().currentJob.jobHeader.jobNumber;
       sample.sampleNumber = DataManager.get().currentJob.highestSampleNumber + 1;
     } else {
-      _title = "Edit Sample " + sample.jobNumber + '-' + sample.sampleNumber.toString();
+      _title = "Edit Sample " + sample.jobNumber + '-' +
+          sample.sampleNumber.toString();
     }
 
     return new Scaffold(

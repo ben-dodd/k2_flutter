@@ -68,7 +68,7 @@ class _WfmFragmentState extends State<WfmFragment> {
                         children: <Widget>[
                           new CircularProgressIndicator(),
                           Container(
-                            height: 40.0,
+                            height: 80.0,
                             child:
                               Text('Loading jobs from WorkflowMax...')
                           )]))
@@ -81,14 +81,14 @@ class _WfmFragmentState extends State<WfmFragment> {
                         return WfmJobCard(
                             jobHeader: _jobs[index],
                             onCardClick: () async {
-                              setState(() {_isLoading = true;});
+//                              setState(() {_isLoading = true;});
                               await JobHeaderRepo.get()
                                   .updateJob(_jobs[index]);
                               // TODO do not add existing jobs to job list
                               JobHeaderRepo.get().myJobCache.add(_jobs[index]);
-                              setState(() {
-                                _isLoading = false;
-                              });
+//                              setState(() {
+//                                _isLoading = false;
+//                              });
                               print(_jobs[index].jobNumber + ' added to your jobs.');
                               // TODO say you already have that job loaded if you do
                               Navigator.pop(context,_jobs[index].jobNumber + ' added to your jobs.');

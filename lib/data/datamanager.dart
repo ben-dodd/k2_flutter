@@ -52,19 +52,26 @@ class DataManager {
 
   Future<void> loadJob(JobHeader jobHeader) async {
     Job job = new Job(jobHeader);
+    print(job.jobHeader.jobNumber);
+    print('List length: ' + job.asbestosBulkSamples.length.toString());
     job.asbestosBulkSamples = await sampleAsbestosBulkRepo.getSamplesByJobNumber(jobHeader.jobNumber);
+    if (job.asbestosBulkSamples == null) { job.asbestosBulkSamples = []; }
     job.rooms = await roomRepo.getRoomsByJobNumber(jobHeader.jobNumber);
     job.superRooms = await superRoomRepo.getSuperRoomsByJobNumber(jobHeader.jobNumber);
-    for (SampleAsbestosBulk sample in job.asbestosBulkSamples){
+    if (job.asbestosBulkSamples.length > 0) {
+      for (SampleAsbestosBulk sample in job.asbestosBulkSamples) {
         if (sample.sampleNumber > job.highestSampleNumber) {
           job.highestSampleNumber = sample.sampleNumber;
         }
+      }
     }
-    for (SampleAsbestosAir sample in job.asbestosAirSamples){
-      if (isNumeric(sample.sampleNumber)){
-        int sampleNumber = toInt(sample.sampleNumber);
-        if (sampleNumber > job.highestSampleNumber){
-          job.highestSampleNumber = sampleNumber;
+    if (job.asbestosAirSamples.length > 0) {
+      for (SampleAsbestosAir sample in job.asbestosAirSamples) {
+        if (isNumeric(sample.sampleNumber)) {
+          int sampleNumber = toInt(sample.sampleNumber);
+          if (sampleNumber > job.highestSampleNumber) {
+            job.highestSampleNumber = sampleNumber;
+          }
         }
       }
     }

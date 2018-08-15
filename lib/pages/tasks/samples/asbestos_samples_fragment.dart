@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
+import 'package:k2e/data/repos/sample_asbestos_bulk_repo.dart';
 import 'package:k2e/model/entities/samples/sample_asbestos_air.dart';
 import 'package:k2e/model/entities/samples/sample_asbestos_bulk.dart';
+import 'package:k2e/pages/tasks/samples/edit_asbestos_sample_bulk.dart';
 import 'package:k2e/widgets/sample_asbestos_air_card.dart';
 import 'package:k2e/widgets/sample_asbestos_bulk_card.dart';
 
@@ -55,6 +57,22 @@ class _AsbestosSamplesFragmentState extends State<AsbestosSamplesFragment> {
                       return SampleAsbestosBulkCard(
                           sample: _bulkSamples[index],
                           onCardClick: () async {
+                            SampleAsbestosBulk result = await Navigator.of(context).push(
+                              new MaterialPageRoute(builder: (context) => EditAsbestosSampleBulk(_bulkSamples[index])),
+                            );
+                            setState((){
+                              if (result != null) {
+                                // TODO Need to make this more robust, seems dodgy
+                                SampleAsbestosBulkRepo.get().updateJob(result);
+                                DataManager
+                                    .get()
+                                    .currentJob
+                                    .asbestosBulkSamples[index] = result;
+                              }
+//      Scaffold.of(context).showSnackBar(
+//          new SnackBar(
+//              content: new Text(result.jobNumber + '-' + result.sampleNumber.toString() + " created")));
+                            });
 
                           },
                           onCardLongPress: () async {

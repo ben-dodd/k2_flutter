@@ -91,11 +91,11 @@ class _MyJobsFragmentState extends State<MyJobsFragment> {
                 itemBuilder: (context, index) {
                   return JobCard(
                       jobHeader: _jobs[index],
-                      onCardClick: () {
-//                          setState(() {
-//                          _isLoading = true; });
-                           DataManager.get().loadJob(_jobs[index]);
-//                          _isLoading = false;
+                      onCardClick: () async {
+                          setState(() {
+                          _isLoading = true; });
+                          await DataManager.get().loadJob(_jobs[index]);
+                          _isLoading = false;
 //                          JobRepo.get().currentJob = _jobs[index];
                           Navigator.push(context, MaterialPageRoute(builder: (context) => BasicJobFragment()));
                       },
