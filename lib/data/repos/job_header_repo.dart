@@ -98,10 +98,7 @@ class JobHeaderRepo {
 
   /// Fetches all my jobs from db
   Future<List<JobHeader>> getMyJobs() async{
-    database.getJobs()
-      .then((jobs) =>
-        myJobCache = jobs);
-    return myJobCache;
+    return database.getJobs();
   }
 
   /// Fetches job by jobnumber

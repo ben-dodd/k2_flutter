@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_fab_dialer/flutter_fab_dialer.dart';
+//import 'package:flutter_fab_dialer/flutter_fab_dialer.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/data/repos/sample_asbestos_bulk_repo.dart';
 import 'package:k2e/model/entities/samples/sample_asbestos_bulk.dart';
@@ -14,6 +14,7 @@ import 'package:k2e/pages/tasks/samples/asbestos_samples_fragment.dart';
 import 'package:k2e/pages/tasks/samples/meth_samples_fragment.dart';
 import 'package:k2e/pages/tasks/timelog/time_log_fragment.dart';
 import 'package:k2e/theme.dart';
+import 'package:k2e/widgets/fab_dialer.dart';
 
 // This is a base page for jobs, this will be used for any jobs that are not currently supported
 // Have full functionality for editing WFM information though
@@ -164,28 +165,33 @@ class _BasicJobFragmentState extends State<BasicJobFragment> {
         break;
     }
 
-    // Initialize FAB Menu
-    var _asbestosMenuItem = [
-      new FabMiniMenuItem.withText(
-          new Icon(Icons.domain),
-          CompanyColors.accent,
-          4.0,
-          "Add New Room",
-          _addRoom,
-          "Add New Room",
-          CompanyColors.accent,
-          Colors.white),
-
-      new FabMiniMenuItem.withText(
-          new Icon(Icons.whatshot),
-          CompanyColors.accent,
-          4.0,
-          "Add New ACM",
-          _addACMBulkSample,
-          "Add New ACM Bulk Sample",
-          CompanyColors.accent,
-          Colors.white),
+    List<Widget> asbestosDialer = [
+      new SpeedDialerButton(backgroundColor: CompanyColors.accent, icon: Icons.domain, onPressed: () { _addRoom(); }, text: "Add New Room",),
+      new SpeedDialerButton(backgroundColor: CompanyColors.accent, icon: Icons.whatshot, onPressed: () { _addACMBulkSample(); }, text: "Add New ACM Bulk Sample",),
     ];
+//
+//    // Initialize FAB Menu
+//    var _asbestosMenuItem = [
+//      new FabMiniMenuItem.withText(
+//          new Icon(Icons.domain),
+//          CompanyColors.accent,
+//          4.0,
+//          "Add New Room",
+//          _addRoom,
+//          "Add New Room",
+//          CompanyColors.accent,
+//          Colors.white),
+//
+//      new FabMiniMenuItem.withText(
+//          new Icon(Icons.whatshot),
+//          CompanyColors.accent,
+//          4.0,
+//          "Add New ACM",
+//          _addACMBulkSample,
+//          "Add New ACM Bulk Sample",
+//          CompanyColors.accent,
+//          Colors.white),
+//    ];
 
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above
@@ -200,8 +206,9 @@ class _BasicJobFragmentState extends State<BasicJobFragment> {
         body: Stack(
           children: <Widget> [
             tabBarView,
-          _isAsbestos? FabDialer(_asbestosMenuItem, CompanyColors.accent, Icon(Icons.add),):Container(),
+//          _isAsbestos? FabDialer(_asbestosMenuItem, CompanyColors.accent, Icon(Icons.add),):Container(),
         ]),
+            floatingActionButton: _isAsbestos? new SpeedDialer(children: asbestosDialer) : Container(),
         ),
     );
   }

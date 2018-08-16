@@ -64,11 +64,13 @@ class _WfmFragmentState extends State<WfmFragment> {
                 children: <Widget>[
                   _isLoading?
                     new Center(
-                            child: Column(
+                        child:Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
                           new CircularProgressIndicator(),
                           Container(
-                            height: 80.0,
+                            alignment: Alignment.center,
+                            height: 64.0,
                             child:
                               Text('Loading jobs from WorkflowMax...')
                           )]))

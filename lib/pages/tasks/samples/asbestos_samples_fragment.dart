@@ -48,6 +48,8 @@ class _AsbestosSamplesFragmentState extends State<AsbestosSamplesFragment> {
 
                     : new Container(),
                 // Check if any bulk samples
+                new Column(
+                  children: <Widget>[
                 _isBulk?
 //                new Column(
 //                    children: <Widget>[Text('Bulk Samples'),
@@ -101,6 +103,7 @@ class _AsbestosSamplesFragmentState extends State<AsbestosSamplesFragment> {
                     }
                 ),])
                     : new Container(),
+                    ])
           ]
       ),
       )

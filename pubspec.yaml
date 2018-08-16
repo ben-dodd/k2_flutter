@@ -11,7 +11,8 @@ dependencies:
   json_annotation: ^0.2.3
   redux: ^3.0.0
   flutter_redux: ^0.5.0
-  flutter_fab_dialer: ^0.0.5
+#  flutter_fab_dialer: ^0.0.5
+#  flutter_speed_dialer: ^0.0.2
   scoped_model: ^0.2.0
   uuid: 1.0.0
   validator: ">=0.0.4 <0.1.0"
