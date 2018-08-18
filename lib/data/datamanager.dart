@@ -30,6 +30,7 @@ class DataManager {
   // Temp Storage
   Job currentJob;   // this holds the current job being worked on
   Room currentRoom; // either the Room that was last added or the room currently being edited
+  SampleAsbestosBulk currentAsbestosBulkSample;
 
   static DataManager get() {
     return _dm;
@@ -58,10 +59,31 @@ class DataManager {
     if (job.asbestosBulkSamples == null) { job.asbestosBulkSamples = []; }
     job.rooms = await roomRepo.getRoomsByJobNumber(jobHeader.jobNumber);
     job.superRooms = await superRoomRepo.getSuperRoomsByJobNumber(jobHeader.jobNumber);
+    job.highestSampleNumber = getHighestSampleNumber(job);
+    currentJob = job;
+    return;
+  }
+
+  Future<void> updateSampleAsbestosBulk(SampleAsbestosBulk sample) async {
+    sampleAsbestosBulkRepo.updateSample(sample);
+    bool itemFound = false;
+    for (SampleAsbestosBulk sampleItem in currentJob.asbestosBulkSamples){
+      if(sampleItem.uuid == sample.uuid){
+        sampleItem = sample;
+      }
+    }
+    if (!itemFound) {
+      currentJob.asbestosBulkSamples.add(sample);
+    }
+    currentAsbestosBulkSample = null;
+  }
+
+  int getHighestSampleNumber(Job job) {
+    int highestSampleNumber = 0;
     if (job.asbestosBulkSamples.length > 0) {
       for (SampleAsbestosBulk sample in job.asbestosBulkSamples) {
-        if (sample.sampleNumber > job.highestSampleNumber) {
-          job.highestSampleNumber = sample.sampleNumber;
+        if (sample.sampleNumber > highestSampleNumber) {
+          highestSampleNumber = sample.sampleNumber;
         }
       }
     }
@@ -69,13 +91,29 @@ class DataManager {
       for (SampleAsbestosAir sample in job.asbestosAirSamples) {
         if (isNumeric(sample.sampleNumber)) {
           int sampleNumber = toInt(sample.sampleNumber);
-          if (sampleNumber > job.highestSampleNumber) {
-            job.highestSampleNumber = sampleNumber;
+          if (sampleNumber > highestSampleNumber) {
+            highestSampleNumber = sampleNumber;
           }
         }
       }
     }
-    currentJob = job;
-    return;
+    return highestSampleNumber;
+  }
+
+  // Iterates through your jobs and syncs each one
+  Future<void> syncAllJobs() async {
+    jobHeaderRepo.getMyJobs().then((jobs) {
+      for (JobHeader job in jobs) {
+        // Add updating message that indicates how the syncing is going
+        // Iterate through all jobs and add data first, then go through them again and update images
+        jobHeaderRepo.getRemoteJobModifiedDate(job.jobNumber).then((response) {
+          // check if modified date on server is newer than this job
+        });
+      }
+      // Now add all the images in background task (show in Android notification drawer)
+      for (JobHeader job in jobs) {
+
+      }
+    });
   }
 }

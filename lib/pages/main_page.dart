@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/jobs/my_jobs_fragment.dart';
 import 'package:k2e/pages/under_construction_fragment.dart';
 
@@ -74,7 +75,13 @@ class _MainPageState extends State<MainPage> {
           // here we display the title corresponding to the fragment
           // you can choose to have a static title
           title: new Text(widget.drawerItems[_selectedDrawerIndex].title),
-        ),
+            actions: <Widget>[
+          new IconButton(icon: const Icon(Icons.sync), onPressed: () {
+//          DataManager.get().currentJob.asbestosBulkSamples.add(sample);
+            DataManager.get().syncAllJobs;
+//                print(sample.jobNumber + '-' + sample.sampleNumber.toString() + ': ' + sample.description);
+          })
+        ]),
         drawer: new Drawer(
           child: new SingleChildScrollView(
             child: new Container(

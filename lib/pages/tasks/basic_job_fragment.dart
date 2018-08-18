@@ -50,21 +50,14 @@ class _BasicJobFragmentState extends State<BasicJobFragment> {
   }
 
   void _addACMBulkSample() async {
+    DataManager.get().currentAsbestosBulkSample = null;
     SampleAsbestosBulk result = await Navigator.of(context).push(
-      new MaterialPageRoute(builder: (context) => EditAsbestosSampleBulk(null)),
+      new MaterialPageRoute(builder: (context) => EditAsbestosSampleBulk()),
     );
     setState((){
       if (result != null) {
-        SampleAsbestosBulkRepo.get().updateJob(result);
-        DataManager
-            .get()
-            .currentJob
-            .asbestosBulkSamples
-            .add(result);
+        DataManager.get().updateSampleAsbestosBulk(result);
       }
-//      Scaffold.of(context).showSnackBar(
-//          new SnackBar(
-//              content: new Text(result.jobNumber + '-' + result.sampleNumber.toString() + " created")));
     });
   }
 

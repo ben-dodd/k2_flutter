@@ -71,7 +71,7 @@ class SampleAsbestosBulkRepo {
 
 
   // Adds new job, or updates if already exists
-  Future<void> updateJob(SampleAsbestosBulk sample) async {
+  Future<void> updateSample(SampleAsbestosBulk sample) async {
     await database.updateSample(sample);
     print(sample.jobNumber + '-' + sample.sampleNumber.toString() + ' updated!');
   }

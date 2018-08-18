@@ -111,6 +111,30 @@ class JobHeaderRepo {
     await database.updateJob(job);
   }
 
+  // Todo Create Universal function for these types of functions
+  Future<ParsedResponse<JobHeader>> getRemoteJobModifiedDate(String jobNumber) async{
+    //http request, catching error like no internet connection.
+    //If no internet is available for example response is
+    http.Response response = await http.get(Strings.apiRoot + 'job/modified.php?jobNumber=' + jobNumber + '&apiKey=' + Strings.apiKey)
+        .catchError((resp) {});
+
+    if(response == null) {
+      return new ParsedResponse(NO_INTERNET, null);
+    }
+
+    //If there was an error return an empty list
+    if(response.statusCode < 200 || response.statusCode >= 300) {
+      return new ParsedResponse(response.statusCode, null);
+    }
+    // Decode and go to the jobs list
+    print(response.body.toString());
+
+    JobHeader job = json.decode(response.body);
+
+    return new ParsedResponse(response.statusCode, job);
+  }
+
+
   // Closes db
   Future close() async {
     return database.close();

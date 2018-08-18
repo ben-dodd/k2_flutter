@@ -16,8 +16,10 @@ class AsbestosSamplesFragment extends StatefulWidget {
 
 class _AsbestosSamplesFragmentState extends State<AsbestosSamplesFragment> {
   bool _isLoading = false;
-  bool _isBulk = true;
+  bool _isBulk = false;
   bool _isAir = false;
+  bool _isEmpty = false;
+  String _loadingText = 'Loading samples...';
 
   @override
   Widget build(BuildContext context) {
@@ -29,9 +31,11 @@ class _AsbestosSamplesFragmentState extends State<AsbestosSamplesFragment> {
     _bulkSamples = DataManager.get().currentJob.asbestosBulkSamples;
     List<SampleAsbestosAir> _airSamples = new List();
     _airSamples = DataManager.get().currentJob.asbestosAirSamples;
+    print('Bulk Size ' + _bulkSamples.length.toString());
 
     if (_bulkSamples.length > 0) { _isBulk = true; }
     if (_airSamples.length > 0) { _isAir = true; }
+    if (!_isBulk && !_isAir) { _isEmpty = true; }
 
     return new Scaffold(
       body:
@@ -39,74 +43,75 @@ class _AsbestosSamplesFragmentState extends State<AsbestosSamplesFragment> {
           padding: new EdgeInsets.all(8.0),
           child: new Stack(
               children: <Widget>[
-                _isLoading?
-                new Container(alignment: AlignmentDirectional.center,
+                _isEmpty?
+                new Center(
                     child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          new CircularProgressIndicator(),
-                          Text('Loading samples...')]))
-
+                          Icon(Icons.not_interested, size: 64.0),
+                          Container(
+                              color: Colors.white,
+                              alignment: Alignment.center,
+                              height: 64.0,
+                              child:
+                              Text('This job has no samples.')
+                          )
+                        ]
+                    )
+                )
                     : new Container(),
-                // Check if any bulk samples
-                new Column(
-                  children: <Widget>[
-                _isBulk?
-//                new Column(
-//                    children: <Widget>[Text('Bulk Samples'),
                 ListView.builder(
                     itemCount: _bulkSamples.length,
                     itemBuilder: (context, index) {
                       return SampleAsbestosBulkCard(
-                          sample: _bulkSamples[index],
-                          onCardClick: () async {
+                        sample: _bulkSamples[index],
+                        onCardClick: () async {
+                            DataManager.get().currentAsbestosBulkSample = _bulkSamples[index];
                             SampleAsbestosBulk result = await Navigator.of(context).push(
-                              new MaterialPageRoute(builder: (context) => EditAsbestosSampleBulk(_bulkSamples[index])),
+                              new MaterialPageRoute(builder: (context) => EditAsbestosSampleBulk()),
                             );
                             setState((){
                               if (result != null) {
-                                // TODO Need to make this more robust, seems dodgy
-                                SampleAsbestosBulkRepo.get().updateJob(result);
-                                DataManager
-                                    .get()
-                                    .currentJob
-                                    .asbestosBulkSamples[index] = result;
+                                Scaffold.of(context).showSnackBar(
+                                    new SnackBar(
+                                        content: new Text(result.jobNumber)));
+//                                SampleAsbestosBulkRepo.get().updateJob(result);
+//                                DataManager
+//                                    .get()
+//                                    .currentJob
+//                                    .asbestosBulkSamples[index] = result;
                               }
 //      Scaffold.of(context).showSnackBar(
 //          new SnackBar(
 //              content: new Text(result.jobNumber + '-' + result.sampleNumber.toString() + " created")));
                             });
+                        },
+                        onCardLongPress: () async {
 
-                          },
-                          onCardLongPress: () async {
-
-                          },);
+                        },
+                      );
                     }
-                )
+                ),
+                _isLoading?
+                new Container(
+                    alignment: Alignment.center,
+                    color: Colors.white,
+
+                    child:Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          new CircularProgressIndicator(),
+                          Container(
+                              alignment: Alignment.center,
+                              height: 64.0,
+                              child:
+                              Text(_loadingText)
+                          )]))
+
                     : new Container(),
-
-                _isAir?
-                new Column(
-                  children: <Widget>[
-                // Check if any air samples
-                Text('Air Samples'),
-                ListView.builder(
-                    itemCount: _airSamples.length,
-                    itemBuilder: (context, index) {
-                      return SampleAsbestosAirCard(
-                          sample: _airSamples[index],
-                          onCardClick: () async {
-
-                          },
-                          onCardLongPress: () async {
-
-                          },);
-                    }
-                ),])
-                    : new Container(),
-                    ])
-          ]
+              ]
+          )
       ),
-      )
     );
   }
 }
