@@ -93,6 +93,6 @@ class _MainPageState extends State<MainPage> {
           ),
         ),
         body: _getDrawerItemWidget(_selectedDrawerIndex),
-      );
+        );
   }
 }

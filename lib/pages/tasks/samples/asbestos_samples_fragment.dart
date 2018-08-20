@@ -33,9 +33,11 @@ class _AsbestosSamplesFragmentState extends State<AsbestosSamplesFragment> {
     _airSamples = DataManager.get().currentJob.asbestosAirSamples;
     print('Bulk Size ' + _bulkSamples.length.toString());
 
-    if (_bulkSamples.length > 0) { _isBulk = true; }
-    if (_airSamples.length > 0) { _isAir = true; }
-    if (!_isBulk && !_isAir) { _isEmpty = true; }
+    if (_bulkSamples.length > 0) { _isBulk = true; } else { _isBulk = false; }
+    if (_airSamples.length > 0) { _isAir = true; } else { _isAir = false; }
+    if (!_isBulk && !_isAir) { _isEmpty = true; } else { _isEmpty = false; }
+
+    _bulkSamples.sort((a,b) => a.sampleNumber.compareTo(b.sampleNumber)); // sort samples by sample number
 
     return new Scaffold(
       body:
@@ -50,7 +52,6 @@ class _AsbestosSamplesFragmentState extends State<AsbestosSamplesFragment> {
                         children: <Widget>[
                           Icon(Icons.not_interested, size: 64.0),
                           Container(
-                              color: Colors.white,
                               alignment: Alignment.center,
                               height: 64.0,
                               child:

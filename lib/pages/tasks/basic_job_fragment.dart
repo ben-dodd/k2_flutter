@@ -4,8 +4,11 @@ import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/data/repos/sample_asbestos_bulk_repo.dart';
 import 'package:k2e/model/entities/samples/sample_asbestos_bulk.dart';
 import 'package:k2e/model/jobs/job.dart';
+import 'package:k2e/pages/cameras/camera_generic.dart';
+import 'package:k2e/pages/tasks/check/check.dart';
+import 'package:k2e/utils/camera.dart';
 import 'package:k2e/pages/tasks/documents/documents_fragment.dart';
-import 'package:k2e/pages/tasks/job_details_fragment.dart';
+import 'package:k2e/pages/tasks/details/job_details_fragment.dart';
 import 'package:k2e/pages/tasks/map/map_basic_fragment.dart';
 import 'package:k2e/pages/tasks/photo_notes/photo_notes_fragment.dart';
 import 'package:k2e/pages/tasks/rooms/room_fragment.dart';
@@ -26,8 +29,6 @@ class BasicJobFragment extends StatefulWidget {
 }
 
 class _BasicJobFragmentState extends State<BasicJobFragment> {
-  // Todo Change the basic job to one that has everything inside it
-
   final Job job = DataManager.get().currentJob;
   int jobType;
 
@@ -38,9 +39,9 @@ class _BasicJobFragmentState extends State<BasicJobFragment> {
   // FAB Methods
 
   void _addRoom() async {
-//    String result = await Navigator.of(context).push(
-//      new MaterialPageRoute(builder: (context) => WfmFragment()),
-//    );
+    String result = await Navigator.of(context).push(
+      new MaterialPageRoute(builder: (context) => CameraGeneric()),
+    );
 //    setState((){
 //      _jobs = JobRepository.get().myJobCache;
 //      Scaffold.of(context).showSnackBar(
@@ -76,7 +77,7 @@ class _BasicJobFragmentState extends State<BasicJobFragment> {
     // Initialize TabView
     switch (jobType) {
       case 1: // Asbestos Jobs
-        tabCount = 7;
+        tabCount = 8;
         tabBar = new TabBar(
           tabs: [
             Tab(icon: Icon(Icons.assignment)),
@@ -91,6 +92,8 @@ class _BasicJobFragmentState extends State<BasicJobFragment> {
             // Notes and photos
             Tab(icon: Icon(Icons.map)),
             // Map
+            Tab(icon: Icon(Icons.check_circle)),
+            // Check
             Tab(icon: Icon(Icons.file_download)), // Download documents
           ],
         );
@@ -101,11 +104,12 @@ class _BasicJobFragmentState extends State<BasicJobFragment> {
           new AsbestosSamplesFragment(),
           new PhotoNotesFragment(),
           new MapBasicFragment(),
+          new CheckFragment(),
           new DocumentsFragment(),
         ]);
         break;
       case 2: // Meth Jobs
-        tabCount = 7;
+        tabCount = 8;
         tabBar = new TabBar(
           tabs: [
             Tab(icon: Icon(Icons.assignment)),
@@ -120,6 +124,8 @@ class _BasicJobFragmentState extends State<BasicJobFragment> {
             // Notes and photos
             Tab(icon: Icon(Icons.map)),
             // Map
+            Tab(icon: Icon(Icons.check_circle)),
+            // Check
             Tab(icon: Icon(Icons.file_download)), // Download documents
           ],
         );
@@ -130,11 +136,12 @@ class _BasicJobFragmentState extends State<BasicJobFragment> {
           new MethSamplesFragment(),
           new PhotoNotesFragment(),
           new MapBasicFragment(),
+          new CheckFragment(),
           new DocumentsFragment(),
         ]);
         break;
       default: // Default
-        tabCount = 5;
+        tabCount = 6;
         tabBar = new TabBar(
           tabs: [
             Tab(icon: Icon(Icons.assignment)),
@@ -145,6 +152,8 @@ class _BasicJobFragmentState extends State<BasicJobFragment> {
             // Notes and photos
             Tab(icon: Icon(Icons.map)),
             // Map
+            Tab(icon: Icon(Icons.check_circle)),
+            // Check
             Tab(icon: Icon(Icons.file_download)), // Download documents
           ],
         );
@@ -153,6 +162,7 @@ class _BasicJobFragmentState extends State<BasicJobFragment> {
           new TimeLogFragment(),
           new PhotoNotesFragment(),
           new MapBasicFragment(),
+          new CheckFragment(),
           new DocumentsFragment(),
         ]);
         break;

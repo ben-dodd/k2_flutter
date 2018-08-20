@@ -31,6 +31,7 @@ class _TimeLogFragmentState extends State<TimeLogFragment> {
                   style: Styles.h1),
                   FlatButton(
                     onPressed: () => {},
+                    // TODO longpress: Share with other job numbers, add other site tech
                     padding: EdgeInsets.all(10.0),
                     child: Row(
                       children: <Widget>[
@@ -45,6 +46,7 @@ class _TimeLogFragmentState extends State<TimeLogFragment> {
                   ),
                   FlatButton(
                     onPressed: () => {},
+                    // TODO: longpress Do SSSP, add site tech
                     padding: EdgeInsets.all(10.0),
                     child: Row( // Replace with a Row for horizontal icon + text
                       children: <Widget>[

@@ -6,6 +6,7 @@ import 'package:k2e/model/jobs/job.dart';
 import 'package:k2e/model/jobs/job_header.dart';
 import 'package:k2e/pages/jobs/wfm_fragment.dart';
 import 'package:k2e/theme.dart';
+import 'package:k2e/utils/camera.dart';
 import 'package:k2e/widgets/fab_dialer.dart';
 import 'package:k2e/widgets/job_card.dart';
 import 'package:k2e/pages/tasks/basic_job_fragment.dart';
@@ -25,7 +26,7 @@ class _MyJobsFragmentState extends State<MyJobsFragment> {
   List<JobHeader> _jobs = new List();
 
   bool _isLoading = true;
-  bool _isEmpty = false;
+  bool _isEmpty = true;
   String _loadingText = "Loading your jobs...";
 
   @override
@@ -73,7 +74,6 @@ class _MyJobsFragmentState extends State<MyJobsFragment> {
                   children: <Widget>[
                     Icon(Icons.not_interested, size: 64.0),
                     Container(
-                      color: Colors.white,
                       alignment: Alignment.center,
                       height: 64.0,
                           child:
@@ -94,6 +94,7 @@ class _MyJobsFragmentState extends State<MyJobsFragment> {
                             _isLoading = true;
                           });
                           await DataManager.get().loadJob(_jobs[index]);
+                          DataManager.get().cameras = await getCameras();
                           _isLoading = false;
                           _loadingText = "Loading your jobs...";
 //                          JobRepo.get().currentJob = _jobs[index];
@@ -135,7 +136,7 @@ class _MyJobsFragmentState extends State<MyJobsFragment> {
 
   void _addWfmJob() async {
     String result = await Navigator.of(context).push(
-      new MaterialPageRoute(builder: (context) => WfmFragment()),
+      new MaterialPageRoute(builder: (_) => new WfmFragment()),
     );
     setState((){
       _jobs = JobHeaderRepo.get().myJobCache;

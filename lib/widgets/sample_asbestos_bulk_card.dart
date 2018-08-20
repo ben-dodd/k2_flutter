@@ -25,7 +25,7 @@ class _SampleAsbestosBulkCardState extends State<SampleAsbestosBulkCard>{
     return new ListTile(
       leading: const Icon(Icons.whatshot),
       title: Text(widget.sample.jobNumber + '-' + widget.sample.sampleNumber.toString()),
-      subtitle: Text(widget.sample.description),
+      subtitle: Text(widget.sample.description + ': ' + widget.sample.material),
 
 //      subtitle: Text(widget.sample.description + '(' + widget.sample.material + ')'),
       // Tap -> go through to job task

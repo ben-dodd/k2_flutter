@@ -6,6 +6,7 @@
 
 import 'dart:async';
 
+import 'package:camera/camera.dart';
 import 'package:k2e/data/repos/job_header_repo.dart';
 import 'package:k2e/data/repos/room_repo.dart';
 import 'package:k2e/data/repos/sample_asbestos_bulk_repo.dart';
@@ -15,6 +16,7 @@ import 'package:k2e/model/entities/samples/sample_asbestos_air.dart';
 import 'package:k2e/model/entities/samples/sample_asbestos_bulk.dart';
 import 'package:k2e/model/jobs/job.dart';
 import 'package:k2e/model/jobs/job_header.dart';
+import 'package:k2e/model/user/user.dart';
 import 'package:validator/validator.dart';
 
 class DataManager {
@@ -31,6 +33,8 @@ class DataManager {
   Job currentJob;   // this holds the current job being worked on
   Room currentRoom; // either the Room that was last added or the room currently being edited
   SampleAsbestosBulk currentAsbestosBulkSample;
+  List<CameraDescription> cameras;
+  User user;
 
   static DataManager get() {
     return _dm;

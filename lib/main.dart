@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:k2e/pages/main_page.dart';
 import 'package:k2e/theme.dart';
 
-void main() => runApp(new MyApp());
+Future<void> main() async {
+  runApp(new MyApp());
+}
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.

@@ -25,6 +25,8 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
       sample.sampleNumber = sampleNumber;
       sample.description = description;
       sample.material = material;
+
+      // TODO save sample with job
       Navigator.pop(context, sample);
     }
   }
