@@ -3,7 +3,7 @@ import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/data/repos/sample_asbestos_bulk_repo.dart';
 import 'package:k2e/model/entities/samples/sample_asbestos_air.dart';
 import 'package:k2e/model/entities/samples/sample_asbestos_bulk.dart';
-import 'package:k2e/pages/tasks/samples/edit_asbestos_sample_bulk.dart';
+import 'package:k2e/pages/my_jobs/tasks/samples/edit_asbestos_sample_bulk.dart';
 import 'package:k2e/widgets/sample_asbestos_air_card.dart';
 import 'package:k2e/widgets/sample_asbestos_bulk_card.dart';
 

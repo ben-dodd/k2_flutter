@@ -24,5 +24,4 @@ class Styles {
     fontSize: 16.0,
   );
 
-
 }

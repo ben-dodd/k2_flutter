@@ -17,6 +17,8 @@ class WfmFragment extends StatefulWidget {
 
 class _WfmFragmentState extends State<WfmFragment> {
   List<JobHeader> _jobs = new List();
+  TextEditingController searchController = new TextEditingController();
+  String filter;
 
   bool _isLoading = true;
 
@@ -39,10 +41,21 @@ class _WfmFragmentState extends State<WfmFragment> {
         _isLoading = false;
       });
     }
+    searchController.addListener(() {
+      setState(() {
+        filter = searchController.text;
+      });
+    });
   }
 
   Future<Null> _refreshWfmJobs() async{
     await JobHeaderRepo.get().getAllWfmJobs().then((jobs) { _jobs = jobs.body; });
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -76,33 +89,59 @@ class _WfmFragmentState extends State<WfmFragment> {
                           )]))
 
                 : new Container(),
-                  ListView.builder(
+                  Column(
+                    children: <Widget>[
+                    new TextField(
+                      decoration: new InputDecoration(
+                          labelText: "Search current jobs on WorkflowMax"
+                      ),
+                      controller: searchController,
+                    ),
+                  new Expanded(
+                  child: ListView.builder(
                       physics: const AlwaysScrollableScrollPhysics(),
                       itemCount: _jobs.length,
                       itemBuilder: (context, index) {
-                        return WfmJobCard(
-                            jobHeader: _jobs[index],
-                            onCardClick: () async {
-//                              setState(() {_isLoading = true;});
-                              await JobHeaderRepo.get()
-                                  .updateJob(_jobs[index]);
-                              // TODO do not add existing jobs to job list
-                              JobHeaderRepo.get().myJobCache.add(_jobs[index]);
-//                              setState(() {
-//                                _isLoading = false;
-//                              });
-                              print(_jobs[index].jobNumber + ' added to your jobs.');
-                              // TODO say you already have that job loaded if you do
-                              Navigator.pop(context,_jobs[index].jobNumber + ' added to your jobs.');
-                            }
-                        );
+                        return filter == null || filter == "" ? getWfmJobCard(_jobs[index])
+                        : _jobs[index].jobNumber.toLowerCase().contains(filter.toLowerCase())
+                          || _jobs[index].clientName.toLowerCase().contains(filter.toLowerCase())
+                          || _jobs[index].address.toLowerCase().contains(filter.toLowerCase())
+                          || _jobs[index].type.toLowerCase().contains(filter.toLowerCase()) ?
+                          getWfmJobCard(_jobs[index])
+                            : new Container();
                       }
+                  )
                   )
                 ]
             )
+        ]
+        ),
         ),
         onRefresh: _refreshWfmJobs,
     ),
+    );
+  }
+
+  Widget getWfmJobCard(JobHeader jobHeader){
+    return new WfmJobCard(
+        jobHeader: jobHeader,
+        onCardClick: () async {
+//                              setState(() {_isLoading = true;});
+          await JobHeaderRepo.get()
+              .updateJob(jobHeader);
+          String message;
+          if (JobHeaderRepo.get().myJobCache.indexWhere((job) => job.jobNumber.toLowerCase() == jobHeader.jobNumber.toLowerCase()) == -1) {
+            JobHeaderRepo
+                .get()
+                .myJobCache
+                .add(jobHeader);
+            message = jobHeader.jobNumber + ' added to your jobs.';
+          } else {
+            message = jobHeader.jobNumber + ' is already in your jobs.';
+          }
+
+          Navigator.pop(context,message);
+        }
     );
   }
 }

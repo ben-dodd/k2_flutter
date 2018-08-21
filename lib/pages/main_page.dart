@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/pages/jobs/my_jobs_fragment.dart';
+import 'package:k2e/pages/my_details/my_details_fragment.dart';
+import 'package:k2e/pages/my_jobs/my_jobs_fragment.dart';
 import 'package:k2e/pages/under_construction_fragment.dart';
+import 'package:k2e/utils/draglist.dart';
 
 class DrawerItem {
   String title;
@@ -13,13 +15,14 @@ class MainPage extends StatefulWidget {
   // Add all drawer items here
   final drawerItems = [
     new DrawerItem("My Jobs", Icons.assignment),
-    new DrawerItem("To Do", Icons.format_list_bulleted),
+//    new DrawerItem("To Do", Icons.format_list_bulleted),
     new DrawerItem("Lab", Icons.colorize),
-    new DrawerItem("Notifications", Icons.notifications),
-    new DrawerItem("Calendar", Icons.date_range),
+//    new DrawerItem("Notifications", Icons.notifications),
+//    new DrawerItem("Calendar", Icons.date_range),
     new DrawerItem("My Details", Icons.person),
-    new DrawerItem("Training", Icons.people),
-    new DrawerItem("Equipment", Icons.build),
+//    new DrawerItem("Training", Icons.people),
+//    new DrawerItem("Equipment", Icons.build),
+    new DrawerItem("Reference", Icons.info_outline), // This page has various reference to methods etc.
     new DrawerItem("App Settings", Icons.settings),
     new DrawerItem("Log Out", Icons.exit_to_app)
   ];
@@ -40,8 +43,8 @@ class _MainPageState extends State<MainPage> {
         return new MyJobsFragment();
 //      case 1:
 //        return new LabFragment();
-//      case 2:
-//        return new MyDetailsFragment();
+      case 2:
+        return new MyDetailsFragment();
 //      case 3:
 //        return new TrainingFragment();
 

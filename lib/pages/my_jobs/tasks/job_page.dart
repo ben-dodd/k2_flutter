@@ -5,30 +5,29 @@ import 'package:k2e/data/repos/sample_asbestos_bulk_repo.dart';
 import 'package:k2e/model/entities/samples/sample_asbestos_bulk.dart';
 import 'package:k2e/model/jobs/job.dart';
 import 'package:k2e/pages/cameras/camera_generic.dart';
-import 'package:k2e/pages/tasks/check/check.dart';
-import 'package:k2e/utils/camera.dart';
-import 'package:k2e/pages/tasks/documents/documents_fragment.dart';
-import 'package:k2e/pages/tasks/details/job_details_fragment.dart';
-import 'package:k2e/pages/tasks/map/map_basic_fragment.dart';
-import 'package:k2e/pages/tasks/photo_notes/photo_notes_fragment.dart';
-import 'package:k2e/pages/tasks/rooms/room_fragment.dart';
-import 'package:k2e/pages/tasks/samples/edit_asbestos_sample_bulk.dart';
-import 'package:k2e/pages/tasks/samples/asbestos_samples_fragment.dart';
-import 'package:k2e/pages/tasks/samples/meth_samples_fragment.dart';
-import 'package:k2e/pages/tasks/timelog/time_log_fragment.dart';
+import 'package:k2e/pages/my_jobs/tasks/check/check.dart';
+import 'package:k2e/pages/my_jobs/tasks/details/job_details_fragment.dart';
+import 'package:k2e/pages/my_jobs/tasks/documents/documents_fragment.dart';
+import 'package:k2e/pages/my_jobs/tasks/map/map_basic_fragment.dart';
+import 'package:k2e/pages/my_jobs/tasks/photo_notes/photo_notes_fragment.dart';
+import 'package:k2e/pages/my_jobs/tasks/rooms/room_fragment.dart';
+import 'package:k2e/pages/my_jobs/tasks/samples/asbestos_samples_fragment.dart';
+import 'package:k2e/pages/my_jobs/tasks/samples/edit_asbestos_sample_bulk.dart';
+import 'package:k2e/pages/my_jobs/tasks/samples/meth_samples_fragment.dart';
+import 'package:k2e/pages/my_jobs/tasks/timelog/time_log_fragment.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/widgets/fab_dialer.dart';
 
 // This is a base page for jobs, this will be used for any jobs that are not currently supported
 // Have full functionality for editing WFM information though
 
-class BasicJobFragment extends StatefulWidget {
-  BasicJobFragment() : super();
+class JobPage extends StatefulWidget {
+  JobPage() : super();
   @override
-  _BasicJobFragmentState createState() => new _BasicJobFragmentState();
+  _JobPageState createState() => new _JobPageState();
 }
 
-class _BasicJobFragmentState extends State<BasicJobFragment> {
+class _JobPageState extends State<JobPage> {
   final Job job = DataManager.get().currentJob;
   int jobType;
 

@@ -102,7 +102,6 @@ class _JobDetailsFragment extends State<JobDetailsFragment> {
                             DataManager.get().currentJob.jobHeader.imagePath = _imageFile.path;
                             print(DataManager.get().currentJob.jobHeader.imagePath);
                           });
-//                          _addMainPhoto();
                         },
                         child: (_imageFile != null)
 //                        ? new Image.file(new File(DataManager.get().currentJob.jobHeader.imagePath))
@@ -115,12 +114,5 @@ class _JobDetailsFragment extends State<JobDetailsFragment> {
         )
     );
 
-  }
-
-  void _addMainPhoto() async {
-    DataManager.get().currentJob.jobHeader.imagePath = await Navigator.of(context).push(
-      new MaterialPageRoute(builder: (context) => CameraGeneric()),
-    );
-    print(DataManager.get().currentJob.jobHeader.imagePath);
   }
 }

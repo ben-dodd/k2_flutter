@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
-//import 'package:flutter_fab_dialer/flutter_fab_dialer.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/data/repos/job_header_repo.dart';
-import 'package:k2e/model/jobs/job.dart';
 import 'package:k2e/model/jobs/job_header.dart';
-import 'package:k2e/pages/jobs/wfm_fragment.dart';
+import 'package:k2e/pages/my_jobs/tasks/job_page.dart';
+import 'package:k2e/pages/my_jobs/wfm_fragment.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
 import 'package:k2e/widgets/fab_dialer.dart';
 import 'package:k2e/widgets/job_card.dart';
-import 'package:k2e/pages/tasks/basic_job_fragment.dart';
 
 // This page lists all your current jobs
 // From here you can click on the Fab Menu to add more jobs
@@ -98,7 +96,7 @@ class _MyJobsFragmentState extends State<MyJobsFragment> {
                           _isLoading = false;
                           _loadingText = "Loading your jobs...";
 //                          JobRepo.get().currentJob = _jobs[index];
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => BasicJobFragment()));
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => JobPage()));
                       },
                       onCardLongPress: () {
 
