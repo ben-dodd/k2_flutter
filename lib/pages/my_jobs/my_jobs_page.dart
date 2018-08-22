@@ -13,13 +13,13 @@ import 'package:k2e/widgets/job_card.dart';
 // From here you can click on the Fab Menu to add more jobs
 // or click on a job to go to that task e.g. a survey
 
-class MyJobsFragment extends StatefulWidget {
-  MyJobsFragment() : super();
+class MyJobsPage extends StatefulWidget {
+  MyJobsPage() : super();
   @override
-  _MyJobsFragmentState createState() => new _MyJobsFragmentState();
+  _MyJobsPageState createState() => new _MyJobsPageState();
 }
 
-class _MyJobsFragmentState extends State<MyJobsFragment> {
+class _MyJobsPageState extends State<MyJobsPage> {
 
   List<JobHeader> _jobs = new List();
 

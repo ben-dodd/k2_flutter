@@ -21,13 +21,13 @@ import 'package:k2e/widgets/fab_dialer.dart';
 // This is a base page for jobs, this will be used for any jobs that are not currently supported
 // Have full functionality for editing WFM information though
 
-class JobPage extends StatefulWidget {
-  JobPage() : super();
+class MyDetailsPage extends StatefulWidget {
+  MyDetailsPage() : super();
   @override
-  _JobPageState createState() => new _JobPageState();
+  _MyDetailsPageState createState() => new _MyDetailsPageState();
 }
 
-class _JobPageState extends State<JobPage> {
+class _MyDetailsPageState extends State<MyDetailsPage> {
   final Job job = DataManager.get().currentJob;
   int jobType;
 
@@ -198,20 +198,20 @@ class _JobPageState extends State<JobPage> {
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above
     return DefaultTabController(
-        length: tabCount,
-        child:
-          Scaffold(
-            appBar: new AppBar(
-              title: Text(job.jobHeader.jobNumber + ': ' + job.jobHeader.type, overflow: TextOverflow.ellipsis),
-             bottom: tabBar,
-            ),
-        body: Stack(
-          children: <Widget> [
-            tabBarView,
-//          _isAsbestos? FabDialer(_asbestosMenuItem, CompanyColors.accent, Icon(Icons.add),):Container(),
-        ]),
-            floatingActionButton: _isAsbestos? new SpeedDialer(children: asbestosDialer) : Container(),
+      length: tabCount,
+      child:
+      Scaffold(
+        appBar: new AppBar(
+          title: Text(job.jobHeader.jobNumber + ': ' + job.jobHeader.type, overflow: TextOverflow.ellipsis),
+          bottom: tabBar,
         ),
+        body: Stack(
+            children: <Widget> [
+              tabBarView,
+//          _isAsbestos? FabDialer(_asbestosMenuItem, CompanyColors.accent, Icon(Icons.add),):Container(),
+            ]),
+        floatingActionButton: _isAsbestos? new SpeedDialer(children: asbestosDialer) : Container(),
+      ),
     );
   }
 }

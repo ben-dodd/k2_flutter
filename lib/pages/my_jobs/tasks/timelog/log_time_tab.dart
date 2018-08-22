@@ -5,13 +5,13 @@ import 'package:k2e/styles.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
 
-class TimeLogFragment extends StatefulWidget {
-  TimeLogFragment() : super();
+class LogTimeTab extends StatefulWidget {
+  LogTimeTab() : super();
   @override
-  _TimeLogFragmentState createState() => new _TimeLogFragmentState();
+  _LogTimeTabState createState() => new _LogTimeTabState();
 }
 
-class _TimeLogFragmentState extends State<TimeLogFragment> {
+class _LogTimeTabState extends State<LogTimeTab> {
 
   final Job job = DataManager.get().currentJob;
 

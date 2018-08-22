@@ -5,13 +5,13 @@ import 'package:k2e/styles.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
 
-class CheckFragment extends StatefulWidget {
-  CheckFragment() : super();
+class MapsTab extends StatefulWidget {
+  MapsTab() : super();
   @override
-  _CheckFragmentState createState() => new _CheckFragmentState();
+  _MapsTabState createState() => new _MapsTabState();
 }
 
-class _CheckFragmentState extends State<CheckFragment> {
+class _MapsTabState extends State<MapsTab> {
 
   final Job job = DataManager.get().currentJob;
 
@@ -27,8 +27,8 @@ class _CheckFragmentState extends State<CheckFragment> {
             alignment: Alignment.center,
             child: Column(
                 children: <Widget> [
-                  Text('Check', style: Styles.h1),
-                  Text('This page is where you can check if you have done everything correctly.',
+                  Text('Draw Map', style: Styles.h1,),
+                  Text('This page is for drawing a basic map. No sample locations are supported in the basic job fragment.',
                       style: Styles.comment),
                 ]
             )

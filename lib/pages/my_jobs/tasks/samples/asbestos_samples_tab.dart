@@ -7,14 +7,14 @@ import 'package:k2e/pages/my_jobs/tasks/samples/edit_asbestos_sample_bulk.dart';
 import 'package:k2e/widgets/sample_asbestos_air_card.dart';
 import 'package:k2e/widgets/sample_asbestos_bulk_card.dart';
 
-class AsbestosSamplesFragment extends StatefulWidget {
-  AsbestosSamplesFragment() : super();
+class AsbestosSamplesTab extends StatefulWidget {
+  AsbestosSamplesTab() : super();
 
   @override
-  _AsbestosSamplesFragmentState createState() => new _AsbestosSamplesFragmentState();
+  _AsbestosSamplesTabState createState() => new _AsbestosSamplesTabState();
 }
 
-class _AsbestosSamplesFragmentState extends State<AsbestosSamplesFragment> {
+class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
   bool _isLoading = false;
   bool _isBulk = false;
   bool _isAir = false;

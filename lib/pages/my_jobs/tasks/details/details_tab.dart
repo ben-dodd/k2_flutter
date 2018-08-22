@@ -12,13 +12,13 @@ import 'package:k2e/theme.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
 
-class JobDetailsFragment extends StatefulWidget {
-  JobDetailsFragment() : super();
+class DetailsTab extends StatefulWidget {
+  DetailsTab() : super();
   @override
-  _JobDetailsFragment createState() => new _JobDetailsFragment();
+  _DetailsTabState createState() => new _DetailsTabState();
 }
 
-class _JobDetailsFragment extends State<JobDetailsFragment> {
+class _DetailsTabState extends State<DetailsTab> {
 
   JobHeader jobHeader;
 

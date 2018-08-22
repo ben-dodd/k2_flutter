@@ -5,13 +5,13 @@ import 'package:k2e/styles.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
 
-class MethSamplesFragment extends StatefulWidget {
-  MethSamplesFragment() : super();
+class CheckTab extends StatefulWidget {
+  CheckTab() : super();
   @override
-  _MethSamplesFragmentState createState() => new _MethSamplesFragmentState();
+  _CheckTabState createState() => new _CheckTabState();
 }
 
-class _MethSamplesFragmentState extends State<MethSamplesFragment> {
+class _CheckTabState extends State<CheckTab> {
 
   final Job job = DataManager.get().currentJob;
 
@@ -27,8 +27,8 @@ class _MethSamplesFragmentState extends State<MethSamplesFragment> {
             alignment: Alignment.center,
             child: Column(
                 children: <Widget> [
-                  Text('Meth Samples', style: Styles.h1,),
-                  Text('Meth samples list!',
+                  Text('Check', style: Styles.h1),
+                  Text('This page is where you can check if you have done everything correctly.',
                       style: Styles.comment),
                 ]
             )

@@ -5,13 +5,13 @@ import 'package:k2e/styles.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
 
-class DocumentsFragment extends StatefulWidget {
-  DocumentsFragment() : super();
+class NotepadTab extends StatefulWidget {
+  NotepadTab() : super();
   @override
-  _DocumentsFragmentState createState() => new _DocumentsFragmentState();
+  _NotepadTabState createState() => new _NotepadTabState();
 }
 
-class _DocumentsFragmentState extends State<DocumentsFragment> {
+class _NotepadTabState extends State<NotepadTab> {
 
   final Job job = DataManager.get().currentJob;
 
@@ -23,15 +23,15 @@ class _DocumentsFragmentState extends State<DocumentsFragment> {
     return new Scaffold(
         body:
         new Container(
-          padding: new EdgeInsets.all(24.0),
-          alignment: Alignment.center,
-          child: Column(
-            children: <Widget> [
-              Text('Job Documents', style: Styles.h1),
-              Text('This page is where you can produce and download reports and documents.',
+            padding: new EdgeInsets.all(24.0),
+            alignment: Alignment.center,
+            child: Column(
+                children: <Widget> [
+                  Text('Notepad', style: Styles.h1,),
+                  Text('Add any notes and photos in this page that don''t relate specifically to a task.',
                   style: Styles.comment),
-            ]
-          )
+                ]
+            )
         )
     );
   }

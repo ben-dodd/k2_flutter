@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/pages/my_details/my_details_fragment.dart';
-import 'package:k2e/pages/my_jobs/my_jobs_fragment.dart';
-import 'package:k2e/pages/under_construction_fragment.dart';
+import 'package:k2e/pages/my_details/my_details_page.dart';
+import 'package:k2e/pages/my_jobs/my_jobs_page.dart';
+import 'package:k2e/pages/under_construction_page.dart';
 import 'package:k2e/utils/draglist.dart';
 
 class DrawerItem {
@@ -40,16 +40,16 @@ class _MainPageState extends State<MainPage> {
   _getDrawerItemWidget(int pos) {
     switch (pos) {
       case 0:
-        return new MyJobsFragment();
+        return new MyJobsPage();
 //      case 1:
-//        return new LabFragment();
+//        return new LabPage();
       case 2:
-        return new MyDetailsFragment();
+        return new MyDetailsPage();
 //      case 3:
 //        return new TrainingFragment();
 
       default:
-        return new UnderConstructionFragment();
+        return new UnderConstructionPage();
     }
   }
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class UnderConstructionFragment extends StatelessWidget {
-  UnderConstructionFragment() : super();
+class UnderConstructionPage extends StatelessWidget {
+  UnderConstructionPage() : super();
 
   @override
   Widget build(BuildContext context) {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class LabFragment extends StatefulWidget {
-  LabFragment() : super();
+class LabPage extends StatefulWidget {
+  LabPage() : super();
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -15,10 +15,10 @@ class LabFragment extends StatefulWidget {
 //  final String title;
 
   @override
-  _LabFragmentState createState() => new _LabFragmentState();
+  _LabPageState createState() => new _LabPageState();
 }
 
-class _LabFragmentState extends State<LabFragment> {
+class _LabPageState extends State<LabPage> {
   int _counter = 0;
 
   void _incrementCounter() {

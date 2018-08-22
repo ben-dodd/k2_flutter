@@ -5,13 +5,13 @@ import 'package:k2e/styles.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
 
-class RoomFragment extends StatefulWidget {
-  RoomFragment() : super();
+class MethSamplesTab extends StatefulWidget {
+  MethSamplesTab() : super();
   @override
-  _RoomFragmentState createState() => new _RoomFragmentState();
+  _MethSamplesTabState createState() => new _MethSamplesTabState();
 }
 
-class _RoomFragmentState extends State<RoomFragment> {
+class _MethSamplesTabState extends State<MethSamplesTab> {
 
   final Job job = DataManager.get().currentJob;
 
@@ -27,8 +27,8 @@ class _RoomFragmentState extends State<RoomFragment> {
             alignment: Alignment.center,
             child: Column(
                 children: <Widget> [
-                  Text('Rooms', style: Styles.h1,),
-                  Text('Get all your rooms in order!.',
+                  Text('Meth Samples', style: Styles.h1,),
+                  Text('Meth samples list!',
                       style: Styles.comment),
                 ]
             )
