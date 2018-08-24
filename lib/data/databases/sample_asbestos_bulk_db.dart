@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:k2e/model/entities/samples/sample_asbestos_bulk.dart';
+import 'package:k2e/model/samples/sample_asbestos_bulk.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -43,6 +43,7 @@ class SampleAsbestosBulkDatabase {
               "CREATE TABLE $tableName ("
                   "uuid STRING PRIMARY KEY,"
                   "asbestosItemUuid TEXT,"
+                  "siteVisitUuid TEXT,"
                   "description TEXT,"
                   "material TEXT,"
                   "jobNumber TEXT,"
@@ -84,6 +85,7 @@ class SampleAsbestosBulkDatabase {
             '$tableName('
             'uuid,'
             'asbestosItemUuid,'
+            'siteVisitUuid,'
             'description,'
             'material,'
             'jobNumber,'
@@ -100,9 +102,10 @@ class SampleAsbestosBulkDatabase {
             'dryWeight,'
             'resultVersion,'
             'hasSynced)'
-            ' VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            ' VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [sample.uuid,
         sample.asbestosItemUuid,
+        sample.siteVisitUuid,
         sample.description,
         sample.material,
         sample.jobNumber,

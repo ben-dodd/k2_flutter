@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:k2e/data/databases/sample_asbestos_bulk_db.dart';
-import 'package:k2e/model/entities/samples/sample_asbestos_bulk.dart';
+import 'package:k2e/model/samples/sample_asbestos_bulk.dart';
 import 'package:k2e/model/jobs/job_header.dart';
 import 'package:k2e/strings.dart';
 import 'package:k2e/utils/custom_classes.dart';

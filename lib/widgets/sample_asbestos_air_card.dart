@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:k2e/model/entities/samples/sample_asbestos_air.dart';
+import 'package:k2e/model/samples/sample_asbestos_air.dart';
 
 class SampleAsbestosAirCard extends StatefulWidget {
 

@@ -22,6 +22,7 @@ class SampleAsbestosBulk extends Object with _$SampleAsbestosBulkSerializerMixin
 //  var uuid = new Uuid();
   String uuid,
       asbestosItemUuid,
+      siteVisitUuid,
       description,
       material,
       jobNumber;
@@ -48,6 +49,7 @@ class SampleAsbestosBulk extends Object with _$SampleAsbestosBulkSerializerMixin
   SampleAsbestosBulk({
     @required this.uuid,
     @required this.asbestosItemUuid,
+    this.siteVisitUuid,
     this.description,
     this.material,
     this.jobNumber,

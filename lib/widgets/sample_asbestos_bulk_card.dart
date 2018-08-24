@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:k2e/model/entities/samples/sample_asbestos_bulk.dart';
+import 'package:k2e/model/samples/sample_asbestos_bulk.dart';
 
 class SampleAsbestosBulkCard extends StatefulWidget {
 

@@ -4,7 +4,7 @@ import 'package:meta/meta.dart';
 /// This allows the `User` class to access private members in
 /// the generated file. The value for this is *.g.dart, where
 /// the star denotes the source file name.
-part 'analysis_asbestos_bulk.g.dart';
+part 'package:k2e/model/analysis/analysis_asbestos_bulk.g.dart';
 /// This allows the `User` class to access private members in
 /// the generated file. The value for this is *.g.dart, where
 /// the star denotes the source file name.

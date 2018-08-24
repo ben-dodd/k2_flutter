@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -9,6 +10,8 @@ import 'package:k2e/styles.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:k2e/theme.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
 
@@ -21,7 +24,7 @@ class DetailsTab extends StatefulWidget {
 class _DetailsTabState extends State<DetailsTab> {
 
   JobHeader jobHeader;
-
+  Directory docPath;
   File _imageFile;
 
   final TextEditingController _addressController = new TextEditingController();
@@ -30,7 +33,8 @@ class _DetailsTabState extends State<DetailsTab> {
   String description;
 
   @override
-  void initState() {
+  Future initState() async {
+    Directory docPath = await getApplicationDocumentsDirectory();
     jobHeader = DataManager.get().currentJob.jobHeader;
     address = jobHeader.address;
     description = jobHeader.description;
@@ -98,9 +102,13 @@ class _DetailsTabState extends State<DetailsTab> {
                       child: GestureDetector(
                         onTap: () async {
                           _imageFile = await ImagePicker.pickImage(source: ImageSource.camera);
-                          setState(() {
-                            DataManager.get().currentJob.jobHeader.imagePath = _imageFile.path;
-                            print(DataManager.get().currentJob.jobHeader.imagePath);
+                          String fileName = basename(_imageFile.path);
+                          File newImage = await _imageFile.copy('${docPath.path}/$fileName');
+                          setState(() async {
+                            DataManager.get().currentJob.jobHeader.imagePath = fileName;
+                            print(_imageFile.path);
+                            print(newImage.path);
+                            print(fileName);
                           });
                         },
                         child: (_imageFile != null)

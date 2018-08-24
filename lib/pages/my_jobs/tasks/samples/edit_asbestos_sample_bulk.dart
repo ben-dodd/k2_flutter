@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/model/entities/samples/sample_asbestos_bulk.dart';
+import 'package:k2e/model/samples/sample_asbestos_bulk.dart';
 import 'package:uuid/uuid.dart';
 import 'package:validator/validator.dart';
 

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 //import 'package:flutter_fab_dialer/flutter_fab_dialer.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/data/repos/sample_asbestos_bulk_repo.dart';
-import 'package:k2e/model/entities/samples/sample_asbestos_bulk.dart';
+import 'package:k2e/model/samples/sample_asbestos_bulk.dart';
 import 'package:k2e/model/jobs/job.dart';
 import 'package:k2e/pages/cameras/camera_generic.dart';
 import 'package:k2e/pages/my_jobs/tasks/check/check_tab.dart';
