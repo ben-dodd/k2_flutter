@@ -33,8 +33,8 @@ class _DetailsTabState extends State<DetailsTab> {
   String description;
 
   @override
-  Future initState() async {
-    Directory docPath = await getApplicationDocumentsDirectory();
+  Future initState() {
+//    Directory docPath = await getApplicationDocumentsDirectory();
     jobHeader = DataManager.get().currentJob.jobHeader;
     address = jobHeader.address;
     description = jobHeader.description;
@@ -103,11 +103,10 @@ class _DetailsTabState extends State<DetailsTab> {
                         onTap: () async {
                           _imageFile = await ImagePicker.pickImage(source: ImageSource.camera);
                           String fileName = basename(_imageFile.path);
-                          File newImage = await _imageFile.copy('${docPath.path}/$fileName');
+//                          File newImage = await _imageFile.copy('${docPath.path}/$fileName');
                           setState(() async {
                             DataManager.get().currentJob.jobHeader.imagePath = fileName;
                             print(_imageFile.path);
-                            print(newImage.path);
                             print(fileName);
                           });
                         },

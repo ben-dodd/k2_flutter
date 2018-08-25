@@ -73,6 +73,19 @@ class SampleAsbestosBulkRepo {
   // Adds new job, or updates if already exists
   Future<void> updateSample(SampleAsbestosBulk sample) async {
     await database.updateSample(sample);
+    await http.get(Strings.apiRoot + 'asbestos_sample/update.php?apiKey=' + Strings.apiKey + '&sample=' + json.encode(sample));
+    print(Strings.apiRoot + 'asbestos_sample/update.php?apiKey=' + Strings.apiKey + '&sample=' + json.encode(sample));
+    await http.get(Strings.apiRoot + 'asbestos_sample/create.php?apiKey=' + Strings.apiKey + '&sample=' + json.encode(sample));
+    print(Strings.apiRoot + 'asbestos_sample/create.php?apiKey=' + Strings.apiKey + '&sample=' + json.encode(sample));
+//    if(response == null) {
+////      return new ParsedResponse(NO_INTERNET, []);
+//    }
+//
+//    //If there was an error return an empty list
+//    if(response.statusCode < 200 || response.statusCode >= 300) {
+////      return new ParsedResponse(response.statusCode, []);
+//    }
+
     print(sample.jobNumber + '-' + sample.sampleNumber.toString() + ' updated!');
   }
 

@@ -168,8 +168,8 @@ class _JobPageState extends State<JobPage> {
     }
 
     List<Widget> asbestosDialer = [
-      new SpeedDialerButton(backgroundColor: CompanyColors.accent, icon: Icons.domain, onPressed: () { _addRoom(); }, text: "Add New Room",),
-      new SpeedDialerButton(backgroundColor: CompanyColors.accent, icon: Icons.whatshot, onPressed: () { _addACMBulkSample(); }, text: "Add New ACM Bulk Sample",),
+      new SpeedDialerButton(backgroundColor: CompanyColors.accent, icon: Icons.domain, onPressed: () { _addRoom(); }, text: "Add Room",),
+      new SpeedDialerButton(backgroundColor: CompanyColors.accent, icon: Icons.whatshot, onPressed: () { _addACMBulkSample(); }, text: "Add ACM Bulk Sample",),
     ];
 //
 //    // Initialize FAB Menu

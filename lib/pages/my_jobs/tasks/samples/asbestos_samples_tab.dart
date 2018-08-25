@@ -76,11 +76,11 @@ class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
                                 Scaffold.of(context).showSnackBar(
                                     new SnackBar(
                                         content: new Text(result.jobNumber)));
-//                                SampleAsbestosBulkRepo.get().updateJob(result);
-//                                DataManager
-//                                    .get()
-//                                    .currentJob
-//                                    .asbestosBulkSamples[index] = result;
+                                SampleAsbestosBulkRepo.get().updateSample(result);
+                                DataManager
+                                    .get()
+                                    .currentJob
+                                    .asbestosBulkSamples[index] = result;
                               }
 //      Scaffold.of(context).showSnackBar(
 //          new SnackBar(

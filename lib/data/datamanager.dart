@@ -78,6 +78,7 @@ class DataManager {
     }
     if (!itemFound) {
       currentJob.asbestosBulkSamples.add(sample);
+      sampleAsbestosBulkRepo.updateSample(sample);
     }
     currentAsbestosBulkSample = null;
   }
