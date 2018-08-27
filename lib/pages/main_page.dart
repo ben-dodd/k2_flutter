@@ -47,6 +47,7 @@ class _MainPageState extends State<MainPage> {
         return new MyDetailsPage();
 //      case 3:
 //        return new TrainingFragment();
+      case 5:
 
       default:
         return new UnderConstructionPage();
