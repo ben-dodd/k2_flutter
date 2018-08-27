@@ -18,23 +18,23 @@ class MyApp extends StatelessWidget {
     return new MaterialApp(
       title: 'K2 Environmental',
       theme: CompanyThemeData,
-      home: _handleCurrentScreen(),
+      home: new MainPage(),
     );
   }
 
-  Widget _handleCurrentScreen() {
-    return new StreamBuilder<FirebaseUser>(
-      stream: FirebaseAuth.instance.onAuthStateChanged,
-      builder: (BuildContext context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return new SplashPage();
-        } else {
-          if (snapshot.hasData) {
-            return new MainPage();
-          }
-          return new LoginPage();
-        }
-      }
-    );
-  }
+//  Widget _handleCurrentScreen() {
+//    return new StreamBuilder<FirebaseUser>(
+//      stream: FirebaseAuth.instance.onAuthStateChanged,
+//      builder: (BuildContext context, snapshot) {
+//        if (snapshot.connectionState == ConnectionState.waiting) {
+//          return new SplashPage();
+//        } else {
+//          if (snapshot.hasData) {
+//            return new MainPage();
+//          }
+//          return new LoginPage();
+//        }
+//      }
+//    );
+//  }
 }

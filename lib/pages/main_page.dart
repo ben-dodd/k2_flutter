@@ -1,9 +1,16 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_details/my_details_page.dart';
 import 'package:k2e/pages/my_jobs/my_jobs_page.dart';
 import 'package:k2e/pages/under_construction_page.dart';
 import 'package:k2e/utils/draglist.dart';
+
+final FirebaseAuth _auth = FirebaseAuth.instance;
+final GoogleSignIn _googleSignIn = new GoogleSignIn();
 
 class DrawerItem {
   String title;
@@ -35,6 +42,28 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
+  FirebaseUser currentUser;
+  bool _isLoading = false;
+
+  Future<void> _testSignInWithGoogle() async {
+    final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
+    setState(() {
+      _isLoading = true;
+    });
+    final GoogleSignInAuthentication googleAuth =
+    await googleUser.authentication;
+    FirebaseUser user = await _auth.signInWithGoogle(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+    setState(() {
+      _isLoading = false;
+      _selectedDrawerIndex = 0;
+      print('user is ' + user.displayName);
+      currentUser = user;
+    });
+  }
+
   int _selectedDrawerIndex = 0;
 
   _getDrawerItemWidget(int pos) {
@@ -48,10 +77,22 @@ class _MainPageState extends State<MainPage> {
 //      case 3:
 //        return new TrainingFragment();
       case 5:
+        _signOut();
+        break;
 
       default:
         return new UnderConstructionPage();
     }
+  }
+
+  void _signOut() async {
+    print(currentUser.displayName + ' signing out.');
+    await _googleSignIn.signOut();
+    await _auth.signOut();
+    currentUser = null;
+    setState(() {
+      print ('Signed out');
+    });
   }
 
   _onSelectItem(int index) {
@@ -65,38 +106,77 @@ class _MainPageState extends State<MainPage> {
     for (var i = 0; i < widget.drawerItems.length; i++) {
       var d = widget.drawerItems[i];
       drawerOptions.add(
-        new ListTile(
-          leading: new Icon(d.icon),
-          title: new Text(d.title),
-          selected: i == _selectedDrawerIndex,
-          onTap: () => _onSelectItem(i),
-        )
+          new ListTile(
+            leading: new Icon(d.icon),
+            title: new Text(d.title),
+            selected: i == _selectedDrawerIndex,
+            onTap: () => _onSelectItem(i),
+          )
       );
     }
-
-    return new Scaffold(
+    print (currentUser.toString() + ' is the current user');
+    if (currentUser != null) {
+      return new Scaffold(
         appBar: new AppBar(
           // here we display the title corresponding to the fragment
           // you can choose to have a static title
-          title: new Text(widget.drawerItems[_selectedDrawerIndex].title),
+            title: new Text(widget.drawerItems[_selectedDrawerIndex].title),
             actions: <Widget>[
-          new IconButton(icon: const Icon(Icons.sync), onPressed: () {
+              new IconButton(icon: const Icon(Icons.sync), onPressed: () {
 //          DataManager.get().currentJob.asbestosBulkSamples.add(sample);
-            DataManager.get().syncAllJobs;
+                DataManager
+                    .get()
+                    .syncAllJobs;
 //                print(sample.jobNumber + '-' + sample.sampleNumber.toString() + ': ' + sample.description);
-          })
-        ]),
+              })
+            ]),
         drawer: new Drawer(
-          child: new SingleChildScrollView(
-            child: new Container(
-              margin: EdgeInsets.fromLTRB(10.0, 20.0, 10.0, 10.0),
-              child: new Column(
-                children: drawerOptions
+          child: ListView(
+            children: <Widget> [
+              UserAccountsDrawerHeader(
+                currentAccountPicture: CircleAvatar(backgroundImage: new NetworkImage(currentUser.photoUrl)),
+                accountName: Text(currentUser.displayName),
+                accountEmail: Text(currentUser.email),
               ),
-            ),
-          ),
+              new SingleChildScrollView(
+                child:
+                Container(
+                  margin: EdgeInsets.fromLTRB(10.0, 20.0, 10.0, 10.0),
+                  child: new Column(
+                      children: drawerOptions
+                  ),
+                ),
+              )
+            ]
+          )
         ),
         body: _getDrawerItemWidget(_selectedDrawerIndex),
-        );
+      );
+    } else {
+      return new Scaffold(
+        appBar: new AppBar(
+          title: new Text('Sign In')
+        ),
+        body: _isLoading?
+        new Container(
+            alignment: Alignment.center,
+            color: Colors.white,
+
+            child:Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  new CircularProgressIndicator(),
+                  Container(
+                      alignment: Alignment.center,
+                      height: 64.0,
+                      child:
+                      Text('Signing In...')
+                  )]))
+
+            : new Center(
+          child: RaisedButton(onPressed: _testSignInWithGoogle, child: Text('Sign In'),)
+        )
+      );
+    }
   }
 }

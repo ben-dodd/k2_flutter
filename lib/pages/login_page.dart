@@ -8,10 +8,13 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        color: CompanyColors.iconLGreen,
+    return Scaffold(
+      body:
+        Container(
+        color: CompanyColors.colorPrimaryLight,
         margin: EdgeInsets.all(64.0),
         child: IconButton(icon: Icon(Icons.vpn_key), iconSize: 48.0, onPressed: _authenticateWithGoogle)
+    )
     );
   }
 
