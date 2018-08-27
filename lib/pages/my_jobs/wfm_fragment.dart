@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:k2e/data/repos/job_header_repo.dart';
 import 'package:k2e/model/jobs/job_header.dart';
 import 'package:k2e/widgets/wfm_job_card.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // This page lists all your current jobs
 // From here you can click on the Fab Menu to add more jobs
@@ -126,6 +127,11 @@ class _WfmFragmentState extends State<WfmFragment> {
     return new WfmJobCard(
         jobHeader: jobHeader,
         onCardClick: () async {
+          Firestore.instance.runTransaction((Transaction tx) async {
+            var _result = await Firestore.instance.collection('jobheaders').add(jobHeader.toJson());
+            print(_result.path);
+            // add result reference to "MyJobs" array in users document
+          });
 //                              setState(() {_isLoading = true;});
           await JobHeaderRepo.get()
               .updateJob(jobHeader);

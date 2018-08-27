@@ -7,7 +7,7 @@ import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_details/my_details_page.dart';
 import 'package:k2e/pages/my_jobs/my_jobs_page.dart';
 import 'package:k2e/pages/under_construction_page.dart';
-import 'package:k2e/utils/draglist.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 final GoogleSignIn _googleSignIn = new GoogleSignIn();
@@ -44,6 +44,9 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   FirebaseUser currentUser;
   bool _isLoading = false;
+  bool _isSignedIn = false;
+
+  GlobalKey _signInKey;
 
   Future<void> _testSignInWithGoogle() async {
     final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
@@ -56,12 +59,26 @@ class _MainPageState extends State<MainPage> {
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
-    setState(() {
-      _isLoading = false;
-      _selectedDrawerIndex = 0;
-      print('user is ' + user.displayName);
-      currentUser = user;
-    });
+    print(user.email);
+    QuerySnapshot query = await Firestore.instance.collection('users').where('email',isEqualTo: user.email).getDocuments();
+    if (query.documents.length == 0){
+      // User is not registered
+      print('This email is not registered with K2.');
+      setState(() {
+        _isLoading = false;
+        _isSignedIn = false;
+        currentUser = null;
+        _googleSignIn.signOut();
+      });
+    } else {
+      setState(() {
+        _isLoading = false;
+        _selectedDrawerIndex = 0;
+        print('user is ' + user.displayName);
+        currentUser = user;
+        _isSignedIn = true;
+      });
+    }
   }
 
   int _selectedDrawerIndex = 0;
@@ -89,8 +106,9 @@ class _MainPageState extends State<MainPage> {
     print(currentUser.displayName + ' signing out.');
     await _googleSignIn.signOut();
     await _auth.signOut();
-    currentUser = null;
     setState(() {
+      currentUser = null;
+      _isSignedIn = false;
       print ('Signed out');
     });
   }
@@ -115,8 +133,9 @@ class _MainPageState extends State<MainPage> {
       );
     }
     print (currentUser.toString() + ' is the current user');
-    if (currentUser != null) {
-      return new Scaffold(
+      return new Container(
+        child: _isSignedIn?
+       new Scaffold(
         appBar: new AppBar(
           // here we display the title corresponding to the fragment
           // you can choose to have a static title
@@ -151,9 +170,9 @@ class _MainPageState extends State<MainPage> {
           )
         ),
         body: _getDrawerItemWidget(_selectedDrawerIndex),
-      );
-    } else {
-      return new Scaffold(
+      )
+    : new Scaffold(
+          key: _signInKey,
         appBar: new AppBar(
           title: new Text('Sign In')
         ),
@@ -176,7 +195,7 @@ class _MainPageState extends State<MainPage> {
             : new Center(
           child: RaisedButton(onPressed: _testSignInWithGoogle, child: Text('Sign In'),)
         )
+      )
       );
-    }
   }
 }
