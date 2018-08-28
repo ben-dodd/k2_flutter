@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/data/repos/job_header_repo.dart';
@@ -30,21 +31,36 @@ class _MyJobsPageState extends State<MyJobsPage> {
   @override
   void initState() {
     super.initState();
-    JobHeaderRepo.get().getMyJobs()
-          .then((jobs) {
-        JobHeaderRepo.get().myJobCache = jobs;
-        setState(() {
-          _jobs = jobs;
-          _isLoading = false;
-          if (_jobs == null || _jobs.length == 0) {
-            _jobs = [];
-            _isEmpty = true;
-          } else {
-            _isEmpty = false;
-          }
-          _isLoading = false;
-        });
-      });
+//    JobHeaderRepo.get().getMyJobs()
+//          .then((jobs) {
+//        JobHeaderRepo.get().myJobCache = jobs;
+//        setState(() {
+//          _jobs = jobs;
+//          _isLoading = false;
+//          if (_jobs == null || _jobs.length == 0) {
+//            _jobs = [];
+//            _isEmpty = true;
+//          } else {
+//            _isEmpty = false;
+//          }
+//          _isLoading = false;
+//        });
+//      });
+//        Firestore.instance.collection("jobHeader")
+//          .then((jobs) {
+//        setState(() {
+//          _jobs = jobs;
+//          _isLoading = false;
+//          if (_jobs == null || _jobs.length == 0) {
+//            _jobs = [];
+//            _isEmpty = true;
+//          } else {
+//            _isEmpty = false;
+//          }
+//          _isLoading = false;
+//        });
+//      });
+
   }
 
   @override

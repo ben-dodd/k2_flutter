@@ -34,7 +34,7 @@ class DataManager {
   Room currentRoom; // either the Room that was last added or the room currently being edited
   SampleAsbestosBulk currentAsbestosBulkSample;
   List<CameraDescription> cameras;
-  User user;
+  String user;
 
   static DataManager get() {
     return _dm;

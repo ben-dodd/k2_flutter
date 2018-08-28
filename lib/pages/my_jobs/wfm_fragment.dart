@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/data/repos/job_header_repo.dart';
 import 'package:k2e/model/jobs/job_header.dart';
 import 'package:k2e/widgets/wfm_job_card.dart';
@@ -127,24 +128,49 @@ class _WfmFragmentState extends State<WfmFragment> {
     return new WfmJobCard(
         jobHeader: jobHeader,
         onCardClick: () async {
-          Firestore.instance.runTransaction((Transaction tx) async {
-            var _result = await Firestore.instance.collection('jobheaders').add(jobHeader.toJson());
-            print(_result.path);
-            // add result reference to "MyJobs" array in users document
-          });
-//                              setState(() {_isLoading = true;});
-          await JobHeaderRepo.get()
-              .updateJob(jobHeader);
           String message;
-          if (JobHeaderRepo.get().myJobCache.indexWhere((job) => job.jobNumber.toLowerCase() == jobHeader.jobNumber.toLowerCase()) == -1) {
-            JobHeaderRepo
-                .get()
-                .myJobCache
-                .add(jobHeader);
-            message = jobHeader.jobNumber + ' added to your jobs.';
+          var dataMap = new Map<String, dynamic>();
+          dataMap['jobNumber'] = jobHeader.jobNumber;
+          // Check if job in user's jobs first
+          var job = await Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').where('jobNumber', isEqualTo: jobHeader.jobNumber).getDocuments();
+          // Check if job in firestore first
+          if (job.documents.length == 0){
+            print ('No jobs have been added or job not in list');
+            // No jobs have been added, or job number not in 'my jobs' list. Add job
+            // First check if job has been moved from WFM into firestore
+            var query = await Firestore.instance.collection('jobheaders').where('jobNumber',isEqualTo: jobHeader.jobNumber).getDocuments();
+            if (query.documents.length == 0) {
+              // Job has not been imported from WFM, add
+              Firestore.instance.runTransaction((Transaction tx) async {
+                var _result = await Firestore.instance.collection('jobheaders')
+                    .add(jobHeader.toJson());
+              });
+              await Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').add(dataMap);
+                message = jobHeader.jobNumber + ' added to your jobs.';
+            } else {
+              print ('job was in firestore');
+              // Job is already in firestore, get path
+              // TODO change getting job Number to getting path
+              await Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').add(dataMap);
+              message = jobHeader.jobNumber + ' added to your jobs.';
+            }
           } else {
             message = jobHeader.jobNumber + ' is already in your jobs.';
           }
+
+//                              setState(() {_isLoading = true;});
+//          await JobHeaderRepo.get()
+//              .updateJob(jobHeader);
+//          String message;
+//          if (JobHeaderRepo.get().myJobCache.indexWhere((job) => job.jobNumber.toLowerCase() == jobHeader.jobNumber.toLowerCase()) == -1) {
+//            JobHeaderRepo
+//                .get()
+//                .myJobCache
+//                .add(jobHeader);
+//            message = jobHeader.jobNumber + ' added to your jobs.';
+//          } else {
+//            message = jobHeader.jobNumber + ' is already in your jobs.';
+//          }
 
           Navigator.pop(context,message);
         }

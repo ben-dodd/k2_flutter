@@ -64,6 +64,7 @@ class _MainPageState extends State<MainPage> {
     if (query.documents.length == 0){
       // User is not registered
       print('This email is not registered with K2.');
+      // Todo show pop up snack bar if email not registered
       setState(() {
         _isLoading = false;
         _isSignedIn = false;
@@ -72,6 +73,8 @@ class _MainPageState extends State<MainPage> {
       });
     } else {
       setState(() {
+        DataManager.get().user = query.documents.first.documentID;
+        print ('user is !!! ' + DataManager.get().user);
         _isLoading = false;
         _selectedDrawerIndex = 0;
         print('user is ' + user.displayName);
