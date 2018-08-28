@@ -129,7 +129,7 @@ class _WfmFragmentState extends State<WfmFragment> {
         jobHeader: jobHeader,
         onCardClick: () async {
           String message;
-          var dataMap = new Map<String, dynamic>();
+          Map<String, String> dataMap = new Map();
           dataMap['jobNumber'] = jobHeader.jobNumber;
           // Check if job in user's jobs first
           var job = await Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').where('jobNumber', isEqualTo: jobHeader.jobNumber).getDocuments();
@@ -143,37 +143,29 @@ class _WfmFragmentState extends State<WfmFragment> {
               // Job has not been imported from WFM, add
               Firestore.instance.runTransaction((Transaction tx) async {
                 var _result = await Firestore.instance.collection('jobheaders')
-                    .add(jobHeader.toJson());
-              });
-              await Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').add(dataMap);
+                    .add(jobHeader.toMap());
+                dataMap['path'] = _result.path;
+                await Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').add(dataMap);
                 message = jobHeader.jobNumber + ' added to your jobs.';
+              });
             } else {
               print ('job was in firestore');
               // Job is already in firestore, get path
               // TODO change getting job Number to getting path
+              print (query.documents.length);
+              dataMap['path'] = query.documents.elementAt(0).reference.path;
+              print (query.documents.elementAt(0).reference.path);
               await Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').add(dataMap);
               message = jobHeader.jobNumber + ' added to your jobs.';
             }
+            DataManager.get().jobHeaderRepo.myJobCache.add(jobHeader);
           } else {
             message = jobHeader.jobNumber + ' is already in your jobs.';
           }
-
-//                              setState(() {_isLoading = true;});
-//          await JobHeaderRepo.get()
-//              .updateJob(jobHeader);
-//          String message;
-//          if (JobHeaderRepo.get().myJobCache.indexWhere((job) => job.jobNumber.toLowerCase() == jobHeader.jobNumber.toLowerCase()) == -1) {
-//            JobHeaderRepo
-//                .get()
-//                .myJobCache
-//                .add(jobHeader);
-//            message = jobHeader.jobNumber + ' added to your jobs.';
-//          } else {
-//            message = jobHeader.jobNumber + ' is already in your jobs.';
-//          }
 
           Navigator.pop(context,message);
         }
     );
   }
+
 }

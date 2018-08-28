@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
@@ -31,36 +34,43 @@ class _MyJobsPageState extends State<MyJobsPage> {
   @override
   void initState() {
     super.initState();
-//    JobHeaderRepo.get().getMyJobs()
-//          .then((jobs) {
-//        JobHeaderRepo.get().myJobCache = jobs;
-//        setState(() {
-//          _jobs = jobs;
-//          _isLoading = false;
-//          if (_jobs == null || _jobs.length == 0) {
-//            _jobs = [];
-//            _isEmpty = true;
-//          } else {
-//            _isEmpty = false;
-//          }
-//          _isLoading = false;
-//        });
-//      });
-//        Firestore.instance.collection("jobHeader")
-//          .then((jobs) {
-//        setState(() {
-//          _jobs = jobs;
-//          _isLoading = false;
-//          if (_jobs == null || _jobs.length == 0) {
-//            _jobs = [];
-//            _isEmpty = true;
-//          } else {
-//            _isEmpty = false;
-//          }
-//          _isLoading = false;
-//        });
-//      });
+    resetJobs().then((length) {
+      setState(() {
+        print ('set state calld' + length.toString());
+        if (length == null || length == 0) {
+          _jobs = [];
+          _isEmpty = true;
+        } else {
+          _isEmpty = false;
+        }
+        _isLoading = false;
+      });
+    });
+  }
 
+  Future<int> resetJobs() async {
+    print('getjobs called');
+    setState(() {
+      _jobs = [];
+      _isLoading = true;
+      _isEmpty = true;
+    });
+    _jobs = [];
+    // TODO try using snapshot listener instead of getDocuments to fix the lag time
+    // The problem with using snapshot listener is to get everything working in a chain
+    await Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').getDocuments().then((jobs) async {
+      print(jobs.documents.length.toString() + ' is the documents in myjobs');
+      for (var job in jobs.documents) {
+        print(job.data['jobNumber']);
+        var doc = await Firestore.instance.document(job.data['path']).get();
+        JobHeader jobObj = JobHeader.fromMap(doc.data);
+        _jobs.add(jobObj);
+        print(jobObj.jobNumber + ' ' + jobObj.address);
+      }
+    });
+    print ('get jobs returned');
+    DataManager.get().jobHeaderRepo.myJobCache = _jobs;
+    return _jobs.length;
   }
 
   @override
@@ -152,15 +162,27 @@ class _MyJobsPageState extends State<MyJobsPage> {
     String result = await Navigator.of(context).push(
       new MaterialPageRoute(builder: (_) => new WfmFragment()),
     );
-    setState((){
-      _jobs = JobHeaderRepo.get().myJobCache;
+//    resetJobs().then((length) {
+//      setState(() {
+//        print('set state calld' + length.toString());
+//        if (length == null || length == 0) {
+//          _jobs = [];
+//          _isEmpty = true;
+//        } else {
+//          _isEmpty = false;
+//        }
+//        _isLoading = false;
+//      });
+//    });
+    _jobs = await DataManager.get().jobHeaderRepo.myJobCache;
+    setState(() {
       if (result != null) {
       Scaffold.of(context).showSnackBar(
           new SnackBar(
               content: new Text(result)));
-
-    }
+      }
     });
   }
+
 
 }

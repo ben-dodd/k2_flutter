@@ -40,6 +40,35 @@ class JobHeader extends Object with _$JobHeaderSerializerMixin {
     this.lastSynced,
   });
 
+  static JobHeader fromMap(Map<String, dynamic> map){
+    JobHeader jobHeader = new JobHeader(
+        jobNumber: map['jobNumber'],
+        address: map['address'],
+      description: map['description'],
+      clientName: map['clientName'],
+      state: map['state'],
+      type: map['type'],
+      imagePath: map['imagePath'],
+      lastModified: map['lastModified'],
+      lastSynced: map['lastSynced'],
+    );
+    return jobHeader;
+  }
+
+  Map<String, dynamic> toMap(){
+    Map<String, dynamic> map = new Map();
+    map['jobNumber'] = jobNumber;
+    map['address'] = address;
+    map['description'] = description;
+    map['clientName'] = clientName;
+    map['state'] = state;
+    map['type'] = type;
+    map['imagePath'] = imagePath;
+    map['lastModified'] = lastModified;
+    map['lastSynced'] = lastSynced;
+    return map;
+  }
+
   /// A necessary factory constructor for creating a new User instance
   /// from a map. Pass the map to the generated _$UserFromJson constructor.
   /// The constructor is named after the source class, in this case User.
