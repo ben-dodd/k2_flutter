@@ -34,21 +34,10 @@ class _MyJobsPageState extends State<MyJobsPage> {
   @override
   void initState() {
     super.initState();
-    resetJobs().then((length) {
-      setState(() {
-        print ('set state calld' + length.toString());
-        if (length == null || length == 0) {
-          _jobs = [];
-          _isEmpty = true;
-        } else {
-          _isEmpty = false;
-        }
-        _isLoading = false;
-      });
-    });
+    _resetJobs;
   }
 
-  Future<int> resetJobs() async {
+  Future<Null> _resetJobs() async {
     print('getjobs called');
     setState(() {
       _jobs = [];
@@ -70,7 +59,15 @@ class _MyJobsPageState extends State<MyJobsPage> {
     });
     print ('get jobs returned');
     DataManager.get().jobHeaderRepo.myJobCache = _jobs;
-    return _jobs.length;
+    setState(() {
+      if (_jobs == null || _jobs.length == 0) {
+        _jobs = [];
+        _isEmpty = true;
+      } else {
+        _isEmpty = false;
+      }
+      _isLoading = false;
+    });
   }
 
   @override
@@ -87,70 +84,72 @@ class _MyJobsPageState extends State<MyJobsPage> {
 
     return new Scaffold(
       body:
-        new Container(
-          padding: new EdgeInsets.all(8.0),
-          child: new Stack(
-            children: <Widget>[
-              _isEmpty?
-              new Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+          new RefreshIndicator(child:
+          new Container(
+              padding: new EdgeInsets.all(8.0),
+              child: new Stack(
                   children: <Widget>[
-                    Icon(Icons.not_interested, size: 64.0),
-                    Container(
-                      alignment: Alignment.center,
-                      height: 64.0,
-                          child:
-                        Text('You have no jobs loaded.')
+                    _isEmpty?
+                    new Center(
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Icon(Icons.not_interested, size: 64.0),
+                              Container(
+                                  alignment: Alignment.center,
+                                  height: 64.0,
+                                  child:
+                                  Text('You have no jobs loaded.')
+                              )
+                            ]
+                        )
                     )
-                  ]
-                )
-              )
-              : new Container(),
-              ListView.builder(
-                itemCount: _jobs.length,
-                itemBuilder: (context, index) {
-                  return JobCard(
-                      jobHeader: _jobs[index],
-                      onCardClick: () async {
-                          setState(() {
-                            _loadingText = "Loading " + _jobs[index].jobNumber;
-                            _isLoading = true;
-                          });
-                          await DataManager.get().loadJob(_jobs[index]);
-                          DataManager.get().cameras = await getCameras();
-                          _isLoading = false;
-                          _loadingText = "Loading your jobs...";
+                        : new Container(),
+                    ListView.builder(
+                        itemCount: _jobs.length,
+                        itemBuilder: (context, index) {
+                          return JobCard(
+                            jobHeader: _jobs[index],
+                            onCardClick: () async {
+                              setState(() {
+                                _loadingText = "Loading " + _jobs[index].jobNumber;
+                                _isLoading = true;
+                              });
+                              await DataManager.get().loadJob(_jobs[index]);
+                              DataManager.get().cameras = await getCameras();
+                              _isLoading = false;
+                              _loadingText = "Loading your jobs...";
 //                          JobRepo.get().currentJob = _jobs[index];
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => JobPage()));
-                      },
-                      onCardLongPress: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => JobPage()));
+                            },
+                            onCardLongPress: () {
 
-                      },
-                  );
-                }
-            ),
-              _isLoading?
-              new Container(
-                alignment: Alignment.center,
-                  color: Colors.white,
+                            },
+                          );
+                        }
+                    ),
+                    _isLoading?
+                    new Container(
+                        alignment: Alignment.center,
+                        color: Colors.white,
 
-                  child:Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        new CircularProgressIndicator(),
-                        Container(
-                            alignment: Alignment.center,
-                            height: 64.0,
-                            child:
-                            Text(_loadingText)
-                        )]))
+                        child:Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              new CircularProgressIndicator(),
+                              Container(
+                                  alignment: Alignment.center,
+                                  height: 64.0,
+                                  child:
+                                  Text(_loadingText)
+                              )]))
 
-                  : new Container(),
-            ]
-          )
-      ),
-      floatingActionButton: new SpeedDialer(children: modeButtons),
+                        : new Container(),
+                  ]
+              )
+          ),
+          onRefresh: _resetJobs),
+          floatingActionButton: new SpeedDialer(children: modeButtons),
     );
   }
 
