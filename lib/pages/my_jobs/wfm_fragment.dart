@@ -131,6 +131,9 @@ class _WfmFragmentState extends State<WfmFragment> {
           String message;
           Map<String, String> dataMap = new Map();
           dataMap['jobNumber'] = jobHeader.jobNumber;
+          dataMap['type'] = jobHeader.type;
+          dataMap['address'] = jobHeader.address;
+          dataMap['clientName'] = jobHeader.clientName;
           // Check if job in user's jobs first
           var job = await Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').where('jobNumber', isEqualTo: jobHeader.jobNumber).getDocuments();
           // Check if job in firestore first
@@ -143,7 +146,7 @@ class _WfmFragmentState extends State<WfmFragment> {
               // Job has not been imported from WFM, add
               Firestore.instance.runTransaction((Transaction tx) async {
                 var _result = await Firestore.instance.collection('jobheaders')
-                    .add(jobHeader.toMap());
+                    .add(jobHeader.toJson());
                 dataMap['path'] = _result.path;
                 await Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').add(dataMap);
                 message = jobHeader.jobNumber + ' added to your jobs.';

@@ -45,7 +45,7 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
     if (sample == null){
       print('null sample');
       print('creating new sample');
-      sample = new SampleAsbestosBulk(uuid: new Uuid().v1(), asbestosItemUuid: null);
+      sample = new SampleAsbestosBulk();
       _title = "Add New Sample";
       sample.jobNumber = DataManager.get().currentJob.jobHeader.jobNumber;
       sample.sampleNumber = DataManager.get().getHighestSampleNumber(DataManager.get().currentJob) + 1;

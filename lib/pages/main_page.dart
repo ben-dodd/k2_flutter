@@ -92,8 +92,8 @@ class _MainPageState extends State<MainPage> {
         return new MyJobsPage();
 //      case 1:
 //        return new LabPage();
-      case 2:
-        return new MyDetailsPage();
+//      case 2:
+//        return new MyDetailsPage();
 //      case 3:
 //        return new TrainingFragment();
       case 5:

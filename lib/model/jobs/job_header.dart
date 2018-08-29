@@ -16,6 +16,7 @@ part 'job_header.g.dart';
 /// Every json_serializable class must have the serializer mixin.
 /// It makes the generated toJson() method to be usable for the class.
 /// The mixin's name follows the source class, in this case, User.
+/// TODO Remove JSON serialization
 class JobHeader extends Object with _$JobHeaderSerializerMixin {
   String
       jobNumber,

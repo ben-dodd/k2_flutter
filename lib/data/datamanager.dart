@@ -7,6 +7,7 @@
 import 'dart:async';
 
 import 'package:camera/camera.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:k2e/data/repos/job_header_repo.dart';
 import 'package:k2e/data/repos/room_repo.dart';
 import 'package:k2e/data/repos/sample_asbestos_bulk_repo.dart';
@@ -25,7 +26,7 @@ class DataManager {
 
   // REPOS
   JobHeaderRepo jobHeaderRepo;
-  SampleAsbestosBulkRepo sampleAsbestosBulkRepo;
+//  SampleAsbestosBulkRepo sampleAsbestosBulkRepo;
   RoomRepo roomRepo;
   SuperRoomRepo superRoomRepo;
 
@@ -42,24 +43,37 @@ class DataManager {
 
   DataManager._internal(){
     jobHeaderRepo = JobHeaderRepo.get();
-    sampleAsbestosBulkRepo = SampleAsbestosBulkRepo.get();
+//    sampleAsbestosBulkRepo = SampleAsbestosBulkRepo.get();
     roomRepo = RoomRepo.get();
     superRoomRepo = SuperRoomRepo.get();
   }
 
   Future init() async {
     await jobHeaderRepo.init();
-    await sampleAsbestosBulkRepo.init();
+//    await sampleAsbestosBulkRepo.init();
     await roomRepo.init();
     await superRoomRepo.init();
     return true;
   }
 
-  Future<void> loadJob(JobHeader jobHeader) async {
+  Future<void> loadJob(String firePath) async {
+    print ('Fire pPath: ' + firePath);
+    JobHeader jobHeader;
+    // Get full Job Header from firestore
+    await Firestore.instance.document(firePath).get().then((fireMap) {
+      jobHeader = JobHeader.fromMap(fireMap.data);
+    });
     Job job = new Job(jobHeader);
     print(job.jobHeader.jobNumber);
+
+    // Get all samples for this job from firestore
+    await Firestore.instance.collection('samplesasbestosbulk').where('jobNumber',isEqualTo: jobHeader.jobNumber).getDocuments().then((fireSamples) {
+      for (DocumentSnapshot samples in fireSamples.documents){
+        job.asbestosBulkSamples.add(new SampleAsbestosBulk().fromMap(samples.data));
+      }
+    });
     print('List length: ' + job.asbestosBulkSamples.length.toString());
-    job.asbestosBulkSamples = await sampleAsbestosBulkRepo.getSamplesByJobNumber(jobHeader.jobNumber);
+//    job.asbestosBulkSamples = await sampleAsbestosBulkRepo.getSamplesByJobNumber(jobHeader.jobNumber);
     if (job.asbestosBulkSamples == null) { job.asbestosBulkSamples = []; }
     job.rooms = await roomRepo.getRoomsByJobNumber(jobHeader.jobNumber);
     job.superRooms = await superRoomRepo.getSuperRoomsByJobNumber(jobHeader.jobNumber);
@@ -68,20 +82,23 @@ class DataManager {
     return;
   }
 
-  Future<void> updateSampleAsbestosBulk(SampleAsbestosBulk sample) async {
-    sampleAsbestosBulkRepo.updateSample(sample);
-    bool itemFound = false;
-    for (SampleAsbestosBulk sampleItem in currentJob.asbestosBulkSamples){
-      if(sampleItem.uuid == sample.uuid){
-        sampleItem = sample;
-      }
-    }
-    if (!itemFound) {
-      currentJob.asbestosBulkSamples.add(sample);
-      sampleAsbestosBulkRepo.updateSample(sample);
-    }
-    currentAsbestosBulkSample = null;
-  }
+//  Future<void> updateSampleAsbestosBulk(SampleAsbestosBulk sample) async {
+//    sampleAsbestosBulkRepo.updateSample(sample);
+//    bool itemFound = false;
+//    for (SampleAsbestosBulk sampleItem in currentJob.asbestosBulkSamples){
+//      if(sampleItem.uuid == sample.uuid){
+//        // update sample
+//        sampleItem = sample;
+//        itemFound = true;
+//      }
+//    }
+//    if (!itemFound) {
+//      currentJob.asbestosBulkSamples.add(sample);
+//      sampleAsbestosBulkRepo.updateSample(sample);
+//      await Firestore.instance.collection('samplesasbestosbulk').add(sample.toJson());
+//    }
+//    currentAsbestosBulkSample = null;
+//  }
 
   int getHighestSampleNumber(Job job) {
     int highestSampleNumber = 0;

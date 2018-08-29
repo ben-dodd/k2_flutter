@@ -1,26 +1,7 @@
-import 'package:json_annotation/json_annotation.dart';
-import 'package:meta/meta.dart';
-
-/// This allows the `User` class to access private members in
-/// the generated file. The value for this is *.g.dart, where
-/// the star denotes the source file name.
-part 'sample_asbestos_bulk.g.dart';
-/// This allows the `User` class to access private members in
-/// the generated file. The value for this is *.g.dart, where
-/// the star denotes the source file name.
-
-
-/// An annotation for the code generator to know that this class needs the
-/// JSON serialization logic to be generated.
-@JsonSerializable()
-
-/// Every json_serializable class must have the serializer mixin.
-/// It makes the generated toJson() method to be usable for the class.
-/// The mixin's name follows the source class, in this case, User.
-class SampleAsbestosBulk extends Object with _$SampleAsbestosBulkSerializerMixin {
+class SampleAsbestosBulk {
 //
 //  var uuid = new Uuid();
-  String uuid,
+  String
       asbestosItemUuid,
       siteVisitUuid,
       description,
@@ -47,8 +28,7 @@ class SampleAsbestosBulk extends Object with _$SampleAsbestosBulkSerializerMixin
       hasSynced;      // make it an int to fit in with sqlite (Sqlite doesn't use booleans, 0 = false, 1 = true
 
   SampleAsbestosBulk({
-    @required this.uuid,
-    @required this.asbestosItemUuid,
+    this.asbestosItemUuid,
     this.siteVisitUuid,
     this.description,
     this.material,
@@ -72,8 +52,64 @@ class SampleAsbestosBulk extends Object with _$SampleAsbestosBulkSerializerMixin
     this.hasSynced,
   });
 
+  SampleAsbestosBulk fromMap(Map<String, dynamic> map){
+    SampleAsbestosBulk sampleAsbestosBulk = new SampleAsbestosBulk(
+      asbestosItemUuid: map['asbestosItemUuid'],
+      siteVisitUuid: map['siteVisitUuid'],
+      description: map['description'],
+      material: map['material'],
+      jobNumber: map['jobNumber'],
+      sampleNumber: map['sampleNumber'],
+      clientName: map['clientName'],
+      address: map['address'],
+      samplerUuid: map['samplerUuid'],
+      siteNotes: map['siteNotes'],
+      sampleDateTime: map['sampleDateTime'],
+
+      analysisResultUuid: map['analysisResultUuid'],
+      analysisResult: map['analysisResult'],
+      resultVersion: map['resultVersion'],
+
+      imagePath: map['imagePath'],
+
+      receivedWeight: map['receivedWeight'],
+      dryWeight: map['dryWeight'],
+      hasSynced: map['hasSynced'],
+
+    );
+    return sampleAsbestosBulk;
+  }
+
+  Map<String, dynamic> toMap() {
+    Map<String, dynamic> map = new Map();
+    map['asbestosItemUuid'] = asbestosItemUuid;
+    map['siteVisitUuid'] = siteVisitUuid;
+    map['description'] = description;
+    map['material'] = material;
+    map['jobNumber'] = jobNumber;
+    map['sampleNumber'] = sampleNumber;
+    map['clientName'] = clientName;
+    map['address'] = address;
+    map['samplerUuid'] = samplerUuid;
+    map['siteNotes'] = siteNotes;
+    map['sampleDateTime'] = sampleDateTime;
+
+    map['analysisResultUuid'] = analysisResultUuid;
+    map['analysisResult'] = analysisResult;
+    map['resultVersion'] = resultVersion;
+
+    map['imagePath'] = imagePath;
+
+    map['receivedWeight'] = receivedWeight;
+    map['dryWeight'] = dryWeight;
+
+    map['hasSynced'] = hasSynced;
+
+    return map;
+  }
+
   /// A necessary factory constructor for creating a new User instance
   /// from a map. Pass the map to the generated _$UserFromJson constructor.
   /// The constructor is named after the source class, in this case User.
-  factory SampleAsbestosBulk.fromJson(Map<String, dynamic> json) => _$SampleAsbestosBulkFromJson(json);
+//  factory SampleAsbestosBulk.fromJson(Map<String, dynamic> json) => _$SampleAsbestosBulkFromJson(json);
 }

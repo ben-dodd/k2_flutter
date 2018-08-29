@@ -25,50 +25,7 @@ class MyJobsPage extends StatefulWidget {
 
 class _MyJobsPageState extends State<MyJobsPage> {
 
-  List<JobHeader> _jobs = new List();
-
-  bool _isLoading = true;
-  bool _isEmpty = true;
   String _loadingText = "Loading your jobs...";
-
-  @override
-  void initState() {
-    super.initState();
-    _resetJobs;
-  }
-
-  Future<Null> _resetJobs() async {
-    print('getjobs called');
-    setState(() {
-      _jobs = [];
-      _isLoading = true;
-      _isEmpty = true;
-    });
-    _jobs = [];
-    // TODO try using snapshot listener instead of getDocuments to fix the lag time
-    // The problem with using snapshot listener is to get everything working in a chain
-    await Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').getDocuments().then((jobs) async {
-      print(jobs.documents.length.toString() + ' is the documents in myjobs');
-      for (var job in jobs.documents) {
-        print(job.data['jobNumber']);
-        var doc = await Firestore.instance.document(job.data['path']).get();
-        JobHeader jobObj = JobHeader.fromMap(doc.data);
-        _jobs.add(jobObj);
-        print(jobObj.jobNumber + ' ' + jobObj.address);
-      }
-    });
-    print ('get jobs returned');
-    DataManager.get().jobHeaderRepo.myJobCache = _jobs;
-    setState(() {
-      if (_jobs == null || _jobs.length == 0) {
-        _jobs = [];
-        _isEmpty = true;
-      } else {
-        _isEmpty = false;
-      }
-      _isLoading = false;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,72 +40,76 @@ class _MyJobsPageState extends State<MyJobsPage> {
 //    FabDialer _fabDialer = new FabDialer(_fabMiniMenuItemList, CompanyColors.accent, Icon(Icons.add),);
 
     return new Scaffold(
-      body:
-          new RefreshIndicator(child:
-          new Container(
+      body: new Container(
               padding: new EdgeInsets.all(8.0),
-              child: new Stack(
-                  children: <Widget>[
-                    _isEmpty?
-                    new Center(
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              Icon(Icons.not_interested, size: 64.0),
+                        child: StreamBuilder(
+                          stream: Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').snapshots(),
+                          builder: (context, snapshot) {
+                            if (!snapshot.hasData) return
                               Container(
                                   alignment: Alignment.center,
-                                  height: 64.0,
-                                  child:
-                                  Text('You have no jobs loaded.')
-                              )
-                            ]
-                        )
-                    )
-                        : new Container(),
-                    ListView.builder(
-                        itemCount: _jobs.length,
-                        itemBuilder: (context, index) {
-                          return JobCard(
-                            jobHeader: _jobs[index],
-                            onCardClick: () async {
-                              setState(() {
-                                _loadingText = "Loading " + _jobs[index].jobNumber;
-                                _isLoading = true;
-                              });
-                              await DataManager.get().loadJob(_jobs[index]);
-                              DataManager.get().cameras = await getCameras();
-                              _isLoading = false;
-                              _loadingText = "Loading your jobs...";
-//                          JobRepo.get().currentJob = _jobs[index];
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => JobPage()));
-                            },
-                            onCardLongPress: () {
+                                  color: Colors.white,
 
-                            },
-                          );
-                        }
-                    ),
-                    _isLoading?
-                    new Container(
-                        alignment: Alignment.center,
-                        color: Colors.white,
-
-                        child:Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              new CircularProgressIndicator(),
-                              Container(
-                                  alignment: Alignment.center,
-                                  height: 64.0,
-                                  child:
-                                  Text(_loadingText)
-                              )]))
-
-                        : new Container(),
-                  ]
-              )
+                                  child: Column(
+                                      mainAxisAlignment: MainAxisAlignment
+                                          .center,
+                                      children: <Widget>[
+                                        new CircularProgressIndicator(),
+                                        Container(
+                                            alignment: Alignment.center,
+                                            height: 64.0,
+                                            child:
+                                            Text(_loadingText)
+                                        )
+                                      ]));
+                            if (snapshot.data.documents.length == 0) return
+                              Center(
+                                  child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: <Widget>[
+                                        Icon(Icons.not_interested, size: 64.0),
+                                        Container(
+                                            alignment: Alignment.center,
+                                            height: 64.0,
+                                            child:
+                                            Text('You have no jobs loaded.')
+                                        )
+                                      ]
+                                  )
+                              );
+                            return ListView.builder(
+                                itemCount: snapshot.data.documents.length,
+                                itemBuilder: (context, index) {
+                                  return JobCard(
+                                    doc: snapshot.data.documents[index],
+                                    onCardClick: () async {
+                                      setState(() {
+                                        // Todo Add loading back in to load jobs oooops
+                                        _loadingText =
+                                            "Loading " + snapshot.data.documents[index]['jobNumber'];
+//                                        _isLoading = true;
+                                      });
+                                      // Load job from path listed in my jobs
+                                      await DataManager.get().loadJob(
+                                          snapshot.data.documents[index]['path']);
+                                      // Prepare cameras
+                                      DataManager
+                                          .get()
+                                          .cameras = await getCameras();
+//                                      _isLoading = false;
+                                      _loadingText = "Loading your jobs...";
+//                                    JobRepo.get().currentJob = _jobs[index];
+                                      Navigator.push(context, MaterialPageRoute(
+                                          builder: (context) => JobPage()));
+                                    },
+                                    onCardLongPress: () {
+                                      // Delete
+                                    },
+                                  );
+                                });
+                          }
+              ),
           ),
-          onRefresh: _resetJobs),
           floatingActionButton: new SpeedDialer(children: modeButtons),
     );
   }
@@ -161,19 +122,6 @@ class _MyJobsPageState extends State<MyJobsPage> {
     String result = await Navigator.of(context).push(
       new MaterialPageRoute(builder: (_) => new WfmFragment()),
     );
-//    resetJobs().then((length) {
-//      setState(() {
-//        print('set state calld' + length.toString());
-//        if (length == null || length == 0) {
-//          _jobs = [];
-//          _isEmpty = true;
-//        } else {
-//          _isEmpty = false;
-//        }
-//        _isLoading = false;
-//      });
-//    });
-    _jobs = await DataManager.get().jobHeaderRepo.myJobCache;
     setState(() {
       if (result != null) {
       Scaffold.of(context).showSnackBar(
@@ -182,6 +130,4 @@ class _MyJobsPageState extends State<MyJobsPage> {
       }
     });
   }
-
-
 }

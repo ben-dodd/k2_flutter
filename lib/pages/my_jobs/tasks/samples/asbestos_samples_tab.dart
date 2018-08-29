@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/data/repos/sample_asbestos_bulk_repo.dart';
@@ -42,11 +43,29 @@ class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
     return new Scaffold(
       body:
       new Container(
-          padding: new EdgeInsets.all(8.0),
-          child: new Stack(
-              children: <Widget>[
-                _isEmpty?
-                new Center(
+        padding: new EdgeInsets.all(8.0),
+        child: StreamBuilder(
+            stream: Firestore.instance.collection('samplesasbestosbulk').where('jobNumber',isEqualTo: DataManager.get().currentJob.jobHeader.jobNumber).snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return
+                Container(
+                    alignment: Alignment.center,
+                    color: Colors.white,
+
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment
+                            .center,
+                        children: <Widget>[
+                          new CircularProgressIndicator(),
+                          Container(
+                              alignment: Alignment.center,
+                              height: 64.0,
+                              child:
+                              Text(_loadingText)
+                          )
+                        ]));
+              if (snapshot.data.documents.length == 0) return
+                Center(
                     child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
@@ -59,59 +78,40 @@ class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
                           )
                         ]
                     )
-                )
-                    : new Container(),
-                ListView.builder(
-                    itemCount: _bulkSamples.length,
-                    itemBuilder: (context, index) {
-                      return SampleAsbestosBulkCard(
-                        sample: _bulkSamples[index],
-                        onCardClick: () async {
-                            DataManager.get().currentAsbestosBulkSample = _bulkSamples[index];
-                            SampleAsbestosBulk result = await Navigator.of(context).push(
-                              new MaterialPageRoute(builder: (context) => EditAsbestosSampleBulk()),
-                            );
-                            setState((){
-                              if (result != null) {
-                                Scaffold.of(context).showSnackBar(
-                                    new SnackBar(
-                                        content: new Text(result.jobNumber)));
-                                SampleAsbestosBulkRepo.get().updateSample(result);
-                                DataManager
-                                    .get()
-                                    .currentJob
-                                    .asbestosBulkSamples[index] = result;
-                              }
-//      Scaffold.of(context).showSnackBar(
-//          new SnackBar(
-//              content: new Text(result.jobNumber + '-' + result.sampleNumber.toString() + " created")));
-                            });
-                        },
-                        onCardLongPress: () async {
-
-                        },
-                      );
-                    }
-                ),
-                _isLoading?
-                new Container(
-                    alignment: Alignment.center,
-                    color: Colors.white,
-
-                    child:Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          new CircularProgressIndicator(),
-                          Container(
-                              alignment: Alignment.center,
-                              height: 64.0,
-                              child:
-                              Text(_loadingText)
-                          )]))
-
-                    : new Container(),
-              ]
-          )
+                );
+              return ListView.builder(
+                  itemCount: snapshot.data.documents.length,
+                  itemBuilder: (context, index) {
+                    return SampleAsbestosBulkCard(
+                      doc: snapshot.data.documents[index],
+                      onCardClick: () async {
+//                        DataManager.get().currentAsbestosBulkSample = _bulkSamples[index];
+//                        SampleAsbestosBulk result = await Navigator.of(context).push(
+//                          new MaterialPageRoute(builder: (context) => EditAsbestosSampleBulk()),
+//                        );
+//                        setState((){
+//                          if (result != null) {
+//                            Scaffold.of(context).showSnackBar(
+//                                new SnackBar(
+//                                    content: new Text(result.jobNumber)));
+//                            SampleAsbestosBulkRepo.get().updateSample(result);
+//                            DataManager
+//                                .get()
+//                                .currentJob
+//                                .asbestosBulkSamples[index] = result;
+//                          }
+////      Scaffold.of(context).showSnackBar(
+////          new SnackBar(
+////              content: new Text(result.jobNumber + '-' + result.sampleNumber.toString() + " created")));
+//                        });
+                      },
+                      onCardLongPress: () {
+                        // Delete
+                      },
+                    );
+                  });
+            }
+        ),
       ),
     );
   }

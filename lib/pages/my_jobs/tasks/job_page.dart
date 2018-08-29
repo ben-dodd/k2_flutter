@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 //import 'package:flutter_fab_dialer/flutter_fab_dialer.dart';
 import 'package:k2e/data/datamanager.dart';
@@ -56,7 +57,8 @@ class _JobPageState extends State<JobPage> {
     );
     setState((){
       if (result != null) {
-        DataManager.get().updateSampleAsbestosBulk(result);
+        Firestore.instance.collection('samplesasbestosbulk').add(result.toMap());
+//        DataManager.get().updateSampleAsbestosBulk(result);
       }
     });
   }
