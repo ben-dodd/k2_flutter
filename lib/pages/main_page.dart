@@ -6,6 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_details/my_details_page.dart';
 import 'package:k2e/pages/my_jobs/my_jobs_page.dart';
+import 'package:k2e/pages/my_jobs/tasks/details/general_details_tab.dart';
 import 'package:k2e/pages/under_construction_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -92,8 +93,8 @@ class _MainPageState extends State<MainPage> {
         return new MyJobsPage();
 //      case 1:
 //        return new LabPage();
-//      case 2:
-//        return new MyDetailsPage();
+      case 2:
+        return new GeneralDetailsTab();
 //      case 3:
 //        return new TrainingFragment();
       case 5:
