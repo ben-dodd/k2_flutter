@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/data/repos/job_header_repo.dart';
+import 'package:k2e/data/wfm_manager.dart';
 import 'package:k2e/model/jobs/job_header.dart';
 import 'package:k2e/widgets/wfm_job_card.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -27,8 +27,8 @@ class _WfmFragmentState extends State<WfmFragment> {
   @override
   void initState() {
     super.initState();
-    if (JobHeaderRepo.get().wfmJobCache.length == 0) {
-      JobHeaderRepo.get().getAllWfmJobs()
+    if (WfmManager.get().wfmJobCache.length == 0) {
+      WfmManager.get().getAllWfmJobs()
           .then((jobs) {
         setState(() {
           _jobs = jobs.body;
@@ -37,7 +37,7 @@ class _WfmFragmentState extends State<WfmFragment> {
       });
     } else {
       setState(() {
-        _jobs = JobHeaderRepo
+        _jobs = WfmManager
             .get()
             .wfmJobCache;
         _isLoading = false;
@@ -51,7 +51,7 @@ class _WfmFragmentState extends State<WfmFragment> {
   }
 
   Future<Null> _refreshWfmJobs() async{
-    await JobHeaderRepo.get().getAllWfmJobs().then((jobs) { _jobs = jobs.body; });
+    await WfmManager.get().getAllWfmJobs().then((jobs) { _jobs = jobs.body; });
   }
 
   @override
@@ -161,7 +161,7 @@ class _WfmFragmentState extends State<WfmFragment> {
               await Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').add(dataMap);
               message = jobHeader.jobNumber + ' added to your jobs.';
             }
-            DataManager.get().jobHeaderRepo.myJobCache.add(jobHeader);
+//            DataManager.get().jobHeaderRepo.myJobCache.add(jobHeader);
           } else {
             message = jobHeader.jobNumber + ' is already in your jobs.';
           }

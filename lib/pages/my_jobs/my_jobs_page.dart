@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/data/repos/job_header_repo.dart';
+import 'package:k2e/data/wfm_manager.dart';
 import 'package:k2e/model/jobs/job_header.dart';
 import 'package:k2e/pages/my_jobs/tasks/job_page.dart';
 import 'package:k2e/pages/my_jobs/wfm_fragment.dart';

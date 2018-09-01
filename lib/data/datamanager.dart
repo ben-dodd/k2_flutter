@@ -8,16 +8,11 @@ import 'dart:async';
 
 import 'package:camera/camera.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:k2e/data/repos/job_header_repo.dart';
-import 'package:k2e/data/repos/room_repo.dart';
-import 'package:k2e/data/repos/sample_asbestos_bulk_repo.dart';
-import 'package:k2e/data/repos/superroom_repo.dart';
 import 'package:k2e/model/entities/areas/room.dart';
 import 'package:k2e/model/samples/sample_asbestos_air.dart';
 import 'package:k2e/model/samples/sample_asbestos_bulk.dart';
 import 'package:k2e/model/jobs/job.dart';
 import 'package:k2e/model/jobs/job_header.dart';
-import 'package:k2e/model/user/user.dart';
 import 'package:validator/validator.dart';
 
 class DataManager {
@@ -25,13 +20,15 @@ class DataManager {
   static final DataManager _dm = new DataManager._internal();
 
   // REPOS
-  JobHeaderRepo jobHeaderRepo;
+//  JobHeaderRepo jobHeaderRepo;
 //  SampleAsbestosBulkRepo sampleAsbestosBulkRepo;
-  RoomRepo roomRepo;
-  SuperRoomRepo superRoomRepo;
+//  RoomRepo roomRepo;
+//  SuperRoomRepo superRoomRepo;
 
   // Temp Storage
   Job currentJob;   // this holds the current job being worked on
+//  List<JobHeader> wfmJobCache = new List(); // this holds all jobs gathered from the last WFM api request
+//  List<JobHeader> myJobCache = new List(); // this holds all jobs in the local database
   Room currentRoom; // either the Room that was last added or the room currently being edited
   SampleAsbestosBulk currentAsbestosBulkSample;
   List<CameraDescription> cameras;
@@ -42,19 +39,19 @@ class DataManager {
   }
 
   DataManager._internal(){
-    jobHeaderRepo = JobHeaderRepo.get();
+//    jobHeaderRepo = JobHeaderRepo.get();
 //    sampleAsbestosBulkRepo = SampleAsbestosBulkRepo.get();
-    roomRepo = RoomRepo.get();
-    superRoomRepo = SuperRoomRepo.get();
+//    roomRepo = RoomRepo.get();
+//    superRoomRepo = SuperRoomRepo.get();
   }
 
-  Future init() async {
-    await jobHeaderRepo.init();
-//    await sampleAsbestosBulkRepo.init();
-    await roomRepo.init();
-    await superRoomRepo.init();
-    return true;
-  }
+//  Future init() async {
+////    await jobHeaderRepo.init();
+////    await sampleAsbestosBulkRepo.init();
+////    await roomRepo.init();
+////    await superRoomRepo.init();
+//    return true;
+//  }
 
   Future<void> loadJob(String firePath) async {
     print ('Fire pPath: ' + firePath);
@@ -75,8 +72,8 @@ class DataManager {
     print('List length: ' + job.asbestosBulkSamples.length.toString());
 //    job.asbestosBulkSamples = await sampleAsbestosBulkRepo.getSamplesByJobNumber(jobHeader.jobNumber);
     if (job.asbestosBulkSamples == null) { job.asbestosBulkSamples = []; }
-    job.rooms = await roomRepo.getRoomsByJobNumber(jobHeader.jobNumber);
-    job.superRooms = await superRoomRepo.getSuperRoomsByJobNumber(jobHeader.jobNumber);
+//    job.rooms = await roomRepo.getRoomsByJobNumber(jobHeader.jobNumber);
+//    job.superRooms = await superRoomRepo.getSuperRoomsByJobNumber(jobHeader.jobNumber);
     job.highestSampleNumber = getHighestSampleNumber(job);
     currentJob = job;
     return;
@@ -123,19 +120,19 @@ class DataManager {
   }
 
   // Iterates through your jobs and syncs each one
-  Future<void> syncAllJobs() async {
-    jobHeaderRepo.getMyJobs().then((jobs) {
-      for (JobHeader job in jobs) {
-        // Add updating message that indicates how the syncing is going
-        // Iterate through all jobs and add data first, then go through them again and update images
-        jobHeaderRepo.getRemoteJobModifiedDate(job.jobNumber).then((response) {
-          // check if modified date on server is newer than this job
-        });
-      }
-      // Now add all the images in background task (show in Android notification drawer)
-      for (JobHeader job in jobs) {
-
-      }
-    });
-  }
+//  Future<void> syncAllJobs() async {
+//    jobHeaderRepo.getMyJobs().then((jobs) {
+//      for (JobHeader job in jobs) {
+//        // Add updating message that indicates how the syncing is going
+//        // Iterate through all jobs and add data first, then go through them again and update images
+//        jobHeaderRepo.getRemoteJobModifiedDate(job.jobNumber).then((response) {
+//          // check if modified date on server is newer than this job
+//        });
+//      }
+//      // Now add all the images in background task (show in Android notification drawer)
+//      for (JobHeader job in jobs) {
+//
+//      }
+//    });
+//  }
 }

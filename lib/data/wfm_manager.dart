@@ -9,28 +9,28 @@ import 'package:http/http.dart' as http;
 
 final int NO_INTERNET = 404;
 
-class JobHeaderRepo {
+class WfmManager {
 
-  static final JobHeaderRepo _repo = new JobHeaderRepo._internal();
+  static final WfmManager _wfm = new WfmManager._internal();
 
-  JobHeaderDatabase database;
+//  JobHeaderDatabase database;
 
   List<JobHeader> wfmJobCache = new List(); // this holds all jobs gathered from the last WFM api request
   List<JobHeader> myJobCache = new List(); // this holds all jobs in the local database
   JobHeader currentJob; // this holds the job object for the currently viewed job
 //  List<Samples>
 
-  static JobHeaderRepo get() {
-    return _repo;
+  static WfmManager get() {
+    return _wfm;
   }
 
-  JobHeaderRepo._internal() {
-    database = JobHeaderDatabase.get();
+  WfmManager._internal() {
+//    database = JobHeaderDatabase.get();
   }
-
-  Future init() async{
-    return await database.init();
-  }
+//
+//  Future init() async{
+//    return await database.init();
+//  }
 
 
   ///
@@ -95,48 +95,48 @@ class JobHeaderRepo {
   ///
   /// JOBS
   ///
+//
+//  /// Fetches all my jobs from db
+//  Future<List<JobHeader>> getMyJobs() async{
+//    return database.getJobs();
+//  }
+//
+//  /// Fetches job by jobnumber
+//  Future<JobHeader> getJobByJobNumber(String jobNumber) async{
+//    return database.getJobByNumber(jobNumber);
+//  }
 
-  /// Fetches all my jobs from db
-  Future<List<JobHeader>> getMyJobs() async{
-    return database.getJobs();
-  }
+//  // Adds new job, or updates if already exists
+//  Future<void> updateJob(JobHeader job) async {
+//    await database.updateJob(job);
+//  }
 
-  /// Fetches job by jobnumber
-  Future<JobHeader> getJobByJobNumber(String jobNumber) async{
-    return database.getJobByNumber(jobNumber);
-  }
-
-  // Adds new job, or updates if already exists
-  Future<void> updateJob(JobHeader job) async {
-    await database.updateJob(job);
-  }
-
-  // Todo Create Universal function for these types of functions
-  Future<ParsedResponse<JobHeader>> getRemoteJobModifiedDate(String jobNumber) async{
-    //http request, catching error like no internet connection.
-    //If no internet is available for example response is
-    http.Response response = await http.get(Strings.apiRoot + 'job/modified.php?jobNumber=' + jobNumber + '&apiKey=' + Strings.apiKey)
-        .catchError((resp) {});
-
-    if(response == null) {
-      return new ParsedResponse(NO_INTERNET, null);
-    }
-
-    //If there was an error return an empty list
-    if(response.statusCode < 200 || response.statusCode >= 300) {
-      return new ParsedResponse(response.statusCode, null);
-    }
-    // Decode and go to the jobs list
-    print(response.body.toString());
-
-    JobHeader job = json.decode(response.body);
-
-    return new ParsedResponse(response.statusCode, job);
-  }
-
-
-  // Closes db
-  Future close() async {
-    return database.close();
-  }
+//  // Todo Create Universal function for these types of functions
+//  Future<ParsedResponse<JobHeader>> getRemoteJobModifiedDate(String jobNumber) async{
+//    //http request, catching error like no internet connection.
+//    //If no internet is available for example response is
+//    http.Response response = await http.get(Strings.apiRoot + 'job/modified.php?jobNumber=' + jobNumber + '&apiKey=' + Strings.apiKey)
+//        .catchError((resp) {});
+//
+//    if(response == null) {
+//      return new ParsedResponse(NO_INTERNET, null);
+//    }
+//
+//    //If there was an error return an empty list
+//    if(response.statusCode < 200 || response.statusCode >= 300) {
+//      return new ParsedResponse(response.statusCode, null);
+//    }
+//    // Decode and go to the jobs list
+//    print(response.body.toString());
+//
+//    JobHeader job = json.decode(response.body);
+//
+//    return new ParsedResponse(response.statusCode, job);
+//  }
+//
+//
+//  // Closes db
+//  Future close() async {
+//    return database.close();
+//  }
 }
