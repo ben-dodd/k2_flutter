@@ -1,17 +1,12 @@
-import 'dart:async';
-import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/data/wfm_manager.dart';
-import 'package:k2e/model/jobs/job_header.dart';
 import 'package:k2e/pages/my_jobs/tasks/job_page.dart';
 import 'package:k2e/pages/my_jobs/wfm_fragment.dart';
 import 'package:k2e/theme.dart';
-import 'package:k2e/utils/camera.dart';
 import 'package:k2e/widgets/fab_dialer.dart';
 import 'package:k2e/widgets/job_card.dart';
+import 'package:k2e/widgets/loading.dart';
 
 // This page lists all your current jobs
 // From here you can click on the Fab Menu to add more jobs
@@ -24,8 +19,6 @@ class MyJobsPage extends StatefulWidget {
 }
 
 class _MyJobsPageState extends State<MyJobsPage> {
-
-  String _loadingText = "Loading your jobs...";
 
   @override
   Widget build(BuildContext context) {
@@ -43,25 +36,11 @@ class _MyJobsPageState extends State<MyJobsPage> {
       body: new Container(
               padding: new EdgeInsets.all(8.0),
                         child: StreamBuilder(
+                          // ignore: ambiguous_import
                           stream: Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').snapshots(),
                           builder: (context, snapshot) {
                             if (!snapshot.hasData) return
-                              Container(
-                                  alignment: Alignment.center,
-                                  color: Colors.white,
-
-                                  child: Column(
-                                      mainAxisAlignment: MainAxisAlignment
-                                          .center,
-                                      children: <Widget>[
-                                        new CircularProgressIndicator(),
-                                        Container(
-                                            alignment: Alignment.center,
-                                            height: 64.0,
-                                            child:
-                                            Text(_loadingText)
-                                        )
-                                      ]));
+                              loadingPage(loadingText: 'Loading your jobs...');
                             if (snapshot.data.documents.length == 0) return
                               Center(
                                   child: Column(
@@ -83,30 +62,19 @@ class _MyJobsPageState extends State<MyJobsPage> {
                                   return JobCard(
                                     doc: snapshot.data.documents[index],
                                     onCardClick: () async {
-                                      setState(() {
-                                        // Todo Add loading back in to load jobs oooops
-                                        _loadingText =
-                                            "Loading " + snapshot.data.documents[index]['jobNumber'];
-//                                        _isLoading = true;
-                                      });
-                                      // Load job from path listed in my jobs
-                                      await DataManager.get().loadJob(
-                                          snapshot.data.documents[index]['path']);
-                                      // Prepare cameras
-                                      DataManager
-                                          .get()
-                                          .cameras = await getCameras();
-//                                      _isLoading = false;
-                                      _loadingText = "Loading your jobs...";
-//                                    JobRepo.get().currentJob = _jobs[index];
-                                      Navigator.push(context, MaterialPageRoute(
-                                          builder: (context) => JobPage()));
+                                        DataManager.get().currentJobPath = snapshot.data.documents[index]['path'];
+                                        print ('my jobs' + DataManager.get().currentJobPath);
+                                        Navigator.push(context, MaterialPageRoute(
+                                            builder: (context) => JobPage(path: snapshot.data.documents[index]['path'],)
+                                        )
+                                      );
                                     },
                                     onCardLongPress: () {
                                       // Delete
                                     },
                                   );
-                                });
+                                }
+                              );
                           }
               ),
           ),

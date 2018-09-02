@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:k2e/strings.dart';
 import 'package:k2e/utils/custom_classes.dart';
-import 'package:k2e/data/databases/job_header_db.dart';
 import 'package:k2e/model/jobs/job_header.dart';
 import 'package:http/http.dart' as http;
 

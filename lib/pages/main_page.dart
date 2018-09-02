@@ -6,9 +6,10 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_details/my_details_page.dart';
 import 'package:k2e/pages/my_jobs/my_jobs_page.dart';
-import 'package:k2e/pages/my_jobs/tasks/details/general_details_tab.dart';
+import 'package:k2e/pages/my_details/general_details_tab.dart';
 import 'package:k2e/pages/under_construction_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:k2e/utils/camera.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 final GoogleSignIn _googleSignIn = new GoogleSignIn();
@@ -49,11 +50,22 @@ class _MainPageState extends State<MainPage> {
 
   GlobalKey _signInKey;
 
+
+  @override
+  void initState() {
+    super.initState();
+    _testSignInWithGoogle();
+  }
+
   Future<void> _testSignInWithGoogle() async {
     final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
     setState(() {
       _isLoading = true;
     });
+    // Load cameras
+    DataManager
+        .get()
+        .cameras = await getCameras();
     final GoogleSignInAuthentication googleAuth =
     await googleUser.authentication;
     FirebaseUser user = await _auth.signInWithGoogle(
@@ -62,6 +74,7 @@ class _MainPageState extends State<MainPage> {
     );
     print(user.email);
     QuerySnapshot query = await Firestore.instance.collection('users').where('email',isEqualTo: user.email).getDocuments();
+
     if (query.documents.length == 0){
       // User is not registered
       print('This email is not registered with K2.');

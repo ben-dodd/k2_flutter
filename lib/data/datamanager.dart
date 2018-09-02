@@ -26,6 +26,7 @@ class DataManager {
 //  SuperRoomRepo superRoomRepo;
 
   // Temp Storage
+  List<JobHeader> myJobCache;
   Job currentJob;   // this holds the current job being worked on
 //  List<JobHeader> wfmJobCache = new List(); // this holds all jobs gathered from the last WFM api request
 //  List<JobHeader> myJobCache = new List(); // this holds all jobs in the local database
@@ -33,6 +34,7 @@ class DataManager {
   SampleAsbestosBulk currentAsbestosBulkSample;
   List<CameraDescription> cameras;
   String user;
+  String currentJobPath;
 
   static DataManager get() {
     return _dm;

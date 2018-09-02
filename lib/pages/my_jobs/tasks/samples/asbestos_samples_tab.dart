@@ -1,11 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/data/repos/sample_asbestos_bulk_repo.dart';
 import 'package:k2e/model/samples/sample_asbestos_air.dart';
 import 'package:k2e/model/samples/sample_asbestos_bulk.dart';
-import 'package:k2e/pages/my_jobs/tasks/samples/edit_asbestos_sample_bulk.dart';
-import 'package:k2e/widgets/sample_asbestos_air_card.dart';
 import 'package:k2e/widgets/sample_asbestos_bulk_card.dart';
 
 class AsbestosSamplesTab extends StatefulWidget {
