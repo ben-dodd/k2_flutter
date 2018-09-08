@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/model/samples/sample_asbestos_bulk.dart';
-import 'package:uuid/uuid.dart';
-import 'package:validator/validator.dart';
+//import 'package:uuid/uuid.dart';
+//import 'package:validator/validator.dart';
 
 class EditAsbestosSampleBulk extends StatefulWidget {
   @override
@@ -91,7 +91,8 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
                     controller: _sampleNumberController,
                     keyboardType: TextInputType.number,
                     onChanged: (String value) {
-                      sampleNumber = toInt(value);
+                      sampleNumber = int.tryParse(value);
+//                      sampleNumber = int.tryParse(value) ?? defaultValue;
                     },
                   ),
                 ),

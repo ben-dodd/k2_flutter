@@ -13,7 +13,7 @@ import 'package:k2e/model/samples/sample_asbestos_air.dart';
 import 'package:k2e/model/samples/sample_asbestos_bulk.dart';
 import 'package:k2e/model/jobs/job.dart';
 import 'package:k2e/model/jobs/job_header.dart';
-import 'package:validator/validator.dart';
+//import 'package:validator/validator.dart';
 
 class DataManager {
 
@@ -35,6 +35,7 @@ class DataManager {
   List<CameraDescription> cameras;
   String user;
   String currentJobPath;
+  String currentJobNumber;
 
   static DataManager get() {
     return _dm;
@@ -110,11 +111,9 @@ class DataManager {
     }
     if (job.asbestosAirSamples.length > 0) {
       for (SampleAsbestosAir sample in job.asbestosAirSamples) {
-        if (isNumeric(sample.sampleNumber)) {
-          int sampleNumber = toInt(sample.sampleNumber);
-          if (sampleNumber > highestSampleNumber) {
-            highestSampleNumber = sampleNumber;
-          }
+        int sampleNumber = int.tryParse(sample.sampleNumber) ?? 0;
+        if (sampleNumber > highestSampleNumber) {
+          highestSampleNumber = sampleNumber;
         }
       }
     }

@@ -31,6 +31,7 @@ class _DetailsTabState extends State<DetailsTab> {
 
   @override
   Future initState() {
+    print("data manager " + DataManager.get().currentJobPath);
     fireStream = Firestore.instance.document(DataManager
         .get()
         .currentJobPath).snapshots();
@@ -75,15 +76,17 @@ class _DetailsTabState extends State<DetailsTab> {
                 if (!snapshot.hasData) return
                   loadingPage(loadingText: 'Loading job info...');
                 if (snapshot.hasData) {
+                  print (snapshot.data['address']);
                   if (controllerAddress.text == '') {
                     controllerAddress.text = snapshot.data['address'];
                     controllerDescription.text = snapshot.data['description'];
-                    imageUrl = snapshot.data['imagePath'];
-                    if (imageUrl != '') {
-                      _imageFile =
-                      FirebaseStorage.instance.ref().child(imageUrl).getData(
-                          null) as File;
-                    }
+//                    imageUrl = snapshot.data['imagePath'];
+//                    if (imageUrl != '') {
+//                      print(imageUrl);
+////                      _imageFile =
+////                      FirebaseStorage.instance.ref().child(imageUrl).getData(
+////                          null) as File;
+//                    }
                   }
                   return GestureDetector(
                       onTap: () {

@@ -9,7 +9,6 @@ class loadingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         alignment: Alignment.center,
-        color: Colors.white,
 
         child: Column(
             mainAxisAlignment: MainAxisAlignment

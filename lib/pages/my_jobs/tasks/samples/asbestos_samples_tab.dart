@@ -25,24 +25,24 @@ class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
     // by the _incrementCounter method above.
 
     // This shouldn't be called on every build!
-    List<SampleAsbestosBulk> _bulkSamples = new List();
-    _bulkSamples = DataManager.get().currentJob.asbestosBulkSamples;
-    List<SampleAsbestosAir> _airSamples = new List();
-    _airSamples = DataManager.get().currentJob.asbestosAirSamples;
-    print('Bulk Size ' + _bulkSamples.length.toString());
+//    List<SampleAsbestosBulk> _bulkSamples = new List();
+//    _bulkSamples = DataManager.get().currentJob.asbestosBulkSamples;
+//    List<SampleAsbestosAir> _airSamples = new List();
+//    _airSamples = DataManager.get().currentJob.asbestosAirSamples;
+//    print('Bulk Size ' + _bulkSamples.length.toString());
 
-    if (_bulkSamples.length > 0) { _isBulk = true; } else { _isBulk = false; }
-    if (_airSamples.length > 0) { _isAir = true; } else { _isAir = false; }
-    if (!_isBulk && !_isAir) { _isEmpty = true; } else { _isEmpty = false; }
-
-    _bulkSamples.sort((a,b) => a.sampleNumber.compareTo(b.sampleNumber)); // sort samples by sample number
+//    if (_bulkSamples.length > 0) { _isBulk = true; } else { _isBulk = false; }
+//    if (_airSamples.length > 0) { _isAir = true; } else { _isAir = false; }
+//    if (!_isBulk && !_isAir) { _isEmpty = true; } else { _isEmpty = false; }
+//
+//    _bulkSamples.sort((a,b) => a.sampleNumber.compareTo(b.sampleNumber)); // sort samples by sample number
 
     return new Scaffold(
       body:
       new Container(
         padding: new EdgeInsets.all(8.0),
         child: StreamBuilder(
-            stream: Firestore.instance.collection('samplesasbestosbulk').where('jobNumber',isEqualTo: DataManager.get().currentJob.jobHeader.jobNumber).snapshots(),
+            stream: Firestore.instance.collection('samplesasbestosbulk').where('jobNumber',isEqualTo: DataManager.get().currentJobNumber).snapshots(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) return
                 Container(

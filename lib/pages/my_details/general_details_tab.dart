@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/widgets/loading.dart';
-import 'package:validator/validator.dart';
 
 class GeneralDetailsTab extends StatefulWidget {
   @override
@@ -37,7 +36,7 @@ class _GeneralDetailsTabState extends State<GeneralDetailsTab> {
   }
 
   _updatePhone(){
-    Firestore.instance.collection('users').document(DataManager.get().user).setData({"phone": toInt(controllerPhone.text)},merge: true);
+    Firestore.instance.collection('users').document(DataManager.get().user).setData({"phone": int.tryParse(controllerPhone.text)},merge: true);
   }
 
   @override

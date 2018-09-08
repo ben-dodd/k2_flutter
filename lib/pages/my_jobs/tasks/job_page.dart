@@ -204,7 +204,7 @@ class _JobPageState extends State<JobPage> {
               ]);
               break;
           }
-          }
+
           return DefaultTabController(
             length: tabCount,
             child:
@@ -223,6 +223,8 @@ class _JobPageState extends State<JobPage> {
                   children: asbestosDialer) : Container(),
             ),
           );
+
+          }
         });
   }
 }
