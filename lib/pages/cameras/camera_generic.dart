@@ -55,25 +55,25 @@ class _CameraGenericState extends State<CameraGeneric> {
             ),
           ),
           GestureDetector(
-            onTap: onTakePictureButtonPressed,
+//            onTap: onTakePictureButtonPressed,
             child: new Icon(Icons.camera, size: 40.0),)
           ]
         )
     );
 
   }
-
-  void onTakePictureButtonPressed() {
-    takePicture(controller).then((String filePath) {
-//    if (mounted) {
-      if (filePath != null) print('Picture saved to $filePath');
-      print("filePath is null");
-//      imagePath = filePath;
-      controller.dispose();
-      Navigator.of(context).pop(filePath);
-      }
-    );
-  }
+//
+//  void onTakePictureButtonPressed() {
+//    takePicture(controller).then((String filePath) {
+////    if (mounted) {
+//      if (filePath != null) print('Picture saved to $filePath');
+//      print("filePath is null");
+////      imagePath = filePath;
+//      controller.dispose();
+//      Navigator.of(context).pop(filePath);
+//      }
+//    );
+//  }
 
   void onNewCameraSelected() async {
     CameraDescription cameraDescription = DataManager.get().cameras[0];

@@ -192,7 +192,7 @@ class _MainPageState extends State<MainPage> {
     : new Scaffold(
           key: _signInKey,
         appBar: new AppBar(
-          title: new Text('Sign In')
+          title: new Text('K2 Sign In')
         ),
         body: _isLoading?
         new Container(

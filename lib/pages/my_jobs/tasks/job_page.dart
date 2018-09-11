@@ -89,19 +89,19 @@ class _JobPageState extends State<JobPage> {
             widget.path).snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) return
-            loadingPage(loadingText: 'Loading job...');
+            loadingPage(loadingText: 'Loading ' + DataManager.get().currentJobNumber);
 
-          bool _isAsbestos = jobType == 1;
+          bool _isAsbestos = false;
 
           if (snapshot.hasData){
           if (snapshot.data['type'].toLowerCase().contains('asbestos')) {
+            _isAsbestos = true;
             jobType = 1;
           } else if (snapshot.data['type'].toLowerCase().contains('meth')) {
             jobType = 2;
           } else {
             jobType = 0;
           }
-
 
           // Initialize TabView
           switch (jobType) {

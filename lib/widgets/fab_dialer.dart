@@ -150,6 +150,7 @@ class _SpeedDialerState extends State<SpeedDialer>
                 height: 80.0,
 //          width: 56.0,
                 alignment: FractionalOffset.topCenter,
+                // TODO Make children not interfere with screen when invisible
                 child: new FadeTransition(
                   opacity: new CurvedAnimation(
                     parent: _controller,

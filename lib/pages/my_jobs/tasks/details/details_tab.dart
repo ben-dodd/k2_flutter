@@ -3,13 +3,16 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/styles.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:k2e/theme.dart';
+import 'package:k2e/utils/camera.dart';
 import 'package:k2e/utils/helpers.dart';
+import 'package:k2e/utils/sync.dart';
 import 'package:k2e/widgets/loading.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
@@ -20,6 +23,8 @@ class DetailsTab extends StatefulWidget {
   @override
   _DetailsTabState createState() => new _DetailsTabState();
 }
+
+//todo: https://stackoverflow.com/questions/37699688/cache-images-local-from-google-firebase-storage
 
 class _DetailsTabState extends State<DetailsTab> {
   Stream fireStream;
@@ -124,76 +129,19 @@ class _DetailsTabState extends State<DetailsTab> {
                                 ),
                               ),
                               Container(
+                                height: 40.0,
+                                alignment: Alignment.bottomLeft,
+                                child: Text("Main Site Photo", style: Styles.h2,)
+                              ),
+                              Container(
                                 alignment: Alignment.center,
                                 height: 156.0,
+                                decoration: BoxDecoration(border: new Border.all(color: Colors.black)),
                                 child: GestureDetector(
-                                    onTap: () async {
-                                      File image = await ImagePicker.pickImage(
-                                          source: ImageSource.camera);
-                                      image.length().then((int) {
-                                        print('Original size ' + int.toString());
-                                      });
-//                          setState(() {
-//                            _imageFile = image;
-//                          });
-                                      File compImage = await compressImage(
-                                          image, 50);
-                                      compImage.length().then((int) {
-                                        print('Compressed size ' + int.toString());
-                                      });
-                                      setState(() {
-                                        _imageFile = compImage;
-                                      });
-                                      var fileName = "site_photo.jpeg";
-                                      var folder = snapshot.data['jobNumber'];
-                                      print(fileName);
-                                      StorageUploadTask putFile =
-                                      FirebaseStorage.instance.ref().child(
-                                          "$folder/$fileName").putFile(
-                                          _imageFile);
-//                          putFile.future.catchError(onError);
-
-                                      UploadTaskSnapshot uploadSnapshot = await putFile
-                                          .future;
-
-                                      print("image uploaded");
-
-                                      Map<String,
-                                          dynamic> pictureData = new Map<
-                                          String,
-                                          dynamic>();
-                                      pictureData["url"] =
-                                          uploadSnapshot.downloadUrl.toString();
-
-
-                                      DocumentReference collectionReference =
-                                      Firestore.instance.collection(
-                                          "collection")
-                                          .document(fileName);
-
-                                      await Firestore.instance.runTransaction((
-                                          transaction) async {
-                                        await transaction.set(
-                                            collectionReference, pictureData);
-                                        print("instance created");
-                                      });
-//                          }).catchError(onError);
-
-//                          String fileName = basename(_imageFile.path);
-//
-//                          // Upload image
-//                          final uploadTask = FirebaseStorage.instance.ref().putFile(_imageFile);
-//                          imageUrl = (await uploadTask.future).downloadUrl.toString();
-//                          Firestore.instance.document(DataManager.get().currentJobPath).setData({"imagePath": imageUrl.toString()}, merge: true);
-////                          File newImage = await _imageFile.copy('${docPath.path}/$fileName');
-////                          setState(() async {
-////                            Firestore.instance.document(DataManager.get().currentJobPath).setData({"imagePath": fileName}, merge: true);
-////                            print(_imageFile.path);
-////                            print(fileName);
-////                          });
+                                    onTap: () {
+                                      handleImage();
                                     },
                                     child: (_imageFile != null)
-//                        ? new Image.file(new File(DataManager.get().currentJob.jobHeader.imagePath))
                                         ? Image.file(_imageFile)
                                         : new Icon(
                                       Icons.camera, color: CompanyColors.accent,
@@ -211,9 +159,28 @@ class _DetailsTabState extends State<DetailsTab> {
                 return errorPage();
               }
             }
-
         )
     );
+  }
+
+  void handleImage() async {
+    ImagePicker.pickImage(source: ImageSource.camera).then((image) {
+      setState(() {
+        _imageFile = image;
+        print (image.path + " added!");
+      });
+      ImageSync(
+          image,
+          50,
+          "site_photo.jpg",
+          DataManager.get().currentJobNumber
+      ).then((image) {
+        setState(() {
+          print ("uploaded yay!");
+          _imageFile = image;
+        });
+      });
+    });
   }
 }
 //https://stackoverflow.com/questions/46515679/flutter-firebase-compression-before-upload-image

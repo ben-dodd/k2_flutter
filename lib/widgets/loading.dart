@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:k2e/styles.dart';
 
 class loadingPage extends StatelessWidget {
   loadingPage({Key key, @required this.loadingText})
@@ -9,6 +10,7 @@ class loadingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         alignment: Alignment.center,
+        color: Colors.white,
 
         child: Column(
             mainAxisAlignment: MainAxisAlignment
@@ -19,7 +21,7 @@ class loadingPage extends StatelessWidget {
                   alignment: Alignment.center,
                   height: 64.0,
                   child:
-                  Text(loadingText)
+                  Text(loadingText, style: Styles.loading)
               )
             ]
         )
@@ -46,7 +48,7 @@ class errorPage extends StatelessWidget {
                 padding: const EdgeInsets.all(8.0),
                 child: Icon(Icons.error),
               ),
-              Text('Error loading data')
+              Text('Error loading data', style: Styles.loading,)
             ],
           ),
         )

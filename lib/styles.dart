@@ -15,6 +15,10 @@ class Styles {
     fontSize: 16.0,
   );
 
+  static TextStyle loading = new TextStyle(
+    fontSize: 12.0, color: Colors.black
+  );
+
   static TextStyle comment = new TextStyle(
     fontStyle: FontStyle.italic,
     fontSize: 16.0,
