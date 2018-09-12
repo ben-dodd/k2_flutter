@@ -87,13 +87,6 @@ class _DetailsTabState extends State<DetailsTab> {
                   if (controllerAddress.text == '') {
                     controllerAddress.text = snapshot.data['address'];
                     controllerDescription.text = snapshot.data['description'];
-//                    imageUrl = snapshot.data['imagePath'];
-//                    if (imageUrl != '') {
-//                      print(imageUrl);
-////                      _imageFile =
-////                      FirebaseStorage.instance.ref().child(imageUrl).getData(
-////                          null) as File;
-//                    }
                   }
                   return GestureDetector(
                       onTap: () {
@@ -157,8 +150,6 @@ class _DetailsTabState extends State<DetailsTab> {
                                             errorWidget: new Icon(Icons.error),
                                             fadeInDuration: new Duration(seconds: 1),
                                         )
-                                        : (_imageFile != null) ?
-                                        Image.file(_imageFile)
                                         : new Icon(
                                           Icons.camera, color: CompanyColors.accent,
                                             size: 48.0,)

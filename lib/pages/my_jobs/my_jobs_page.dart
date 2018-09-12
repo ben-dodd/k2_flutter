@@ -58,20 +58,32 @@ class _MyJobsPageState extends State<MyJobsPage> {
                             return ListView.builder(
                                 itemCount: snapshot.data.documents.length,
                                 itemBuilder: (context, index) {
-                                  return JobCard(
-                                    doc: snapshot.data.documents[index],
-                                    onCardClick: () async {
-                                        DataManager.get().currentJobPath = snapshot.data.documents[index]['path'];
-                                        DataManager.get().currentJobNumber = snapshot.data.documents[index]['jobNumber'];
-                                        print ('my jobs' + DataManager.get().currentJobPath);
-                                        Navigator.push(context, MaterialPageRoute(
-                                            builder: (context) => JobPage(path: snapshot.data.documents[index]['path'],)
-                                        )
-                                      );
+                                  print('myjob'+index.toString());
+                                  return Dismissible(
+                                    key: new Key('myjob'+index.toString()),
+                                    onDismissed: (direction) async {
+                                      await Firestore.instance.collection('users')
+                                          .document(DataManager.get().user).collection('myjobs')
+                                          .document(snapshot.data.documents[index].documentID).delete();
+                                      setState(() {
+                                        //
+                                      });
+                                      print(snapshot.data.documents[index].documentID);
+                                      Scaffold.of(context)
+                                          .showSnackBar(SnackBar(content: Text("Job deleted")));
                                     },
-                                    onCardLongPress: () {
-                                      // Delete
-                                    },
+                                    child: JobCard(
+                                        doc: snapshot.data.documents[index],
+                                        onCardClick: () async {
+                                          DataManager.get().currentJobPath = snapshot.data.documents[index]['path'];
+                                          DataManager.get().currentJobNumber = snapshot.data.documents[index]['jobNumber'];
+                                          print ('my jobs' + DataManager.get().currentJobPath);
+                                          Navigator.push(context, MaterialPageRoute(
+                                              builder: (context) => JobPage(path: snapshot.data.documents[index]['path'],)
+                                          )
+                                          );
+                                        },
+                                    )
                                   );
                                 }
                               );

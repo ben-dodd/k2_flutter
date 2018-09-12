@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/model/samples/sample_asbestos_air.dart';
 import 'package:k2e/model/samples/sample_asbestos_bulk.dart';
+import 'package:k2e/pages/my_jobs/tasks/samples/edit_asbestos_sample_bulk.dart';
 import 'package:k2e/widgets/sample_asbestos_bulk_card.dart';
 
 class AsbestosSamplesTab extends StatefulWidget {
@@ -82,10 +83,15 @@ class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
                     return SampleAsbestosBulkCard(
                       doc: snapshot.data.documents[index],
                       onCardClick: () async {
+                        // todo Incorporate firestore with samples
 //                        DataManager.get().currentAsbestosBulkSample = _bulkSamples[index];
-//                        SampleAsbestosBulk result = await Navigator.of(context).push(
-//                          new MaterialPageRoute(builder: (context) => EditAsbestosSampleBulk()),
-//                        );
+                        Navigator.of(context).push(
+                          new MaterialPageRoute(builder: (context) =>
+                              EditAsbestosSampleBulk(
+                                  sample: snapshot.data.documents[index]
+                                      .getDocumentID)),
+                        );
+                      },
 //                        setState((){
 //                          if (result != null) {
 //                            Scaffold.of(context).showSnackBar(
@@ -97,16 +103,18 @@ class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
 //                                .currentJob
 //                                .asbestosBulkSamples[index] = result;
 //                          }
-////      Scaffold.of(context).showSnackBar(
-////          new SnackBar(
-////              content: new Text(result.jobNumber + '-' + result.sampleNumber.toString() + " created")));
-//                        });
-                      },
+//      Scaffold.of(context).showSnackBar(
+//          new SnackBar(
+//              content: new Text(result.jobNumber + '-' + result.sampleNumber.toString() + " created")));
+//                        }
+//                        );
+//                      },
                       onCardLongPress: () {
                         // Delete
                       },
                     );
-                  });
+                  }
+                );
             }
         ),
       ),
