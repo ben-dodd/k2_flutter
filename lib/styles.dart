@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:k2e/theme.dart';
 
 class Styles {
   static TextStyle h1 = new TextStyle(
+    color: CompanyColors.accent,
     fontWeight: FontWeight.bold,
     fontSize: 24.0,
   );

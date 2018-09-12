@@ -5,8 +5,10 @@ import 'package:camera/camera.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/utils/helpers.dart';
 import 'package:k2e/utils/logs.dart';
+import 'package:flutter_native_image/flutter_native_image.dart';
 
 
 Future<List<CameraDescription>> getCameras() async {
@@ -27,42 +29,58 @@ Future <File> getPicture() async {
 //  return image;
 }
 
-Future<File> ImageSync (File image, int compressionFactor, String fileName, String folder) async {
+void ImageSync (File image, int compressionFactor, String fileName, String folder) async {
   print('compressing image');
-  File compImage = await compressImage(
-      image, compressionFactor);
-  compImage.length().then((int) {
-    print('Compressed size ' + int.toString());
-  });
-  print(fileName);
-  StorageUploadTask putFile =
-  FirebaseStorage.instance.ref().child(
-      "$folder/$fileName").putFile(
-      compImage);
+  File compImage;
+  UploadTaskSnapshot uploadSnapshot;
+
+  FlutterNativeImage.compressImage(
+      image.path,
+      quality: compressionFactor,
+      // todo: set to target widths etc.
+      percentage: 60,
+      ).then((image) {
+        compImage = image;
+        compImage.length().then((int) {
+          print('Compressed size ' + int.toString());
+        });
+        print(fileName);
+        StorageUploadTask putFile =
+        FirebaseStorage.instance.ref().child(
+            "$folder/$fileName").putFile(
+            compImage);
 //                          putFile.future.catchError(onError);
 
-  UploadTaskSnapshot uploadSnapshot = await putFile
-      .future;
+    putFile.future.then((snapshot) {
+          uploadSnapshot = snapshot;
 
-  print("image uploaded");
+          print('Image path: ' + uploadSnapshot.downloadUrl.toString());
+          Firestore.instance.document(DataManager
+              .get()
+              .currentJobPath).setData(
+              {"imagePath": uploadSnapshot.downloadUrl.toString()}, merge: true);
+    });
 
-  Map<String,
-      dynamic> pictureData = new Map<
-      String,
-      dynamic>();
-  pictureData["url"] =
-      uploadSnapshot.downloadUrl.toString();
-
-
-  DocumentReference collectionReference =
-  Firestore.instance.collection(
-      "collection")
-      .document(fileName);
-
-  await Firestore.instance.runTransaction((transaction) async {
-    await transaction.set(
-        collectionReference, pictureData);
-    print("instance created");
+    print("image uploaded");
+    Map<String,
+        dynamic> pictureData = new Map<
+        String,
+        dynamic>();
+//    pictureData["url"] =
+//        uploadSnapshot.downloadUrl.toString();
   });
-  return compImage;
+
+
+//
+//
+//  DocumentReference collectionReference =
+//  Firestore.instance.collection(
+//      "collection")
+//      .document(fileName);
+//
+//  await Firestore.instance.runTransaction((transaction) async {
+//    await transaction.set(
+//        collectionReference, pictureData);
+//    print("instance created");
+//  });
 }

@@ -8,19 +8,20 @@ dependencies:
   sqflite: ^0.11.2+2
   http: ^0.11.3+17
   path_provider: ^0.4.1
-#  json_annotation: ^1.1.0
   redux: ^3.0.0
   flutter_redux: ^0.5.2
   scoped_model: ^0.3.0
-#  uuid: ^1.0.3
-#  validator: ^0.0.7
   camera: ^0.2.3
   video_player: ^0.6.5
   image_picker: ^0.4.10
+  cached_network_image: ^0.4.2
+  flutter_cache_manager: ^0.1.2
+  flutter_native_image:
+    git: https://github.com/btastic/flutter_native_image.git
 
   google_sign_in: ^3.0.5
   firebase_auth: ^0.5.20
-#  flutter_firebase_ui: ^0.0.8
+  shared_preferences: ^0.4.2
   firebase_storage: ^1.0.2
   image: ^2.0.4
   cloud_firestore: ^0.8.0

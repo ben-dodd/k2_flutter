@@ -69,7 +69,7 @@ class _JobPageState extends State<JobPage> {
 
     print ('job page' + DataManager.get().currentJobPath);
 
-    List<Widget> asbestosDialer = [
+    List<SpeedDialerButton> asbestosDialer = [
       new SpeedDialerButton(backgroundColor: CompanyColors.accent,
         icon: Icons.domain,
         onPressed: () {
@@ -94,14 +94,16 @@ class _JobPageState extends State<JobPage> {
           bool _isAsbestos = false;
 
           if (snapshot.hasData){
-          if (snapshot.data['type'].toLowerCase().contains('asbestos')) {
-            _isAsbestos = true;
-            jobType = 1;
-          } else if (snapshot.data['type'].toLowerCase().contains('meth')) {
-            jobType = 2;
-          } else {
-            jobType = 0;
-          }
+            if (snapshot.data['type'] != null) {
+              if (snapshot.data['type'].toLowerCase().contains('asbestos')) {
+                _isAsbestos = true;
+                jobType = 1;
+              } else if (snapshot.data['type'].toLowerCase().contains('meth')) {
+                jobType = 2;
+              } else {
+                jobType = 0;
+              }
+            }
 
           // Initialize TabView
           switch (jobType) {

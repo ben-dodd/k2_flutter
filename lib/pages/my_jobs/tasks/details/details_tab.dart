@@ -12,7 +12,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
 import 'package:k2e/utils/helpers.dart';
-import 'package:k2e/utils/sync.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:k2e/widgets/loading.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
@@ -81,6 +82,7 @@ class _DetailsTabState extends State<DetailsTab> {
                 if (!snapshot.hasData) return
                   loadingPage(loadingText: 'Loading job info...');
                 if (snapshot.hasData) {
+                  if (snapshot.data['imagePath'] != null) print ('image path: ' + snapshot.data['imagePath']);
                   print (snapshot.data['address']);
                   if (controllerAddress.text == '') {
                     controllerAddress.text = snapshot.data['address'];
@@ -139,13 +141,27 @@ class _DetailsTabState extends State<DetailsTab> {
                                 decoration: BoxDecoration(border: new Border.all(color: Colors.black)),
                                 child: GestureDetector(
                                     onTap: () {
-                                      handleImage();
+                                        ImagePicker.pickImage(source: ImageSource.camera).then((image) {
+                                          _imageFile = image;
+                                          handleImage(image);
+                                          print (image.path + " added!");
+                                        });
                                     },
-                                    child: (_imageFile != null)
-                                        ? Image.file(_imageFile)
+//                                    child: (_imageFile != null)
+//                                        ? Image.file(_imageFile)
+                                    child: (snapshot.data['imagePath'] != null)
+                                        ? new CachedNetworkImage(
+                                            imageUrl: snapshot.data['imagePath'],
+//                                            imageUrl: 'https://www.whaleoil.co.nz/wp-content/uploads/2018/08/Dog.jpg',
+                                            placeholder: new CircularProgressIndicator(),
+                                            errorWidget: new Icon(Icons.error),
+                                            fadeInDuration: new Duration(seconds: 1),
+                                        )
+                                        : (_imageFile != null) ?
+                                        Image.file(_imageFile)
                                         : new Icon(
-                                      Icons.camera, color: CompanyColors.accent,
-                                      size: 48.0,)
+                                          Icons.camera, color: CompanyColors.accent,
+                                            size: 48.0,)
                                 ),
                               )
                             ]
@@ -163,24 +179,13 @@ class _DetailsTabState extends State<DetailsTab> {
     );
   }
 
-  void handleImage() async {
-    ImagePicker.pickImage(source: ImageSource.camera).then((image) {
-      setState(() {
-        _imageFile = image;
-        print (image.path + " added!");
-      });
-      ImageSync(
-          image,
-          50,
-          "site_photo.jpg",
-          DataManager.get().currentJobNumber
-      ).then((image) {
-        setState(() {
-          print ("uploaded yay!");
-          _imageFile = image;
-        });
-      });
-    });
+  void handleImage(File image) async {
+    ImageSync(
+        image,
+        50,
+        "site_photo.jpg",
+        DataManager.get().currentJobNumber,
+    );
   }
 }
 //https://stackoverflow.com/questions/46515679/flutter-firebase-compression-before-upload-image
