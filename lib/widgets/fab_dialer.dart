@@ -247,7 +247,7 @@ class _SpeedDialerState extends State<SpeedDialer>
 //                  tooltip: text,
                                 child: new Icon(widget.children[index].icon, color: Colors.white),
 //                  heroTag: "$index",
-                                onPressed: widget.children[index].onPressed),
+                                onPressed: closingWrap(widget.children[index].onPressed)),
                           )
                         ],
                       )),

@@ -85,11 +85,12 @@ class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
                       onCardClick: () async {
                         // todo Incorporate firestore with samples
 //                        DataManager.get().currentAsbestosBulkSample = _bulkSamples[index];
+                        print(snapshot.data.documents[index].documentID);
                         Navigator.of(context).push(
                           new MaterialPageRoute(builder: (context) =>
                               EditAsbestosSampleBulk(
                                   sample: snapshot.data.documents[index]
-                                      .getDocumentID)),
+                                      .documentID)),
                         );
                       },
 //                        setState((){

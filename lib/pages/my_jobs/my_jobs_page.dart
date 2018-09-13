@@ -58,9 +58,9 @@ class _MyJobsPageState extends State<MyJobsPage> {
                             return ListView.builder(
                                 itemCount: snapshot.data.documents.length,
                                 itemBuilder: (context, index) {
-                                  print('myjob'+index.toString());
+                                  print(snapshot.data.documents[index]['path']);
                                   return Dismissible(
-                                    key: new Key('myjob'+index.toString()),
+                                    key: new Key(snapshot.data.documents[index]['path']),
                                     onDismissed: (direction) async {
                                       await Firestore.instance.collection('users')
                                           .document(DataManager.get().user).collection('myjobs')

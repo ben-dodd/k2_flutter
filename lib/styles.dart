@@ -18,7 +18,7 @@ class Styles {
   );
 
   static TextStyle loading = new TextStyle(
-    fontSize: 12.0, color: Colors.black
+    fontSize: 16.0, color: Colors.black
   );
 
   static TextStyle comment = new TextStyle(

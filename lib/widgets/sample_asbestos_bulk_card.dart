@@ -22,12 +22,38 @@ class SampleAsbestosBulkCard extends StatefulWidget {
 }
 
 class _SampleAsbestosBulkCardState extends State<SampleAsbestosBulkCard>{
+  String jobNumber;
+  String sampleNumber;
+  String description;
+  String material;
   @override
   Widget build(BuildContext context) {
+    // todo is there a better way to assert this stuff
+    if (widget.doc['jobNumber'] == null) {
+      jobNumber = 'AS******';
+    } else {
+      jobNumber = widget.doc['jobNumber'];
+    }
+    if (widget.doc['sampleNumber'] == null) {
+      sampleNumber = '0';
+    } else {
+      sampleNumber = widget.doc['sampleNumber'];
+    }
+    if (widget.doc['description'] == null) {
+      description = 'No description';
+    } else {
+      description = widget.doc['description'];
+    }
+    if (widget.doc['material'] == null) {
+      material = 'Undefined material';
+    } else {
+      material = widget.doc['material'];
+    }
+
     return new ListTile(
       leading: const Icon(Icons.whatshot),
-      title: Text(widget.doc['jobNumber'] + '-' + widget.doc['sampleNumber'].toString()),
-      subtitle: Text(widget.doc['description'] + ': ' + widget.doc['material']),
+      title: Text(jobNumber + '-' + sampleNumber),
+      subtitle: Text(description + ': ' + material),
 
 //      subtitle: Text(widget.sample.description + '(' + widget.sample.material + ')'),
       // Tap -> go through to job task

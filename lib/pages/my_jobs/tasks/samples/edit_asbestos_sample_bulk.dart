@@ -28,23 +28,11 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
 
   @override
   void initState() {
-    if (widget.sample == null){
-      Map<String, dynamic> dataMap = new Map();
-      print('null sample');
-      print('creating new sample');
-      _title = "Add New Sample";
-      dataMap['jobNumber'] = DataManager.get().currentJobNumber;
-//      sample.sampleNumber = DataManager.get().getHighestSampleNumber(DataManager.get().currentJob) + 1;
-      dataMap['sampleNumber'] = 1;
-      Firestore.instance.collection('samplesasbestosbulk').add(dataMap).then((ref) {
-        widget.sample = ref.documentID;
-      });
       controllerSampleNumber.addListener(_updateSampleNumber);
       controllerDescription.addListener(_updateDescription);
       controllerMaterial.addListener(_updateMaterial);
-    }
 
-    sampleDoc = Firestore.instance.collection('samplesasbestosbulk').document(widget.sample).get().asStream();
+//    sampleDoc = Firestore.instance.collection('samplesasbestosbulk').document(widget.sample).get().asStream();
 
     super.initState();
   }
@@ -56,16 +44,16 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
 
   _updateDescription() {
     Firestore.instance.collection('samplesasbestosbulk').document(widget.sample).setData(
-        {"sampleNumber": controllerDescription.text}, merge: true);
+        {"description": controllerDescription.text}, merge: true);
   }
 
   _updateMaterial() {
     Firestore.instance.collection('samplesasbestosbulk').document(widget.sample).setData(
-        {"sampleNumber": controllerMaterial.text}, merge: true);
+        {"material": controllerMaterial.text}, merge: true);
   }
 
   Widget build(BuildContext context) {
-    final DateTime today = new DateTime.now();
+//    final DateTime today = new DateTime.now();
 
     return new Scaffold(
         resizeToAvoidBottomPadding: false,
@@ -76,17 +64,36 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
                 Navigator.pop(context);
               })
             ]),
-        body: new StreamBuilder(stream: sampleDoc,
+        body: new StreamBuilder(stream: Firestore.instance.collection('samplesasbestosbulk').document(widget.sample).snapshots(),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.active) {
-                print(snapshot.data.toString());
                 if (!snapshot.hasData) return
                   loadingPage(loadingText: 'Loading sample info...');
                 if (snapshot.hasData) {
-                  if (controllerSampleNumber.text == '') {
-                    controllerSampleNumber.text = snapshot.data['sampleNumber'];
-                    controllerDescription.text = snapshot.data['description'];
-                    controllerMaterial.text = snapshot.data['material'];
+                  if (widget.sample == null) {
+                    Map<String, dynamic> dataMap = new Map();
+                    print('null sample');
+                    print('creating new sample');
+                    _title = "Add New Sample";
+                    dataMap['jobNumber'] = DataManager
+                        .get()
+                        .currentJobNumber;
+                    //      sample.sampleNumber = DataManager.get().getHighestSampleNumber(DataManager.get().currentJob) + 1;
+                    dataMap['sampleNumber'] = '1';
+                    dataMap['description'] = 'CB';
+                    dataMap['material'] = 'AC';
+                    Firestore.instance.collection('samplesasbestosbulk').add(
+                        dataMap).then((ref) {
+                      widget.sample = ref.documentID;
+                      print('New instance made: ' + ref.documentID);
+                      controllerSampleNumber.text = dataMap['sampleNumber'];
+                    }
+                    );
+                  } else {
+                    if (controllerSampleNumber.text == '') {
+                      controllerSampleNumber.text = snapshot.data['sampleNumber'];
+                      controllerDescription.text = snapshot.data['description'];
+                      controllerMaterial.text = snapshot.data['material'];
+                    }
                   }
                   return GestureDetector(
                       onTap: () {
@@ -131,7 +138,6 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
                       )
                   );
                 }
-              }
             }
         )
     );

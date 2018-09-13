@@ -52,16 +52,13 @@ class _JobPageState extends State<JobPage> {
   }
 
   void _addACMBulkSample() async {
-    DataManager.get().currentAsbestosBulkSample = null;
-    SampleAsbestosBulk result = await Navigator.of(context).push(
-      new MaterialPageRoute(builder: (context) => EditAsbestosSampleBulk()),
+//    DataManager.get().currentAsbestosBulkSample = null;
+    Navigator.of(context).push(
+      new MaterialPageRoute(builder: (context) =>
+          EditAsbestosSampleBulk(
+              sample: null),
+      )
     );
-    setState((){
-      if (result != null) {
-        Firestore.instance.collection('samplesasbestosbulk').add(result.toMap());
-//        DataManager.get().updateSampleAsbestosBulk(result);
-      }
-    });
   }
 
   @override
