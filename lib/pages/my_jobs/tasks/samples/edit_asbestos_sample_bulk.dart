@@ -28,12 +28,47 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
 //  bool _isLoading = false;
   String _title = "Edit Sample";
   Stream sampleDoc;
-  bool creatingSample;
+  bool creatingSample = false;
+  bool isSampled = true;
   List<String> materials = AutoComplete.materials.split(';');
 
   final controllerSampleNumber = TextEditingController();
   final controllerDescription = TextEditingController();
   final controllerMaterial = TextEditingController();
+
+  int _radioSample = 0;
+  int _radioPresume = 0;
+
+  void _handleSampleChange(int value) {
+    setState(() {
+      _radioSample = value;
+      switch (_radioSample) {
+        case 0:
+          isSampled = true;
+        // Add to samplesasbestosbulk
+        // Sample number input pops up
+        break;
+      case 1:
+        isSampled = false;
+// Presumed inputs pop up
+        break;
+    }
+    });
+  }
+
+  void _handlePresumeChange(int value) {
+    setState(() {
+      _radioPresume = value;
+      switch (_radioPresume) {
+        case 0:
+          // Strongly presumed
+          break;
+        case 1:
+          // Presumed
+          break;
+      }
+    });
+  }
 
 
   @override
@@ -41,8 +76,6 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
       controllerSampleNumber.addListener(_updateSampleNumber);
       controllerDescription.addListener(_updateDescription);
       controllerMaterial.addListener(_updateMaterial);
-      creatingSample = false;
-
 //    sampleDoc = Firestore.instance.collection('samplesasbestosbulk').document(widget.sample).get().asStream();
     if (widget.sample == null) {
       _title = "Add New Sample";
@@ -100,12 +133,23 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
                           padding: new EdgeInsets.all(8.0),
                           child: ListView(
                             children: <Widget>[
-                              Container(
-                                // TODO Radio to select from Sampled to Presumed
-                                alignment: Alignment.topLeft,
-                                child: Radio()
+                              Row(children: <Widget>[
+                                  new Text("Sample"),
+                                  new Radio(
+                                    value: 0,
+                                    groupValue: _radioSample,
+                                    onChanged: _handleSampleChange,
+                                  ),
+                                  new Text("Presume"),
+                                  new Radio(
+                                    value: 1,
+                                    groupValue: _radioSample,
+                                    onChanged: _handleSampleChange,
+                                  ),
+                                ],
                               ),
-                              Container(
+                                isSampled ?
+                                Container(
                                 alignment: Alignment.topLeft,
                                 child: TextField(
                                   decoration: const InputDecoration(
@@ -114,7 +158,23 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
                                   controller: controllerSampleNumber,
                                   keyboardType: TextInputType.number,
                                 ),
-                              ),
+                              )
+                              :
+                                Row(children: <Widget>[
+                                  new Text("Strongly presumed"),
+                                  new Radio(
+                                    value: 0,
+                                    groupValue: _radioPresume,
+                                    onChanged: _handlePresumeChange,
+                                  ),
+                                  new Text("Presumed"),
+                                  new Radio(
+                                    value: 1,
+                                    groupValue: _radioPresume,
+                                    onChanged: _handlePresumeChange,
+                                  ),
+                                ],
+                                ),
                               Container(
                                 alignment: Alignment.topLeft,
                                 child: TextField(
