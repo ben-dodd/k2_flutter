@@ -29,7 +29,7 @@ Future <File> getPicture() async {
 //  return image;
 }
 
-void ImageSync (File image, int compressionFactor, String fileName, String folder) async {
+void ImageSync (File image, int compressionFactor, String fileName, String folder, DocumentReference ref) async {
   print('compressing image');
   File compImage;
   UploadTaskSnapshot uploadSnapshot;
@@ -55,9 +55,7 @@ void ImageSync (File image, int compressionFactor, String fileName, String folde
           uploadSnapshot = snapshot;
 
           print('Image path: ' + uploadSnapshot.downloadUrl.toString());
-          Firestore.instance.document(DataManager
-              .get()
-              .currentJobPath).setData(
+          ref.setData(
               {"imagePath": uploadSnapshot.downloadUrl.toString()}, merge: true);
     });
 

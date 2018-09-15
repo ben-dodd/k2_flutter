@@ -128,15 +128,25 @@ class _DetailsTabState extends State<DetailsTab> {
                                 alignment: Alignment.bottomLeft,
                                 child: Text("Main Site Photo", style: Styles.h2,)
                               ),
-                              Container(
+                              Row(
+                              children: <Widget>[Container(
                                 alignment: Alignment.center,
                                 height: 156.0,
+                                width: 206.0,
                                 decoration: BoxDecoration(border: new Border.all(color: Colors.black)),
                                 child: GestureDetector(
                                     onTap: () {
                                         ImagePicker.pickImage(source: ImageSource.camera).then((image) {
-                                          _imageFile = image;
-                                          handleImage(image);
+//                                          _imageFile = image;
+                                          ImageSync(
+                                            image,
+                                            50,
+                                            "site_photo.jpg",
+                                            DataManager.get().currentJobNumber,
+                                            Firestore.instance.document(DataManager
+                                                .get()
+                                                .currentJobPath)
+                                          );
                                           print (image.path + " added!");
                                         });
                                     },
@@ -154,7 +164,7 @@ class _DetailsTabState extends State<DetailsTab> {
                                           Icons.camera, color: CompanyColors.accent,
                                             size: 48.0,)
                                 ),
-                              )
+                              )]),
                             ]
                         ),
                       )
@@ -167,15 +177,6 @@ class _DetailsTabState extends State<DetailsTab> {
               }
             }
         )
-    );
-  }
-
-  void handleImage(File image) async {
-    ImageSync(
-        image,
-        50,
-        "site_photo.jpg",
-        DataManager.get().currentJobNumber,
     );
   }
 }
