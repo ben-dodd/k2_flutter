@@ -50,6 +50,7 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
   final controllerSurfaceDesc = TextEditingController();
 
   String sample;
+  String room = '';
 
   String localPath;
   String remotePath;
@@ -265,15 +266,24 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
                                     ],)
                                   ),
                               //todo: fix this
-                              new DropdownButton<String>(
-                                items: roomlist.map((String value) {
-                                  return new DropdownMenuItem<String>(
-                                    value: value,
-                                    child: new Text(value),
-                                  );
-                                }).toList(),
-                                onChanged: (_) {},
-                              ),
+//                              new Text(room),
+                              new Row(
+                                children: <Widget>[
+                                  new Text(room),
+                                  new DropdownButton<String>(
+                                    items: roomlist.map((String value) {
+                                      return new DropdownMenuItem<String>(
+                                        value: value,
+                                        child: new Text(value),
+                                      );
+                                    }).toList(),
+                                    onChanged: (value) {
+                                      setState(() {
+                                    room = value;
+                                      });
+                                    },
+                                  )
+                                ],),
                               Container(
                                 alignment: Alignment.topLeft,
                                 child: TextField(
