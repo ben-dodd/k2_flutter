@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/model/samples/sample_asbestos_air.dart';
-import 'package:k2e/model/samples/sample_asbestos_bulk.dart';
 import 'package:k2e/pages/my_jobs/tasks/samples/edit_asbestos_sample_bulk.dart';
 import 'package:k2e/widgets/sample_asbestos_bulk_card.dart';
 
@@ -93,25 +91,9 @@ class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
                                       .documentID)),
                         );
                       },
-//                        setState((){
-//                          if (result != null) {
-//                            Scaffold.of(context).showSnackBar(
-//                                new SnackBar(
-//                                    content: new Text(result.jobNumber)));
-//                            SampleAsbestosBulkRepo.get().updateSample(result);
-//                            DataManager
-//                                .get()
-//                                .currentJob
-//                                .asbestosBulkSamples[index] = result;
-//                          }
-//      Scaffold.of(context).showSnackBar(
-//          new SnackBar(
-//              content: new Text(result.jobNumber + '-' + result.sampleNumber.toString() + " created")));
-//                        }
-//                        );
-//                      },
                       onCardLongPress: () {
                         // Delete
+                        // Bulk add /clone etc.
                       },
                     );
                   }

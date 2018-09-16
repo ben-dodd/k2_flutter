@@ -29,7 +29,9 @@ Future <File> getPicture() async {
 //  return image;
 }
 
-void ImageSync (File image, int compressionFactor, String fileName, String folder, DocumentReference ref) async {
+Future<String> ImageSync (File image, int compressionFactor, String fileName, String folder, DocumentReference ref) async {
+  ref.setData(
+      {"localPath": image.path.toString()},merge: true);
   print('compressing image');
   File compImage;
   UploadTaskSnapshot uploadSnapshot;
@@ -56,16 +58,11 @@ void ImageSync (File image, int compressionFactor, String fileName, String folde
 
           print('Image path: ' + uploadSnapshot.downloadUrl.toString());
           ref.setData(
-              {"imagePath": uploadSnapshot.downloadUrl.toString()}, merge: true);
+              {"remotePath": uploadSnapshot.downloadUrl.toString()}, merge: true);
     });
 
     print("image uploaded");
-    Map<String,
-        dynamic> pictureData = new Map<
-        String,
-        dynamic>();
-//    pictureData["url"] =
-//        uploadSnapshot.downloadUrl.toString();
+    return uploadSnapshot.downloadUrl.toString();
   });
 
 

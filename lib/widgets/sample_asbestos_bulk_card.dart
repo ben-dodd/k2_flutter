@@ -28,6 +28,8 @@ class _SampleAsbestosBulkCardState extends State<SampleAsbestosBulkCard>{
   String description;
   String material;
   bool hasPhoto;
+  bool photoSynced;
+  bool presumed;
   @override
   Widget build(BuildContext context) {
     // todo is there a better way to assert this stuff
@@ -51,10 +53,15 @@ class _SampleAsbestosBulkCardState extends State<SampleAsbestosBulkCard>{
     } else {
       material = widget.doc['material'];
     }
-    if (widget.doc['imagePath'] == null) {
+    if (widget.doc['localPath'] == null && widget.doc['remotePath'] == null) {
       hasPhoto = false;
     } else {
       hasPhoto = true;
+      if (widget.doc['remotePath'] == null) {
+        photoSynced = false;
+      } else {
+        photoSynced = true;
+      }
     }
 
     return new ListTile(
@@ -66,7 +73,8 @@ class _SampleAsbestosBulkCardState extends State<SampleAsbestosBulkCard>{
         ),
         shape: new CircleBorder(),
         elevation: 2.0,
-        fillColor: CompanyColors.accentRippled,
+//        fillColor: CompanyColors.accentRippled,
+      fillColor: Colors.white,
         padding: const EdgeInsets.all(10.0),
       ),
 //      leading: const Icon(Icons.whatshot),
@@ -80,8 +88,48 @@ class _SampleAsbestosBulkCardState extends State<SampleAsbestosBulkCard>{
       onLongPress: widget.onCardLongPress,
       // TODO: Icons display whether sample has photo or not
       trailing:
-        hasPhoto ? Icon(Icons.camera_alt, color: Colors.green,)
+          Container(width: 100.0,
+              alignment: Alignment.centerRight,
+              child:
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              //TODO: Add icons for assessments done
+//           new InkWell(
+//            child: new Container(
+//              height: 30.0,
+//              width: 30.0,
+//              alignment: Alignment.center,
+//              decoration: new BoxDecoration(
+//                color: Colors.white,
+//                border: new Border.all(color: CompanyColors.score3, width: 2.0),
+//                borderRadius: new BorderRadius.circular(30.0),
+//              ),
+//              child: new Text('M',
+//                style: new TextStyle(fontSize: 16.0, color: CompanyColors.score3),
+//              ),
+//            ),
+//          ),
+//           new InkWell(
+//             child: new Container(
+//               height: 30.0,
+//               width: 30.0,
+//               alignment: Alignment.center,
+//               decoration: new BoxDecoration(
+//                 color: Colors.white,
+//                 border: new Border.all(color: CompanyColors.score3, width: 2.0),
+//                 borderRadius: new BorderRadius.circular(30.0),
+//               ),
+//               child: new Text('P',
+//                 style: new TextStyle(fontSize: 16.0, color: CompanyColors.score3),
+//               ),
+//             ),
+//           ),
+        hasPhoto ? photoSynced ? Icon(Icons.camera_alt, color: Colors.green,)
+            : Icon(Icons.camera_alt, color: Colors.orange)
             : Icon(Icons.camera_alt, color: Colors.red)
+          ],)
+          )
     );
   }
 }
