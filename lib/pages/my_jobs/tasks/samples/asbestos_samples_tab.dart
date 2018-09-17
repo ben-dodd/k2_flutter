@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/pages/my_jobs/tasks/samples/edit_asbestos_sample_bulk.dart';
+import 'package:k2e/pages/my_jobs/tasks/samples/edit_acm.dart';
 import 'package:k2e/widgets/sample_asbestos_bulk_card.dart';
 
 class AsbestosSamplesTab extends StatefulWidget {
@@ -86,7 +86,7 @@ class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
                         print(snapshot.data.documents[index].documentID);
                         Navigator.of(context).push(
                           new MaterialPageRoute(builder: (context) =>
-                              EditAsbestosSampleBulk(
+                              EditACM(
                                   sample: snapshot.data.documents[index]
                                       .documentID)),
                         );

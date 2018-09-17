@@ -24,13 +24,13 @@ class CompanyColors {
 
   // score colours
   static const Color score0 = Color(0xFFBDE1EC);
-  static const Color score0no = Color(0xFFEFF7FA);
+  static const Color score0no = Color(0xFFF7FBFD);
   static const Color score1 = Color(0xFFB2E6A1);
-  static const Color score1no = Color(0xFFECF9E8);
+  static const Color score1no = Color(0xFFF5FCF3);
   static const Color score2 = Color(0xFFFFD930);
-  static const Color score2no = Color(0xFFFFF6CB);
+  static const Color score2no = Color(0xFFFFFAE5);
   static const Color score3 = Color(0xFFE33714);
-  static const Color score3no = Color(0xFFF8CDC4);
+  static const Color score3no = Color(0xFFFBE6E2);
 
   // icons
   static Icon asbestosIcon = new Icon(

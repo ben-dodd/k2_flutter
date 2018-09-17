@@ -12,7 +12,7 @@ import 'package:k2e/pages/my_jobs/tasks/notepad/notepad_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/rooms/edit_room.dart';
 import 'package:k2e/pages/my_jobs/tasks/rooms/rooms_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/samples/asbestos_samples_tab.dart';
-import 'package:k2e/pages/my_jobs/tasks/samples/edit_asbestos_sample_bulk.dart';
+import 'package:k2e/pages/my_jobs/tasks/samples/edit_acm.dart';
 import 'package:k2e/pages/my_jobs/tasks/samples/meth_samples_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/timelog/log_time_tab.dart';
 import 'package:k2e/theme.dart';
@@ -52,11 +52,11 @@ class _JobPageState extends State<JobPage> {
 //    });
   }
 
-  void _addACMBulkSample() async {
+  void _addACM() async {
 //    DataManager.get().currentAsbestosBulkSample = null;
     Navigator.of(context).push(
       new MaterialPageRoute(builder: (context) =>
-          EditAsbestosSampleBulk(
+          EditACM(
               sample: null),
       )
     );
@@ -77,9 +77,9 @@ class _JobPageState extends State<JobPage> {
       new SpeedDialerButton(backgroundColor: CompanyColors.accent,
         icon: Icons.whatshot,
         onPressed: () {
-          _addACMBulkSample();
+          _addACM();
         },
-        text: "Add ACM Bulk Sample",),
+        text: "Add ACM",),
     ];
 
     return StreamBuilder(

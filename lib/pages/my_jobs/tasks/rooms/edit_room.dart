@@ -89,11 +89,6 @@ class _EditRoomState extends State<EditRoom> {
                             Row(children: <Widget>[
                               new Container(width: 150.0,
                                 child: new Column(children: <Widget>[
-//                            new Container(
-//                                height: 40.0,
-//                                alignment: Alignment.center,
-//                                child: Text("Sample Photo", style: Styles.h2,)
-//                            ),
                                   Container(
                                     alignment: Alignment.center,
                                     height: 156.0,
