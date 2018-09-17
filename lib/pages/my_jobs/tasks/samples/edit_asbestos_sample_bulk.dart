@@ -8,12 +8,12 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:k2e/autocomplete.dart';
 import 'package:k2e/data/datamanager.dart';
+import 'package:k2e/styles.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
 import 'package:k2e/widgets/buttons.dart';
 import 'package:k2e/widgets/loading.dart';
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
-import 'package:dropdown_menu/dropdown_menu.dart';
 
 class EditAsbestosSampleBulk extends StatefulWidget {
   EditAsbestosSampleBulk({Key key, this.sample}) : super(key: key);
@@ -49,8 +49,20 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
   final controllerDamageDesc = TextEditingController();
   final controllerSurfaceDesc = TextEditingController();
 
+  // priority risk assessment
+  int priorityActivityMain;
+  int priorityActivitySecond;
+  int priorityDisturbanceLocation;
+  int priorityDisturbanceAccessibility;
+  int priorityDisturbanceExtent;
+  int priorityExposureOccupants;
+  int priorityExposureUseFreq;
+  int priorityExposureAvgTime;
+  int priorityMaintType;
+  int priorityMaintFreq;
+
   String sample;
-  String room = '';
+  String _room;
 
   String localPath;
   String remotePath;
@@ -68,6 +80,7 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
 
   int _radioSample;
 
+  // WORKS OUT IDKEY ETC.
   void _handleSampleChange(int value) {
     setState(() {
       _radioSample = value;
@@ -166,6 +179,9 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
                           padding: new EdgeInsets.all(8.0),
                           child: ListView(
                             children: <Widget>[
+
+                              // SAMPLED/PRESUMED
+
                               new Row(children: <Widget>[
                                 new Container(
                                     child: new Row(children: <Widget>[
@@ -232,9 +248,13 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
                                     ),
                                   )],
                           ),),
+
+                          // HEADER INFO
+
                           new Expanded(child: new Container(child:
                           new Column(children: <Widget>[
                                 isSampled ?
+                                    // SAMPLE NUMBER
                                 new Container(
                                 alignment: Alignment.topLeft,
                                 child: TextField(
@@ -246,6 +266,7 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
                                 ),
                               )
                               :
+                                    // PRESUMED/STRONGLY
                                   new Container(
                                     child: new Row(children: <Widget>[
                                       new Switch(
@@ -265,25 +286,27 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
                                       new Text("Strongly presume"),
                                     ],)
                                   ),
-                              //todo: fix this
-//                              new Text(room),
-                              new Row(
-                                children: <Widget>[
-                                  new Text(room),
-                                  new DropdownButton<String>(
-                                    items: roomlist.map((String value) {
-                                      return new DropdownMenuItem<String>(
-                                        value: value,
-                                        child: new Text(value),
-                                      );
-                                    }).toList(),
-                                    onChanged: (value) {
-                                      setState(() {
-                                    room = value;
-                                      });
-                                    },
-                                  )
-                                ],),
+//                             // DROPDOWN ROOM
+                              new Container(
+                                alignment: Alignment.topLeft,
+                              child: new DropdownButton<String>(
+                                // TODO change value to be room text and _room to be doc ID (e.g. map rooms)
+                                  value: _room,
+                                  items: roomlist.map((String value) {
+                                    return new DropdownMenuItem<String>(
+                                      value: value,
+                                      child: new Text(value),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _room = value;
+                                      Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                          {"room": value}, merge: true);
+                                    });
+                                  },
+                                ),
+                              ),
                               Container(
                                 alignment: Alignment.topLeft,
                                 child: TextField(
@@ -345,8 +368,11 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
                                   child: new Column(children: <Widget>[
                                     // ACCESSIBILITY
 
-                                    new Container(alignment: Alignment.bottomLeft, child:
-                                    new Text('Accessibility'),),
+                                    new Container(alignment: Alignment.bottomLeft,
+                                        height: 25.0,
+                                        margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                                        child: new Text('Accessibility', style: Styles.h3,)
+                                    ),
                                     new Row(children: <Widget>[
                                       new Expanded(child:
                                       new ScoreButton(
@@ -400,22 +426,20 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
 
                                     // PRODUCT SCORE
 
-                                    new Container(alignment: Alignment.bottomLeft, child:
-                                    new Text('Product'),),
+                                    new Container(alignment: Alignment.bottomLeft,
+                                        height: 25.0,
+                                        margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                                        child: new Text('Product', style: Styles.h3,)
+                                    ),
                                     new Row(children: <Widget>[
                                       new Expanded(child:
                                       new ScoreButton(
                                         onClick: () {
-                                          // firestore change score
-                                          setState(() {
-                                            if (materialProductScore == 0) { materialProductScore = null; }
-                                            else { materialProductScore = 0; }
-                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                                {"materialrisk_productscore": materialProductScore}, merge: true);
-                                          });
+
                                         },
-                                        selected: materialProductScore == 0,
-                                        score: 0,
+                                        selected: false,
+                                        // -1 = disabled button
+                                        score: -1,
                                       ),),
                                       new Expanded(child:
                                       new ScoreButton(
@@ -465,8 +489,11 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
 
                                     // DAMAGE SCORE
 
-                                    new Container(alignment: Alignment.bottomLeft, child:
-                                    new Text('Damage'),),
+                                    new Container(alignment: Alignment.bottomLeft,
+                                        height: 25.0,
+                                        margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                                        child: new Text('Damage', style: Styles.h3,)
+                                    ),
                                     new Row(children: <Widget>[
                                       new Expanded(child:
                                       new ScoreButton(
@@ -530,8 +557,11 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
 
                                     // SURFACE SCORE
 
-                                    new Container(alignment: Alignment.bottomLeft, child:
-                                    new Text('Surface'),),
+                                    new Container(alignment: Alignment.bottomLeft,
+                                        height: 25.0,
+                                        margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                                        child: new Text('Surface', style: Styles.h3,)
+                                    ),
                                     new Row(children: <Widget>[
                                       new Expanded(child:
                                       new ScoreButton(
@@ -595,8 +625,11 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
 
                                     // ASBESTOS SCORE
 
-                                    new Container(alignment: Alignment.bottomLeft, child:
-                                    new Text('Asbestos Type'),),
+                                    new Container(alignment: Alignment.bottomLeft,
+                                        height: 25.0,
+                                        margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                                        child: new Text('Asbestos Type', style: Styles.h3,)
+                                    ),
                                     new Row(children: <Widget>[
                                       new Expanded(child:
                                       new ScoreButton(
@@ -612,10 +645,10 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
                                         onClick: () {
                                           // firestore change score
                                           setState(() {
-                                            if (materialAsbestosScore == 1) { materialAsbestosScore = null; }
-                                            else { materialAsbestosScore = 1; }
+                                            if (priorityActivityMain == 1) { priorityActivityMain = null; }
+                                            else { priorityActivityMain = 1; }
                                             Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                                {"materialrisk_asbestosscore": materialAsbestosScore}, merge: true);
+                                                {"priority_activity_main": priorityActivityMain}, merge: true);
                                           });
                                         },
                                         selected: materialAsbestosScore == 1,
@@ -696,7 +729,687 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
                                   ],)
                               ),
                               showPriorityRisk ?
-                                  new Container()
+                              new Container(
+                                  child: new Column(children: <Widget>[
+                                  // ACTIVITY
+
+                                    // MAIN ACTIVITY
+                                    new Container(alignment: Alignment.bottomLeft,
+                                        height: 25.0,
+                                        margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                                        child: new Text('Main Activity', style: Styles.h3,)
+                                    ),
+                                    new Row(children: <Widget>[
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityActivityMain == 0) { priorityActivityMain = null; }
+                                            else { priorityActivityMain = 0; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_activity_main": priorityActivityMain}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityActivityMain == 0,
+                                        score: 0,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityActivityMain == 1) { priorityActivityMain = null; }
+                                            else { priorityActivityMain = 1; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_activity_main": priorityActivityMain}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityActivityMain == 1,
+                                        score: 1,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityActivityMain == 2) { priorityActivityMain = null; }
+                                            else { priorityActivityMain = 2; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_activity_main": priorityActivityMain}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityActivityMain == 2,
+                                        score: 2,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityActivityMain == 3) { priorityActivityMain = null; }
+                                            else { priorityActivityMain = 3; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_activity_main": priorityActivityMain}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityActivityMain == 3,
+                                        score: 3,
+                                      ),),
+
+                                    ],
+                                    ),
+
+                                    // SECOND ACTIVITY
+                                    new Container(alignment: Alignment.bottomLeft,
+                                        height: 25.0,
+                                        margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                                        child: new Text('Secondary Activity', style: Styles.h3,)
+                                    ),
+                                    new Row(children: <Widget>[
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityActivitySecond == 0) { priorityActivitySecond = null; }
+                                            else { priorityActivitySecond = 0; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_activity_second": priorityActivitySecond}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityActivitySecond == 0,
+                                        score: 0,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityActivitySecond == 1) { priorityActivitySecond = null; }
+                                            else { priorityActivitySecond = 1; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_activity_second": priorityActivitySecond}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityActivitySecond == 1,
+                                        score: 1,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityActivitySecond == 2) { priorityActivitySecond = null; }
+                                            else { priorityActivitySecond = 2; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_activity_second": priorityActivitySecond}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityActivitySecond == 2,
+                                        score: 2,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityActivitySecond == 3) { priorityActivitySecond = null; }
+                                            else { priorityActivitySecond = 3; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_activity_second": priorityActivitySecond}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityActivitySecond == 3,
+                                        score: 3,
+                                      ),),
+
+                                    ],
+                                    ),
+
+                                    new Divider(),
+
+                                    // LOCATION
+                                    new Container(alignment: Alignment.bottomLeft,
+                                        height: 25.0,
+                                        margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                                        child: new Text('Location', style: Styles.h3,)
+                                    ),
+                                    new Row(children: <Widget>[
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityDisturbanceLocation == 0) { priorityDisturbanceLocation = null; }
+                                            else { priorityDisturbanceLocation = 0; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_disturbance_location": priorityDisturbanceLocation}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityDisturbanceLocation == 0,
+                                        score: 0,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityDisturbanceLocation == 1) { priorityDisturbanceLocation = null; }
+                                            else { priorityDisturbanceLocation = 1; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_disturbance_location": priorityDisturbanceLocation}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityDisturbanceLocation == 1,
+                                        score: 1,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityDisturbanceLocation == 2) { priorityDisturbanceLocation = null; }
+                                            else { priorityDisturbanceLocation = 2; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_disturbance_location": priorityDisturbanceLocation}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityDisturbanceLocation == 2,
+                                        score: 2,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityDisturbanceLocation == 3) { priorityDisturbanceLocation = null; }
+                                            else { priorityDisturbanceLocation = 3; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_disturbance_location": priorityDisturbanceLocation}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityDisturbanceLocation == 3,
+                                        score: 3,
+                                      ),),
+
+                                    ],
+                                    ),
+
+                                    // ACCESS
+                                    new Container(alignment: Alignment.bottomLeft,
+                                        height: 25.0,
+                                        margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                                        child: new Text('Accessibility', style: Styles.h3,)
+                                    ),
+                                    new Row(children: <Widget>[
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityDisturbanceAccessibility == 0) { priorityDisturbanceAccessibility = null; }
+                                            else { priorityDisturbanceAccessibility = 0; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_disturbance_accessibility": priorityDisturbanceAccessibility}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityDisturbanceAccessibility == 0,
+                                        score: 0,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityDisturbanceAccessibility == 1) { priorityDisturbanceAccessibility = null; }
+                                            else { priorityDisturbanceAccessibility = 1; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_disturbance_accessibility": priorityDisturbanceAccessibility}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityDisturbanceAccessibility == 1,
+                                        score: 1,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityDisturbanceAccessibility == 2) { priorityDisturbanceAccessibility = null; }
+                                            else { priorityDisturbanceAccessibility = 2; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_disturbance_accessibility": priorityDisturbanceAccessibility}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityDisturbanceAccessibility == 2,
+                                        score: 2,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityDisturbanceAccessibility == 3) { priorityDisturbanceAccessibility = null; }
+                                            else { priorityDisturbanceAccessibility = 3; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_disturbance_accessibility": priorityDisturbanceAccessibility}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityDisturbanceAccessibility == 3,
+                                        score: 3,
+                                      ),),
+
+                                    ],
+                                    ),
+
+                                    //EXTENT
+                                    new Container(alignment: Alignment.bottomLeft,
+                                        height: 25.0,
+                                        margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                                        child: new Text('Extent', style: Styles.h3,)
+                                    ),
+                                    new Row(children: <Widget>[
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityDisturbanceExtent == 0) { priorityDisturbanceExtent = null; }
+                                            else { priorityDisturbanceExtent = 0; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_disturbance_extent": priorityDisturbanceExtent}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityDisturbanceExtent == 0,
+                                        score: 0,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityDisturbanceExtent == 1) { priorityDisturbanceExtent = null; }
+                                            else { priorityDisturbanceExtent = 1; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_disturbance_extent": priorityDisturbanceExtent}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityDisturbanceExtent == 1,
+                                        score: 1,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityDisturbanceExtent == 2) { priorityDisturbanceExtent = null; }
+                                            else { priorityDisturbanceExtent = 2; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_disturbance_extent": priorityDisturbanceExtent}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityDisturbanceExtent == 2,
+                                        score: 2,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityDisturbanceExtent == 3) { priorityDisturbanceExtent = null; }
+                                            else { priorityDisturbanceExtent = 3; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_disturbance_extent": priorityDisturbanceExtent}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityDisturbanceExtent == 3,
+                                        score: 3,
+                                      ),),
+
+                                    ],
+                                    ),
+
+                                    new Divider(),
+
+                                    //OCCUPANTS
+                                    new Container(alignment: Alignment.bottomLeft,
+                                        height: 25.0,
+                                        margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                                        child: new Text('Occupants', style: Styles.h3,)
+                                    ),
+                                    new Row(children: <Widget>[
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityExposureOccupants == 0) { priorityExposureOccupants = null; }
+                                            else { priorityExposureOccupants = 0; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_exposure_occupants": priorityExposureOccupants}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityExposureOccupants == 0,
+                                        score: 0,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityExposureOccupants == 1) { priorityExposureOccupants = null; }
+                                            else { priorityExposureOccupants = 1; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_exposure_occupants": priorityExposureOccupants}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityExposureOccupants == 1,
+                                        score: 1,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityExposureOccupants == 2) { priorityExposureOccupants = null; }
+                                            else { priorityExposureOccupants = 2; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_exposure_occupants": priorityExposureOccupants}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityExposureOccupants == 2,
+                                        score: 2,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityExposureOccupants == 3) { priorityExposureOccupants = null; }
+                                            else { priorityExposureOccupants = 3; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_exposure_occupants": priorityExposureOccupants}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityExposureOccupants == 3,
+                                        score: 3,
+                                      ),),
+
+                                    ],
+                                    ),
+
+                                    //USEFREQ
+                                    new Container(alignment: Alignment.bottomLeft,
+                                        height: 25.0,
+                                        margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                                        child: new Text('Use Frequency', style: Styles.h3,)
+                                    ),
+                                    new Row(children: <Widget>[
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityExposureUseFreq == 0) { priorityExposureUseFreq = null; }
+                                            else { priorityExposureUseFreq = 0; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_exposure_usefreq": priorityExposureUseFreq}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityExposureUseFreq == 0,
+                                        score: 0,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityExposureUseFreq == 1) { priorityExposureUseFreq = null; }
+                                            else { priorityExposureUseFreq = 1; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_exposure_usefreq": priorityExposureUseFreq}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityExposureUseFreq == 1,
+                                        score: 1,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityExposureUseFreq == 2) { priorityExposureUseFreq = null; }
+                                            else { priorityExposureUseFreq = 2; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_exposure_usefreq": priorityExposureUseFreq}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityExposureUseFreq == 2,
+                                        score: 2,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityExposureUseFreq == 3) { priorityExposureUseFreq = null; }
+                                            else { priorityExposureUseFreq = 3; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_exposure_usefreq": priorityExposureUseFreq}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityExposureUseFreq == 3,
+                                        score: 3,
+                                      ),),
+
+                                    ],
+                                    ),
+
+                                    //AVG TIME
+                                    new Container(alignment: Alignment.bottomLeft,
+                                        height: 25.0,
+                                        margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                                        child: new Text('Average Time', style: Styles.h3,)
+                                    ),
+                                    new Row(children: <Widget>[
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityExposureAvgTime == 0) { priorityExposureAvgTime = null; }
+                                            else { priorityExposureAvgTime = 0; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_exposure_avgtime": priorityExposureAvgTime}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityExposureAvgTime == 0,
+                                        score: 0,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityExposureAvgTime == 1) { priorityExposureAvgTime = null; }
+                                            else { priorityExposureAvgTime = 1; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_exposure_avgtime": priorityExposureAvgTime}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityExposureAvgTime == 1,
+                                        score: 1,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityExposureAvgTime == 2) { priorityExposureAvgTime = null; }
+                                            else { priorityExposureAvgTime = 2; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_exposure_avgtime": priorityExposureAvgTime}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityExposureAvgTime == 2,
+                                        score: 2,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityExposureAvgTime == 3) { priorityExposureAvgTime = null; }
+                                            else { priorityExposureAvgTime = 3; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_exposure_avgtime": priorityExposureAvgTime}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityExposureAvgTime == 3,
+                                        score: 3,
+                                      ),),
+
+                                    ],
+                                    ),
+
+                                    new Divider(),
+
+                                    //MAINT TYPE
+                                    new Container(alignment: Alignment.bottomLeft,
+                                        height: 25.0,
+                                        margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                                        child: new Text('Maintenance Type', style: Styles.h3,)
+                                    ),
+                                    new Row(children: <Widget>[
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityMaintType == 0) { priorityMaintType = null; }
+                                            else { priorityMaintType = 0; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_maint_type": priorityMaintType}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityMaintType == 0,
+                                        score: 0,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityMaintType == 1) { priorityMaintType = null; }
+                                            else { priorityMaintType = 1; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_maint_type": priorityMaintType}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityMaintType == 1,
+                                        score: 1,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityMaintType == 2) { priorityMaintType = null; }
+                                            else { priorityMaintType = 2; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_maint_type": priorityMaintType}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityMaintType == 2,
+                                        score: 2,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityMaintType == 3) { priorityMaintType = null; }
+                                            else { priorityMaintType = 3; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_maint_type": priorityMaintType}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityMaintType == 3,
+                                        score: 3,
+                                      ),),
+
+                                    ],
+                                    ),
+
+                                    // MAINT FREQ
+                                    new Container(alignment: Alignment.bottomLeft,
+                                        height: 25.0,
+                                        margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                                        child: new Text('Maintenance Frequency', style: Styles.h3,)
+                                    ),
+                                    new Row(children: <Widget>[
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityMaintFreq == 0) { priorityMaintFreq = null; }
+                                            else { priorityMaintFreq = 0; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_maint_freq": priorityMaintFreq}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityMaintFreq == 0,
+                                        score: 0,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityMaintFreq == 1) { priorityMaintFreq = null; }
+                                            else { priorityMaintFreq = 1; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_maint_freq": priorityMaintFreq}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityMaintFreq == 1,
+                                        score: 1,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityMaintFreq == 2) { priorityMaintFreq = null; }
+                                            else { priorityMaintFreq = 2; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_maint_freq": priorityMaintFreq}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityMaintFreq == 2,
+                                        score: 2,
+                                      ),),
+                                      new Expanded(child:
+                                      new ScoreButton(
+                                        onClick: () {
+                                          // firestore change score
+                                          setState(() {
+                                            if (priorityMaintFreq == 3) { priorityMaintFreq = null; }
+                                            else { priorityMaintFreq = 3; }
+                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                                {"priority_maint_freq": priorityMaintFreq}, merge: true);
+                                          });
+                                        },
+                                        selected: priorityMaintFreq == 3,
+                                        score: 3,
+                                      ),),
+
+                                    ],
+                                    ),
+                              ]),
+                              )
                                   : new Container(),
                               ],
                           )
@@ -756,6 +1469,7 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
             stronglyPresumed = false;
           }
         }
+        _room = doc.data['room'];
         controllerDescription.text = doc.data['description'];
         materialText = doc.data['material'];
 
@@ -769,6 +1483,18 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
         controllerDamageDesc.text = doc.data['materialrisk_damagedesc'];
         controllerSurfaceDesc.text = doc.data['materialrisk_surfacedesc'];
 
+        // Priority Risk Assessment
+        priorityActivityMain = doc.data['priority_activity_main'];
+        priorityActivitySecond = doc.data['priority_activity_second'];
+        priorityDisturbanceLocation = doc.data['priority_disturbance_location'];
+        priorityDisturbanceAccessibility = doc.data['priority_disturbance_accessibility'];
+        priorityDisturbanceExtent = doc.data['priority_disturbance_extent'];
+        priorityExposureOccupants = doc.data['priority_exposure_occupants'];
+        priorityExposureUseFreq = doc.data['priority_exposure_usefreq'];
+        priorityExposureAvgTime = doc.data['priority_exposure_avgtime'];
+        priorityMaintType = doc.data['priority_maint_type'];
+        priorityMaintFreq = doc.data['priority_maint_freq'];
+
         // image
         remotePath = doc.data['remotePath'];
         localPath = doc.data['localPath'];
@@ -779,7 +1505,6 @@ class _EditAsbestosSampleBulkState extends State<EditAsbestosSampleBulk> {
           localPhoto = false;
         }
         setState(() {
-          print('Rooms: ' + roomlist.toString());
           isLoading = false;
         });
       });

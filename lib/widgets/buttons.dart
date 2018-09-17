@@ -16,6 +16,8 @@ class ScoreButton extends StatelessWidget {
 
   Color scoreColor;
 
+  // TODO OnLongPress show tooltip e.g. what the score means
+
   @override
   Widget build(BuildContext context) {
     if (selected) {
@@ -55,7 +57,9 @@ class ScoreButton extends StatelessWidget {
           break;
       }
     }
-    return new InkWell(
+    return new Container(
+      padding: EdgeInsets.symmetric(horizontal: 6.0),
+      child: InkWell(
       onTap: () {
         onClick();
       },
@@ -71,6 +75,6 @@ class ScoreButton extends StatelessWidget {
           :new Text(text, style: new TextStyle(fontSize: 16.0, color: Colors.white),),
           ),
       ),
-    );
+    ));
   }
 }
