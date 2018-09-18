@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/pages/my_jobs/tasks/samples/edit_acm.dart';
+import 'package:k2e/pages/my_jobs/tasks/samples/edit_sample_asbestos_air.dart';
+import 'package:k2e/pages/my_jobs/tasks/samples/edit_sample_asbestos_bulk.dart';
+import 'package:k2e/styles.dart';
+import 'package:k2e/widgets/sample_asbestos_air_card.dart';
 import 'package:k2e/widgets/sample_asbestos_bulk_card.dart';
 
 class AsbestosSamplesTab extends StatefulWidget {
@@ -12,39 +15,24 @@ class AsbestosSamplesTab extends StatefulWidget {
 }
 
 class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
-  bool _isLoading = false;
-  bool _isBulk = false;
-  bool _isAir = false;
-  bool _isEmpty = false;
   String _loadingText = 'Loading samples...';
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-
-    // This shouldn't be called on every build!
-//    List<SampleAsbestosBulk> _bulkSamples = new List();
-//    _bulkSamples = DataManager.get().currentJob.asbestosBulkSamples;
-//    List<SampleAsbestosAir> _airSamples = new List();
-//    _airSamples = DataManager.get().currentJob.asbestosAirSamples;
-//    print('Bulk Size ' + _bulkSamples.length.toString());
-
-//    if (_bulkSamples.length > 0) { _isBulk = true; } else { _isBulk = false; }
-//    if (_airSamples.length > 0) { _isAir = true; } else { _isAir = false; }
-//    if (!_isBulk && !_isAir) { _isEmpty = true; } else { _isEmpty = false; }
-//
-//    _bulkSamples.sort((a,b) => a.sampleNumber.compareTo(b.sampleNumber)); // sort samples by sample number
-
     return new Scaffold(
-      body:
+      body: new Column(children: <Widget>[
+        //
+        // BULK SAMPLES
+        //
+      new Container(height: 30.0, padding: EdgeInsets.only(left: 8.0), alignment: Alignment.bottomLeft,child: Text('Bulk Samples',style: Styles.h2,)),
       new Container(
         padding: new EdgeInsets.all(8.0),
         child: StreamBuilder(
-            stream: Firestore.instance.collection('samplesasbestosbulk').where('jobNumber',isEqualTo: DataManager.get().currentJobNumber).orderBy("sampleNumber").snapshots(),
+            stream: Firestore.instance.collection('samplesasbestosbulk').where('jobnumber',isEqualTo: DataManager.get().currentJobNumber).orderBy("samplenumber").snapshots(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) return
                 Container(
+                    padding: EdgeInsets.only(top: 16.0),
                     alignment: Alignment.center,
                     color: Colors.white,
 
@@ -70,23 +58,22 @@ class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
                               alignment: Alignment.center,
                               height: 64.0,
                               child:
-                              Text('This job has no samples.')
+                              Text('This job has no bulk samples.')
                           )
                         ]
                     )
                 );
               return ListView.builder(
+                  shrinkWrap: true,
                   itemCount: snapshot.data.documents.length,
                   itemBuilder: (context, index) {
+                    print(snapshot.data.documents[index]['jobnumber']);
                     return SampleAsbestosBulkCard(
                       doc: snapshot.data.documents[index],
                       onCardClick: () async {
-                        // todo Incorporate firestore with samples
-//                        DataManager.get().currentAsbestosBulkSample = _bulkSamples[index];
-                        print(snapshot.data.documents[index].documentID);
                         Navigator.of(context).push(
                           new MaterialPageRoute(builder: (context) =>
-                              EditACM(
+                              EditSampleAsbestosBulk(
                                   sample: snapshot.data.documents[index]
                                       .documentID)),
                         );
@@ -97,10 +84,78 @@ class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
                       },
                     );
                   }
-                );
+              );
             }
         ),
       ),
+      //
+      // AIR SAMPLES
+      //
+      new Divider(),
+      new Container(height: 30.0, padding: EdgeInsets.only(left: 8.0), alignment: Alignment.bottomLeft,child: Text('Air Samples',style: Styles.h2,)),
+      new Container(
+        padding: new EdgeInsets.all(8.0),
+        child: StreamBuilder(
+            stream: Firestore.instance.collection('samplesasbestosair').where('jobnumber',isEqualTo: DataManager.get().currentJobNumber).orderBy("samplenumber").snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return
+                Container(
+                    padding: EdgeInsets.only(top: 16.0),
+                    alignment: Alignment.center,
+                    color: Colors.white,
+
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment
+                            .center,
+                        children: <Widget>[
+                          new CircularProgressIndicator(),
+                          Container(
+                              alignment: Alignment.center,
+                              height: 64.0,
+                              child:
+                              Text(_loadingText)
+                          )
+                        ]));
+              if (snapshot.data.documents.length == 0) return
+                Center(
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Icon(Icons.not_interested, size: 64.0),
+                          Container(
+                              alignment: Alignment.center,
+                              height: 64.0,
+                              child:
+                              Text('This job has no air samples.')
+                          )
+                        ]
+                    )
+                );
+              return ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: snapshot.data.documents.length,
+                  itemBuilder: (context, index) {
+                    return SampleAsbestosAirCard(
+                      doc: snapshot.data.documents[index],
+                      onCardClick: () async {
+                        Navigator.of(context).push(
+                          new MaterialPageRoute(builder: (context) =>
+                              EditSampleAsbestosAir(
+                                  sample: snapshot.data.documents[index]
+                                      .documentID)),
+                        );
+                      },
+                      onCardLongPress: () {
+                        // Delete
+                        // Bulk add /clone etc.
+                      },
+                    );
+                  }
+              );
+            }
+        ),
+      ),
+      ],)
     );
   }
 }

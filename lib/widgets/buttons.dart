@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/tooltips.dart';
+import 'package:k2e/widgets/customdialog.dart';
 
 class ScoreButton extends StatelessWidget {
   ScoreButton({
@@ -81,16 +82,22 @@ class ScoreButton extends StatelessWidget {
           showDialog<Null>(
               context: context,
               builder: (BuildContext context) {
-                return new AlertDialog(
-                    title: new Text(tooltip.title),
-                    content: Container(
-                      height: 120.0,
-                        child: Column(
+                return new CustomAlertDialog(
+                    title: new Text(tooltip.title, style: Styles.h2),
+                    content: new Container(
+                      decoration: new BoxDecoration(
+                        shape: BoxShape.rectangle,
+                        color: Colors.white,
+                        borderRadius: new BorderRadius.all(new Radius.circular(200.0))
+                      ),
+                      height: 200.0,
+                      child: Column(
                         children: <Widget>[
-                          Container(child: Text(tooltip.tip), alignment: Alignment.bottomLeft,),
+                          Container(child: Text(tooltip.tip, style: Styles.body), alignment: Alignment.bottomLeft,),
                           Container(child: Text(tooltip.subtip, style: Styles.comment), alignment: Alignment.bottomLeft,),
-                  ])
-                ));
+                        ])
+                    ),
+                );
               }
           );
         }
@@ -114,9 +121,9 @@ class ScoreButton extends StatelessWidget {
 
 class SelectButton extends StatelessWidget {
   SelectButton({
-    @required this.score,
     @required this.onClick,
-    @required this.onLongPress,
+    this.score,
+    this.onLongPress,
     this.selected,
     this.text,
     this.tooltip,

@@ -202,7 +202,7 @@
 //      child:
 //      Scaffold(
 //        appBar: new AppBar(
-//          title: Text(job.jobHeader.jobNumber + ': ' + job.jobHeader.type, overflow: TextOverflow.ellipsis),
+//          title: Text(job.jobHeader.jobnumber + ': ' + job.jobHeader.type, overflow: TextOverflow.ellipsis),
 //          bottom: tabBar,
 //        ),
 //        body: Stack(

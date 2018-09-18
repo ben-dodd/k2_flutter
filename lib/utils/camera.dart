@@ -31,7 +31,7 @@ Future <File> getPicture() async {
 
 Future<String> ImageSync (File image, int compressionFactor, String fileName, String folder, DocumentReference ref) async {
   ref.setData(
-      {"localPath": image.path.toString()},merge: true);
+      {"path_local": image.path.toString()},merge: true);
   print('compressing image');
   File compImage;
   UploadTaskSnapshot uploadSnapshot;
@@ -58,7 +58,7 @@ Future<String> ImageSync (File image, int compressionFactor, String fileName, St
 
           print('Image path: ' + uploadSnapshot.downloadUrl.toString());
           ref.setData(
-              {"remotePath": uploadSnapshot.downloadUrl.toString()}, merge: true);
+              {"path_remote": uploadSnapshot.downloadUrl.toString()}, merge: true);
     });
 
     print("image uploaded");

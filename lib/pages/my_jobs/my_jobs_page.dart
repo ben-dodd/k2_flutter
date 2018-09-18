@@ -76,7 +76,7 @@ class _MyJobsPageState extends State<MyJobsPage> {
                                         doc: snapshot.data.documents[index],
                                         onCardClick: () async {
                                           DataManager.get().currentJobPath = snapshot.data.documents[index]['path'];
-                                          DataManager.get().currentJobNumber = snapshot.data.documents[index]['jobNumber'];
+                                          DataManager.get().currentJobNumber = snapshot.data.documents[index]['jobnumber'];
                                           print ('my jobs' + DataManager.get().currentJobPath);
                                           Navigator.push(context, MaterialPageRoute(
                                               builder: (context) => JobPage(path: snapshot.data.documents[index]['path'],)

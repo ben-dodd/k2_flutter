@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:k2e/model/jobs/job_header.dart';
+import 'package:k2e/model/jobheader.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/theme.dart';
 
@@ -11,7 +11,6 @@ class WfmJobCard extends StatefulWidget {
   });
 
   final JobHeader jobHeader;
-
   final VoidCallback onCardClick;
 
   @override
@@ -38,9 +37,9 @@ class _WfmJobState extends State<WfmJobCard>{
     return new ListTile(
       leading: icon,
       title: Row(children: <Widget> [
-        Text(widget.jobHeader.jobNumber + ': ', style: Styles.h2,),
+        Text(widget.jobHeader.jobnumber + ': ', style: Styles.h2,),
         Flexible(
-            child: Text(' ' + widget.jobHeader.clientName, overflow: TextOverflow.ellipsis,))]),
+            child: Text(' ' + widget.jobHeader.clientname, overflow: TextOverflow.ellipsis,))]),
       subtitle: Text(widget.jobHeader.address),
       onTap: widget.onCardClick,
     );

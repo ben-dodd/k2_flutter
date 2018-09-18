@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:k2e/model/jobs/job_header.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/theme.dart';
 
@@ -44,9 +43,9 @@ class _JobCardState extends State<JobCard>{
     return new ListTile(
       leading: icon,
       title: Row(children: <Widget> [
-        Text(widget.doc['jobNumber'] + ': ', style: Styles.h2,),
+        Text(widget.doc['jobnumber'] + ': ', style: Styles.h2,),
         Flexible(
-            child: Text(' ' + widget.doc['clientName'], overflow: TextOverflow.ellipsis,))]),
+            child: Text(' ' + widget.doc['clientname'], overflow: TextOverflow.ellipsis,))]),
       subtitle: Text(widget.doc['address']),
       // Tap -> go through to job task
       onTap: widget.onCardClick,

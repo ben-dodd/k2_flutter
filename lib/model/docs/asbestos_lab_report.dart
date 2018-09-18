@@ -19,7 +19,7 @@ part 'asbestos_lab_report.g.dart';
 /// The mixin's name follows the source class, in this case, User.
 class AsbestosLabReport extends Object with _$AsbestosLabReportSerializerMixin {
   String
-  jobNumber,
+  jobnumber,
       client,
       orderNumber,
       address,
@@ -32,7 +32,7 @@ class AsbestosLabReport extends Object with _$AsbestosLabReportSerializerMixin {
   List<AsbestosLabReportRow> samples;
 
   AsbestosLabReport({
-    this.jobNumber,
+    this.jobnumber,
     this.client,
     this.orderNumber,
     this.address,

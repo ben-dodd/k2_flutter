@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/model/jobs/job.dart';
 import 'package:k2e/styles.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
@@ -12,8 +11,6 @@ class NotepadTab extends StatefulWidget {
 }
 
 class _NotepadTabState extends State<NotepadTab> {
-
-  final Job job = DataManager.get().currentJob;
 
   @override
   Widget build(BuildContext context) {

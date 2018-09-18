@@ -28,8 +28,9 @@ class Styles {
   );
 
   static TextStyle comment = new TextStyle(
+    color: Colors.black38,
     fontStyle: FontStyle.italic,
-    fontSize: 16.0,
+    fontSize: 14.0,
   );
 
   static TextStyle logButton = new TextStyle(

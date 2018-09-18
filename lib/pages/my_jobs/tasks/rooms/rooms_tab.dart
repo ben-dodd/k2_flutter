@@ -1,9 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/model/jobs/job.dart';
 import 'package:k2e/pages/my_jobs/tasks/rooms/edit_room.dart';
-import 'package:k2e/styles.dart';
 import 'package:k2e/widgets/room_card.dart';
 
 // The base page for any type of job. Shows address, has cover photo,

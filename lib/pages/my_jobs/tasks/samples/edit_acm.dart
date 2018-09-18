@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -17,43 +16,50 @@ import 'package:k2e/widgets/loading.dart';
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 
 class EditACM extends StatefulWidget {
-  EditACM({Key key, this.sample, this.acm}) : super(key: key);
-  final String sample;
+  EditACM({Key key, this.acm}) : super(key: key);
   final String acm;
   @override
   _EditACMState createState() => new _EditACMState();
 }
 
 class _EditACMState extends State<EditACM> {
-//  bool _isLoading = false;
+  // TITLE
   String _title = "Edit Sample";
-//  Stream sampleDoc;
 
-  String sample;
-  String acm;
-  String _room;
+  // DOCUMENT IDS
+  DocumentReference sample;
+  DocumentReference acm;
+  Map<String,String> _room;
+  Map<String,String> _sample;
 
+  // UI STATE
   bool isLoading = true;
   bool isSampled = true;
-  String materialText;
-  String presumedText = 'Presumed';
   bool stronglyPresumed = false;
-  List<String> roomlist = new List();
-
-  // view
+  String presumedText = 'Presumed';
+  List<Map<String, String>> roomlist = new List();
+  List<Map<String, String>> samplelist = new List();
   bool showMaterialRisk = true;
   bool showPriorityRisk = false;
 
   String idKey;
 
+  // GENERAL INFO
   final controllerSampleNumber = TextEditingController();
   final controllerDescription = TextEditingController();
   final controllerMaterial = TextEditingController();
   final controllerNotes = TextEditingController();
 
+  // IMAGES
+  String path_local;
+  String path_remote;
+
+  bool localPhoto = false;
+
+  // ACCESSIBILITY
   int accessibilityScore;
 
-  // material risk assessment
+  // MATERIAL RISK
   int materialDamageScore;
   int materialSurfaceScore;
   int materialProductScore;
@@ -65,7 +71,7 @@ class _EditACMState extends State<EditACM> {
   String materialRiskText;
   int materialRiskLevel;
 
-  // priority risk assessment
+  // PRIORITY RISK
   int priorityActivityMain;
   int priorityActivitySecond;
   int priorityDisturbanceLocation;
@@ -81,95 +87,56 @@ class _EditACMState extends State<EditACM> {
   String priorityRiskText;
   int priorityRiskLevel;
 
-  String localPath;
-  String remotePath;
-
-  bool localPhoto = false;
-
+  // MATERIAL AUTOCOMPLETE
   List<String> materials = AutoComplete.materials.split(';');
-
-
   GlobalKey<AutoCompleteTextFieldState<String>> key = new GlobalKey();
-
-  int _radioSample;
-
-  // WORKS OUT IDKEY ETC.
-  void _handleSampleChange(int value) {
-    setState(() {
-      _radioSample = value;
-      switch (_radioSample) {
-        case 0:
-          isSampled = true;
-          idKey = 'i';
-          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-              {"idkey": 'i'}, merge: true);
-        // Add to samplesasbestosbulk
-        // Sample number input pops up
-        break;
-      case 1:
-        isSampled = false;
-        if (stronglyPresumed) {
-          Firestore.instance.collection('samplesasbestosbulk')
-              .document(sample)
-              .setData(
-              {"idkey": 's'}, merge: true);
-        } else {
-          Firestore.instance.collection('samplesasbestosbulk')
-              .document(sample)
-              .setData(
-              {"idkey": 'p'}, merge: true);
-        }
-// Presumed inputs pop up
-        break;
-    }
-    });
-  }
-
 
   @override
   void initState() {
-    controllerSampleNumber.addListener(_updateSampleNumber);
+    // init text controllers
+//    controllerSampleNumber.addListener(_updateSampleNumber);
     controllerDescription.addListener(_updateDescription);
     controllerMaterial.addListener(_updateMaterial);
     controllerNotes.addListener(_updateNotes);
 
     controllerDamageDesc.addListener(_updateDamageDesc);
     controllerSurfaceDesc.addListener(_updateSurfaceDesc);
-    sample = widget.sample;
+
+    // set paths
+    acm = Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').document(widget.acm);
     _loadACM();
+
     super.initState();
   }
 
-  _updateSampleNumber() {
-    Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-        {"sampleNumber": int.tryParse(controllerSampleNumber.text)}, merge: true);
-  }
+  //
+  // TEXT CONTROLLERS, FIRESTORE UPLOAD
+  //
+//
+//  _updateSampleNumber() {
+//    Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+//        {"sampleNumber": int.tryParse(controllerSampleNumber.text)}, merge: true);
+//  }
 
   _updateDescription() {
-    Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-        {"description": controllerDescription.text}, merge: true);
+    acm.setData({"address": controllerDescription.text}, merge: true);
   }
 
   _updateMaterial() {
-    Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-        {"material": controllerMaterial.text}, merge: true);
+    acm.setData({"material": controllerMaterial.text}, merge: true);
   }
 
   _updateNotes() {
-    Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-        {"notes": controllerNotes.text}, merge: true);
+    acm.setData({"notes": controllerNotes.text}, merge: true);
   }
 
   _updateDamageDesc() {
-    Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-        {"materialrisk_damagedesc": controllerDamageDesc.text}, merge: true);
+    acm.setData({"materialrisk_damagedesc": controllerDamageDesc.text}, merge: true);
   }
 
   _updateSurfaceDesc() {
-    Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-        {"materialrisk_surfacedesc": controllerSurfaceDesc.text}, merge: true);
+    acm.setData({"materialrisk_surfacedesc": controllerSurfaceDesc.text}, merge: true);
   }
-
 
   Widget build(BuildContext context) {
     // Calculate material totals
@@ -336,7 +303,7 @@ class _EditACMState extends State<EditACM> {
                   Navigator.pop(context);
                 })
               ]),
-          body: new StreamBuilder(stream: Firestore.instance.collection('samplesasbestosbulk').document(sample).snapshots(),
+          body: new StreamBuilder(stream: acm.snapshots(),
               builder: (context, snapshot) {
                 if (isLoading || !snapshot.hasData) return
                   loadingPage(loadingText: 'Loading sample info...');
@@ -360,13 +327,11 @@ class _EditACMState extends State<EditACM> {
                                       setState(() {
                                         idKey = 'i';
                                         isSampled = true;
-                                        Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                            {"idkey": 'i'}, merge: true);
+                                        acm.setData({"idkey": 'i'}, merge: true);
                                       });
                                     },
                                     selected: idKey == 'i',
                                     text: 'Sampled',
-//                                    tooltip: Tip.accessibility_easy
                                 ),),
                                 new Expanded(child:
                                 new SelectButton(
@@ -375,13 +340,12 @@ class _EditACMState extends State<EditACM> {
                                     setState(() {
                                       idKey = stronglyPresumed ? 's' : 'p';
                                       isSampled = false;
-                                      Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
+                                      acm.setData(
                                           {"idkey": idKey}, merge: true);
                                     });
                                   },
                                   selected: idKey != 'i',
                                   text: presumedText,
-//                                    tooltip: Tip.accessibility_easy
                                 ),),
                               ],
                               ),
@@ -404,7 +368,7 @@ class _EditACMState extends State<EditACM> {
                                           onTap: () {
                                             ImagePicker.pickImage(source: ImageSource.camera).then((image) {
                                               setState(() {
-                                                localPath = image.path;
+                                                path_local = image.path;
                                                 localPhoto = true;
                                               });
                                               _handleImageUpload(image);
@@ -413,12 +377,12 @@ class _EditACMState extends State<EditACM> {
 //                                    child: (_imageFile != null)
 //                                        ? Image.file(_imageFile)
                                           child: (localPhoto) ?
-                                          (localPath != null) ?
-                                          new Image.file(new File(localPath))
+                                          (path_local != null) ?
+                                          new Image.file(new File(path_local))
                                               : new Container()
-                                              : (remotePath != null) ?
+                                              : (path_remote != null) ?
                                           new CachedNetworkImage(
-                                            imageUrl: remotePath,
+                                            imageUrl: path_remote,
 //                                            imageUrl: 'https://www.whaleoil.co.nz/wp-content/uploads/2018/08/Dog.jpg',
                                             placeholder: new CircularProgressIndicator(),
                                             errorWidget: new Icon(Icons.error),
@@ -437,17 +401,43 @@ class _EditACMState extends State<EditACM> {
                                 new Column(children: <Widget>[
                                   isSampled ?
                                   // SAMPLE NUMBER
+//                                  new Row(children: <Widget> [
                                   new Container(
-                                    alignment: Alignment.topLeft,
-                                    child: TextField(
-                                      decoration: const InputDecoration(
-                                          labelText: "Sample Number"),
-                                      autocorrect: false,
-                                      controller: controllerSampleNumber,
-                                      keyboardType: TextInputType.number,
-                                    ),
+                                      alignment: Alignment.topLeft,
+                                      child: new DropdownButtonHideUnderline(child: ButtonTheme(
+                                        alignedDropdown: true,
+                                        child: DropdownButton<String>(
+                                          value: _sample['name'],
+                                          iconSize: 24.0,
+                                          items: samplelist.map((Map<String,String> sample) {
+                                            return new DropdownMenuItem<String>(
+                                              value: sample['path'],
+                                              child: new Text(sample['name']),
+                                            );
+                                          }).toList(),
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _sample = samplelist.firstWhere((e) => e['path'] == value);
+                                              acm.setData({"sample": value}, merge: true);
+                                            });
+                                          },
+                                        ),
+                                      )
+                                      )
                                   )
-                                      :
+//                                    new Container(
+//                                    child: new IconButton(
+//                                      icon: new Icon(Icons.add),
+//                                      color: CompanyColors.accent,
+//                                      iconSize: 16.0,
+//                                      onPressed: () {
+//                                      // Go to new Sample page
+//                                      },
+//                                    ),),
+//                                    ]
+//                                  )
+
+                                  :
                                   // PRESUMED/STRONGLY
                                   new Container(
                                       child: new Row(children: <Widget>[
@@ -470,24 +460,27 @@ class _EditACMState extends State<EditACM> {
                                   ),
 //                             // DROPDOWN ROOM
                                   new Container(
-                                    alignment: Alignment.topLeft,
-                                    child: new DropdownButton<String>(
-                                      // TODO change value to be room text and _room to be doc ID (e.g. map rooms)
-                                      value: _room,
-                                      items: roomlist.map((String value) {
-                                        return new DropdownMenuItem<String>(
-                                          value: value,
-                                          child: new Text(value),
-                                        );
-                                      }).toList(),
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _room = value;
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"room": value}, merge: true);
-                                        });
-                                      },
-                                    ),
+                                      alignment: Alignment.topLeft,
+                                      child: new DropdownButtonHideUnderline(child: ButtonTheme(
+                                        alignedDropdown: true,
+                                        child: DropdownButton<String>(
+                                          value: _room['name'],
+                                          iconSize: 24.0,
+                                          items: roomlist.map((Map<String,String> room) {
+                                            return new DropdownMenuItem<String>(
+                                              value: room['path'],
+                                              child: new Text(room['name']),
+                                            );
+                                          }).toList(),
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _room = roomlist.firstWhere((e) => e['path'] == value);
+                                              acm.setData({"room": value}, merge: true);
+                                            });
+                                          },
+                                        ),
+                                      )
+                                      )
                                   ),
                                   Container(
                                     alignment: Alignment.topLeft,
@@ -567,8 +560,7 @@ class _EditACMState extends State<EditACM> {
                                       setState(() {
                                         if (accessibilityScore == 1) { accessibilityScore = null; }
                                         else { accessibilityScore = 1; }
-                                        Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                            {"accessibility": accessibilityScore}, merge: true);
+                                        acm.setData({"accessibility": accessibilityScore}, merge: true);
                                       });
                                     },
                                     selected: accessibilityScore == 1,
@@ -583,8 +575,7 @@ class _EditACMState extends State<EditACM> {
                                       setState(() {
                                         if (accessibilityScore == 2) { accessibilityScore = null; }
                                         else { accessibilityScore = 2; }
-                                        Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                            {"accessibility": accessibilityScore}, merge: true);
+                                        acm.setData({"accessibility": accessibilityScore}, merge: true);
                                       });
                                     },
                                     selected: accessibilityScore == 2,
@@ -599,8 +590,7 @@ class _EditACMState extends State<EditACM> {
                                       setState(() {
                                         if (accessibilityScore == 3) { accessibilityScore = null; }
                                         else { accessibilityScore = 3; }
-                                        Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                            {"accessibility": accessibilityScore}, merge: true);
+                                        acm.setData({"accessibility": accessibilityScore}, merge: true);
                                       });
                                     },
                                     selected: accessibilityScore == 3,
@@ -672,8 +662,7 @@ class _EditACMState extends State<EditACM> {
                                           setState(() {
                                             if (materialProductScore == 1) { materialProductScore = null; }
                                             else { materialProductScore = 1; }
-                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                                {"materialrisk_productscore": materialProductScore}, merge: true);
+                                            acm.setData({"materialrisk_productscore": materialProductScore}, merge: true);
                                           });
                                         },
                                         selected: materialProductScore == 1,
@@ -687,8 +676,7 @@ class _EditACMState extends State<EditACM> {
                                           setState(() {
                                             if (materialProductScore == 2) { materialProductScore = null; }
                                             else { materialProductScore = 2; }
-                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                                {"materialrisk_productscore": materialProductScore}, merge: true);
+                                            acm.setData({"materialrisk_productscore": materialProductScore}, merge: true);
                                           });
                                         },
                                         selected: materialProductScore == 2,
@@ -702,8 +690,7 @@ class _EditACMState extends State<EditACM> {
                                           setState(() {
                                             if (materialProductScore == 3) { materialProductScore = null; }
                                             else { materialProductScore = 3; }
-                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                                {"materialrisk_productscore": materialProductScore}, merge: true);
+                                            acm.setData({"materialrisk_productscore": materialProductScore}, merge: true);
                                           });
                                         },
                                         selected: materialProductScore == 3,
@@ -729,8 +716,7 @@ class _EditACMState extends State<EditACM> {
                                           setState(() {
                                             if (materialDamageScore == 0) { materialDamageScore = null; }
                                             else { materialDamageScore = 0; }
-                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                                {"materialrisk_damagescore": materialDamageScore}, merge: true);
+                                            acm.setData({"materialrisk_damagescore": materialDamageScore}, merge: true);
                                           });
                                         },
                                         selected: materialDamageScore == 0,
@@ -744,8 +730,7 @@ class _EditACMState extends State<EditACM> {
                                           setState(() {
                                             if (materialDamageScore == 1) { materialDamageScore = null; }
                                             else { materialDamageScore = 1; }
-                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                                {"materialrisk_damagescore": materialDamageScore}, merge: true);
+                                            acm.setData({"materialrisk_damagescore": materialDamageScore}, merge: true);
                                           });
                                         },
                                         selected: materialDamageScore == 1,
@@ -759,8 +744,7 @@ class _EditACMState extends State<EditACM> {
                                           setState(() {
                                             if (materialDamageScore == 2) { materialDamageScore = null; }
                                             else { materialDamageScore = 2; }
-                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                                {"materialrisk_damagescore": materialDamageScore}, merge: true);
+                                            acm.setData({"materialrisk_damagescore": materialDamageScore}, merge: true);
                                           });
                                         },
                                         selected: materialDamageScore == 2,
@@ -774,8 +758,7 @@ class _EditACMState extends State<EditACM> {
                                           setState(() {
                                             if (materialDamageScore == 3) { materialDamageScore = null; }
                                             else { materialDamageScore = 3; }
-                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                                {"materialrisk_damagescore": materialDamageScore}, merge: true);
+                                            acm.setData({"materialrisk_damagescore": materialDamageScore}, merge: true);
                                           });
                                         },
                                         selected: materialDamageScore == 3,
@@ -801,8 +784,7 @@ class _EditACMState extends State<EditACM> {
                                           setState(() {
                                             if (materialSurfaceScore == 0) { materialSurfaceScore = null; }
                                             else { materialSurfaceScore = 0; }
-                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                                {"materialrisk_surfacescore": materialSurfaceScore}, merge: true);
+                                            acm.setData({"materialrisk_surfacescore": materialSurfaceScore}, merge: true);
                                           });
                                         },
                                         selected: materialSurfaceScore == 0,
@@ -816,8 +798,7 @@ class _EditACMState extends State<EditACM> {
                                           setState(() {
                                             if (materialSurfaceScore == 1) { materialSurfaceScore = null; }
                                             else { materialSurfaceScore = 1; }
-                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                                {"materialrisk_surfacescore": materialSurfaceScore}, merge: true);
+                                            acm.setData({"materialrisk_surfacescore": materialSurfaceScore}, merge: true);
                                           });
                                         },
                                         selected: materialSurfaceScore == 1,
@@ -831,8 +812,7 @@ class _EditACMState extends State<EditACM> {
                                           setState(() {
                                             if (materialSurfaceScore == 2) { materialSurfaceScore = null; }
                                             else { materialSurfaceScore = 2; }
-                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                                {"materialrisk_surfacescore": materialSurfaceScore}, merge: true);
+                                            acm.setData({"materialrisk_surfacescore": materialSurfaceScore}, merge: true);
                                           });
                                         },
                                         selected: materialSurfaceScore == 2,
@@ -846,8 +826,7 @@ class _EditACMState extends State<EditACM> {
                                           setState(() {
                                             if (materialSurfaceScore == 3) { materialSurfaceScore = null; }
                                             else { materialSurfaceScore = 3; }
-                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                                {"materialrisk_surfacescore": materialSurfaceScore}, merge: true);
+                                            acm.setData({"materialrisk_surfacescore": materialSurfaceScore}, merge: true);
                                           });
                                         },
                                         selected: materialSurfaceScore == 3,
@@ -882,8 +861,7 @@ class _EditACMState extends State<EditACM> {
                                           setState(() {
                                             if (materialAsbestosScore == 1) { materialAsbestosScore = null; }
                                             else { materialAsbestosScore = 1; }
-                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                                {"materialrisk_asbestosscore": materialAsbestosScore}, merge: true);
+                                            acm.setData({"materialrisk_asbestosscore": materialAsbestosScore}, merge: true);
                                           });
                                         },
                                         selected: materialAsbestosScore == 1,
@@ -898,8 +876,7 @@ class _EditACMState extends State<EditACM> {
                                           setState(() {
                                             if (materialAsbestosScore == 2) { materialAsbestosScore = null; }
                                             else { materialAsbestosScore = 2; }
-                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                                {"materialrisk_asbestosscore": materialAsbestosScore}, merge: true);
+                                            acm.setData({"materialrisk_asbestosscore": materialAsbestosScore}, merge: true);
                                           });
                                         },
                                         selected: materialAsbestosScore == 2,
@@ -914,8 +891,7 @@ class _EditACMState extends State<EditACM> {
                                           setState(() {
                                             if (materialAsbestosScore == 3) { materialAsbestosScore = null; }
                                             else { materialAsbestosScore = 3; }
-                                            Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                                {"materialrisk_asbestosscore": materialAsbestosScore}, merge: true);
+                                            acm.setData({"materialrisk_asbestosscore": materialAsbestosScore}, merge: true);
                                           });
                                         },
                                         selected: materialAsbestosScore == 3,
@@ -1006,12 +982,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityActivityMain == 0) { priorityActivityMain = null; }
                                           else { priorityActivityMain = 0; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_activity_main": priorityActivityMain}, merge: true);
+                                          acm.setData({"priority_activity_main": priorityActivityMain}, merge: true);
                                         });
                                       },
                                       selected: priorityActivityMain == 0,
                                       score: 0,
+                                      tooltip: Tip.priority_activity_main_0,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1020,12 +996,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityActivityMain == 1) { priorityActivityMain = null; }
                                           else { priorityActivityMain = 1; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_activity_main": priorityActivityMain}, merge: true);
+                                          acm.setData({"priority_activity_main": priorityActivityMain}, merge: true);
                                         });
                                       },
                                       selected: priorityActivityMain == 1,
                                       score: 1,
+                                      tooltip: Tip.priority_activity_main_1,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1034,12 +1010,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityActivityMain == 2) { priorityActivityMain = null; }
                                           else { priorityActivityMain = 2; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_activity_main": priorityActivityMain}, merge: true);
+                                          acm.setData({"priority_activity_main": priorityActivityMain}, merge: true);
                                         });
                                       },
                                       selected: priorityActivityMain == 2,
                                       score: 2,
+                                      tooltip: Tip.priority_activity_main_2,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1048,12 +1024,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityActivityMain == 3) { priorityActivityMain = null; }
                                           else { priorityActivityMain = 3; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_activity_main": priorityActivityMain}, merge: true);
+                                          acm.setData({"priority_activity_main": priorityActivityMain}, merge: true);
                                         });
                                       },
                                       selected: priorityActivityMain == 3,
                                       score: 3,
+                                      tooltip: Tip.priority_activity_main_3,
                                     ),),
 
                                   ],
@@ -1073,12 +1049,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityActivitySecond == 0) { priorityActivitySecond = null; }
                                           else { priorityActivitySecond = 0; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_activity_second": priorityActivitySecond}, merge: true);
+                                          acm.setData({"priority_activity_second": priorityActivitySecond}, merge: true);
                                         });
                                       },
                                       selected: priorityActivitySecond == 0,
                                       score: 0,
+                                      tooltip: Tip.priority_activity_secondary_0,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1087,12 +1063,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityActivitySecond == 1) { priorityActivitySecond = null; }
                                           else { priorityActivitySecond = 1; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_activity_second": priorityActivitySecond}, merge: true);
+                                          acm.setData({"priority_activity_second": priorityActivitySecond}, merge: true);
                                         });
                                       },
                                       selected: priorityActivitySecond == 1,
                                       score: 1,
+                                      tooltip: Tip.priority_activity_secondary_1,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1101,12 +1077,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityActivitySecond == 2) { priorityActivitySecond = null; }
                                           else { priorityActivitySecond = 2; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_activity_second": priorityActivitySecond}, merge: true);
+                                          acm.setData({"priority_activity_second": priorityActivitySecond}, merge: true);
                                         });
                                       },
                                       selected: priorityActivitySecond == 2,
                                       score: 2,
+                                      tooltip: Tip.priority_activity_secondary_2,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1115,12 +1091,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityActivitySecond == 3) { priorityActivitySecond = null; }
                                           else { priorityActivitySecond = 3; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_activity_second": priorityActivitySecond}, merge: true);
+                                          acm.setData({"priority_activity_second": priorityActivitySecond}, merge: true);
                                         });
                                       },
                                       selected: priorityActivitySecond == 3,
                                       score: 3,
+                                      tooltip: Tip.priority_activity_secondary_3,
                                     ),),
 
                                   ],
@@ -1142,12 +1118,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityDisturbanceLocation == 0) { priorityDisturbanceLocation = null; }
                                           else { priorityDisturbanceLocation = 0; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_disturbance_location": priorityDisturbanceLocation}, merge: true);
+                                          acm.setData({"priority_disturbance_location": priorityDisturbanceLocation}, merge: true);
                                         });
                                       },
                                       selected: priorityDisturbanceLocation == 0,
                                       score: 0,
+                                      tooltip: Tip.priority_disturbance_location_0,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1156,12 +1132,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityDisturbanceLocation == 1) { priorityDisturbanceLocation = null; }
                                           else { priorityDisturbanceLocation = 1; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_disturbance_location": priorityDisturbanceLocation}, merge: true);
+                                          acm.setData({"priority_disturbance_location": priorityDisturbanceLocation}, merge: true);
                                         });
                                       },
                                       selected: priorityDisturbanceLocation == 1,
                                       score: 1,
+                                      tooltip: Tip.priority_disturbance_location_1,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1170,12 +1146,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityDisturbanceLocation == 2) { priorityDisturbanceLocation = null; }
                                           else { priorityDisturbanceLocation = 2; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_disturbance_location": priorityDisturbanceLocation}, merge: true);
+                                          acm.setData({"priority_disturbance_location": priorityDisturbanceLocation}, merge: true);
                                         });
                                       },
                                       selected: priorityDisturbanceLocation == 2,
                                       score: 2,
+                                      tooltip: Tip.priority_disturbance_location_2,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1184,12 +1160,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityDisturbanceLocation == 3) { priorityDisturbanceLocation = null; }
                                           else { priorityDisturbanceLocation = 3; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_disturbance_location": priorityDisturbanceLocation}, merge: true);
+                                          acm.setData({"priority_disturbance_location": priorityDisturbanceLocation}, merge: true);
                                         });
                                       },
                                       selected: priorityDisturbanceLocation == 3,
                                       score: 3,
+                                      tooltip: Tip.priority_disturbance_location_3,
                                     ),),
 
                                   ],
@@ -1209,12 +1185,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityDisturbanceAccessibility == 0) { priorityDisturbanceAccessibility = null; }
                                           else { priorityDisturbanceAccessibility = 0; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_disturbance_accessibility": priorityDisturbanceAccessibility}, merge: true);
+                                          acm.setData({"priority_disturbance_accessibility": priorityDisturbanceAccessibility}, merge: true);
                                         });
                                       },
                                       selected: priorityDisturbanceAccessibility == 0,
                                       score: 0,
+                                      tooltip: Tip.priority_disturbance_accessibility_0,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1223,12 +1199,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityDisturbanceAccessibility == 1) { priorityDisturbanceAccessibility = null; }
                                           else { priorityDisturbanceAccessibility = 1; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_disturbance_accessibility": priorityDisturbanceAccessibility}, merge: true);
+                                          acm.setData({"priority_disturbance_accessibility": priorityDisturbanceAccessibility}, merge: true);
                                         });
                                       },
                                       selected: priorityDisturbanceAccessibility == 1,
                                       score: 1,
+                                      tooltip: Tip.priority_disturbance_accessibility_1,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1237,12 +1213,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityDisturbanceAccessibility == 2) { priorityDisturbanceAccessibility = null; }
                                           else { priorityDisturbanceAccessibility = 2; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_disturbance_accessibility": priorityDisturbanceAccessibility}, merge: true);
+                                          acm.setData({"priority_disturbance_accessibility": priorityDisturbanceAccessibility}, merge: true);
                                         });
                                       },
                                       selected: priorityDisturbanceAccessibility == 2,
                                       score: 2,
+                                      tooltip: Tip.priority_disturbance_accessibility_2,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1251,12 +1227,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityDisturbanceAccessibility == 3) { priorityDisturbanceAccessibility = null; }
                                           else { priorityDisturbanceAccessibility = 3; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_disturbance_accessibility": priorityDisturbanceAccessibility}, merge: true);
+                                          acm.setData({"priority_disturbance_accessibility": priorityDisturbanceAccessibility}, merge: true);
                                         });
                                       },
                                       selected: priorityDisturbanceAccessibility == 3,
                                       score: 3,
+                                      tooltip: Tip.priority_disturbance_accessibility_3,
                                     ),),
 
                                   ],
@@ -1276,12 +1252,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityDisturbanceExtent == 0) { priorityDisturbanceExtent = null; }
                                           else { priorityDisturbanceExtent = 0; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_disturbance_extent": priorityDisturbanceExtent}, merge: true);
+                                          acm.setData({"priority_disturbance_extent": priorityDisturbanceExtent}, merge: true);
                                         });
                                       },
                                       selected: priorityDisturbanceExtent == 0,
                                       score: 0,
+                                      tooltip: Tip.priority_disturbance_extent_0,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1290,12 +1266,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityDisturbanceExtent == 1) { priorityDisturbanceExtent = null; }
                                           else { priorityDisturbanceExtent = 1; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_disturbance_extent": priorityDisturbanceExtent}, merge: true);
+                                          acm.setData({"priority_disturbance_extent": priorityDisturbanceExtent}, merge: true);
                                         });
                                       },
                                       selected: priorityDisturbanceExtent == 1,
                                       score: 1,
+                                      tooltip: Tip.priority_disturbance_extent_1,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1304,12 +1280,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityDisturbanceExtent == 2) { priorityDisturbanceExtent = null; }
                                           else { priorityDisturbanceExtent = 2; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_disturbance_extent": priorityDisturbanceExtent}, merge: true);
+                                          acm.setData({"priority_disturbance_extent": priorityDisturbanceExtent}, merge: true);
                                         });
                                       },
                                       selected: priorityDisturbanceExtent == 2,
                                       score: 2,
+                                      tooltip: Tip.priority_disturbance_extent_2,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1318,12 +1294,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityDisturbanceExtent == 3) { priorityDisturbanceExtent = null; }
                                           else { priorityDisturbanceExtent = 3; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_disturbance_extent": priorityDisturbanceExtent}, merge: true);
+                                          acm.setData({"priority_disturbance_extent": priorityDisturbanceExtent}, merge: true);
                                         });
                                       },
                                       selected: priorityDisturbanceExtent == 3,
                                       score: 3,
+                                      tooltip: Tip.priority_disturbance_extent_3,
                                     ),),
 
                                   ],
@@ -1345,12 +1321,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityExposureOccupants == 0) { priorityExposureOccupants = null; }
                                           else { priorityExposureOccupants = 0; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_exposure_occupants": priorityExposureOccupants}, merge: true);
+                                          acm.setData({"priority_exposure_occupants": priorityExposureOccupants}, merge: true);
                                         });
                                       },
                                       selected: priorityExposureOccupants == 0,
                                       score: 0,
+                                      tooltip: Tip.priority_exposure_occupants_0,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1359,12 +1335,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityExposureOccupants == 1) { priorityExposureOccupants = null; }
                                           else { priorityExposureOccupants = 1; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_exposure_occupants": priorityExposureOccupants}, merge: true);
+                                          acm.setData({"priority_exposure_occupants": priorityExposureOccupants}, merge: true);
                                         });
                                       },
                                       selected: priorityExposureOccupants == 1,
                                       score: 1,
+                                      tooltip: Tip.priority_exposure_occupants_1,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1373,12 +1349,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityExposureOccupants == 2) { priorityExposureOccupants = null; }
                                           else { priorityExposureOccupants = 2; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_exposure_occupants": priorityExposureOccupants}, merge: true);
+                                          acm.setData({"priority_exposure_occupants": priorityExposureOccupants}, merge: true);
                                         });
                                       },
                                       selected: priorityExposureOccupants == 2,
                                       score: 2,
+                                      tooltip: Tip.priority_exposure_occupants_2,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1387,12 +1363,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityExposureOccupants == 3) { priorityExposureOccupants = null; }
                                           else { priorityExposureOccupants = 3; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_exposure_occupants": priorityExposureOccupants}, merge: true);
+                                          acm.setData({"priority_exposure_occupants": priorityExposureOccupants}, merge: true);
                                         });
                                       },
                                       selected: priorityExposureOccupants == 3,
                                       score: 3,
+                                      tooltip: Tip.priority_exposure_occupants_3,
                                     ),),
 
                                   ],
@@ -1412,12 +1388,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityExposureUseFreq == 0) { priorityExposureUseFreq = null; }
                                           else { priorityExposureUseFreq = 0; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_exposure_usefreq": priorityExposureUseFreq}, merge: true);
+                                          acm.setData({"priority_exposure_usefreq": priorityExposureUseFreq}, merge: true);
                                         });
                                       },
                                       selected: priorityExposureUseFreq == 0,
                                       score: 0,
+                                      tooltip: Tip.priority_exposure_usefreq_0,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1426,12 +1402,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityExposureUseFreq == 1) { priorityExposureUseFreq = null; }
                                           else { priorityExposureUseFreq = 1; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_exposure_usefreq": priorityExposureUseFreq}, merge: true);
+                                          acm.setData({"priority_exposure_usefreq": priorityExposureUseFreq}, merge: true);
                                         });
                                       },
                                       selected: priorityExposureUseFreq == 1,
                                       score: 1,
+                                      tooltip: Tip.priority_exposure_usefreq_1,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1440,12 +1416,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityExposureUseFreq == 2) { priorityExposureUseFreq = null; }
                                           else { priorityExposureUseFreq = 2; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_exposure_usefreq": priorityExposureUseFreq}, merge: true);
+                                          acm.setData({"priority_exposure_usefreq": priorityExposureUseFreq}, merge: true);
                                         });
                                       },
                                       selected: priorityExposureUseFreq == 2,
                                       score: 2,
+                                      tooltip: Tip.priority_exposure_usefreq_2,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1454,12 +1430,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityExposureUseFreq == 3) { priorityExposureUseFreq = null; }
                                           else { priorityExposureUseFreq = 3; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_exposure_usefreq": priorityExposureUseFreq}, merge: true);
+                                          acm.setData({"priority_exposure_usefreq": priorityExposureUseFreq}, merge: true);
                                         });
                                       },
                                       selected: priorityExposureUseFreq == 3,
                                       score: 3,
+                                      tooltip: Tip.priority_exposure_usefreq_3,
                                     ),),
 
                                   ],
@@ -1479,12 +1455,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityExposureAvgTime == 0) { priorityExposureAvgTime = null; }
                                           else { priorityExposureAvgTime = 0; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_exposure_avgtime": priorityExposureAvgTime}, merge: true);
+                                          acm.setData({"priority_exposure_avgtime": priorityExposureAvgTime}, merge: true);
                                         });
                                       },
                                       selected: priorityExposureAvgTime == 0,
                                       score: 0,
+                                      tooltip: Tip.priority_exposure_avgtime_0,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1493,12 +1469,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityExposureAvgTime == 1) { priorityExposureAvgTime = null; }
                                           else { priorityExposureAvgTime = 1; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_exposure_avgtime": priorityExposureAvgTime}, merge: true);
+                                          acm.setData({"priority_exposure_avgtime": priorityExposureAvgTime}, merge: true);
                                         });
                                       },
                                       selected: priorityExposureAvgTime == 1,
                                       score: 1,
+                                      tooltip: Tip.priority_exposure_avgtime_1,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1507,12 +1483,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityExposureAvgTime == 2) { priorityExposureAvgTime = null; }
                                           else { priorityExposureAvgTime = 2; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_exposure_avgtime": priorityExposureAvgTime}, merge: true);
+                                          acm.setData({"priority_exposure_avgtime": priorityExposureAvgTime}, merge: true);
                                         });
                                       },
                                       selected: priorityExposureAvgTime == 2,
                                       score: 2,
+                                      tooltip: Tip.priority_exposure_avgtime_2,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1521,12 +1497,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityExposureAvgTime == 3) { priorityExposureAvgTime = null; }
                                           else { priorityExposureAvgTime = 3; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_exposure_avgtime": priorityExposureAvgTime}, merge: true);
+                                          acm.setData({"priority_exposure_avgtime": priorityExposureAvgTime}, merge: true);
                                         });
                                       },
                                       selected: priorityExposureAvgTime == 3,
                                       score: 3,
+                                      tooltip: Tip.priority_exposure_avgtime_3,
                                     ),),
 
                                   ],
@@ -1548,12 +1524,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityMaintType == 0) { priorityMaintType = null; }
                                           else { priorityMaintType = 0; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_maint_type": priorityMaintType}, merge: true);
+                                          acm.setData({"priority_maint_type": priorityMaintType}, merge: true);
                                         });
                                       },
                                       selected: priorityMaintType == 0,
                                       score: 0,
+                                      tooltip: Tip.priority_maint_type_0,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1562,12 +1538,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityMaintType == 1) { priorityMaintType = null; }
                                           else { priorityMaintType = 1; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_maint_type": priorityMaintType}, merge: true);
+                                          acm.setData({"priority_maint_type": priorityMaintType}, merge: true);
                                         });
                                       },
                                       selected: priorityMaintType == 1,
                                       score: 1,
+                                      tooltip: Tip.priority_maint_type_1,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1576,12 +1552,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityMaintType == 2) { priorityMaintType = null; }
                                           else { priorityMaintType = 2; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_maint_type": priorityMaintType}, merge: true);
+                                          acm.setData({"priority_maint_type": priorityMaintType}, merge: true);
                                         });
                                       },
                                       selected: priorityMaintType == 2,
                                       score: 2,
+                                      tooltip: Tip.priority_maint_type_2,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1590,12 +1566,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityMaintType == 3) { priorityMaintType = null; }
                                           else { priorityMaintType = 3; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_maint_type": priorityMaintType}, merge: true);
+                                          acm.setData({"priority_maint_type": priorityMaintType}, merge: true);
                                         });
                                       },
                                       selected: priorityMaintType == 3,
                                       score: 3,
+                                      tooltip: Tip.priority_maint_type_3,
                                     ),),
 
                                   ],
@@ -1615,12 +1591,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityMaintFreq == 0) { priorityMaintFreq = null; }
                                           else { priorityMaintFreq = 0; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_maint_freq": priorityMaintFreq}, merge: true);
+                                          acm.setData({"priority_maint_freq": priorityMaintFreq}, merge: true);
                                         });
                                       },
                                       selected: priorityMaintFreq == 0,
                                       score: 0,
+                                      tooltip: Tip.priority_maint_freq_0,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1629,12 +1605,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityMaintFreq == 1) { priorityMaintFreq = null; }
                                           else { priorityMaintFreq = 1; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_maint_freq": priorityMaintFreq}, merge: true);
+                                          acm.setData({"priority_maint_freq": priorityMaintFreq}, merge: true);
                                         });
                                       },
                                       selected: priorityMaintFreq == 1,
                                       score: 1,
+                                      tooltip: Tip.priority_maint_freq_1,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1643,12 +1619,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityMaintFreq == 2) { priorityMaintFreq = null; }
                                           else { priorityMaintFreq = 2; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_maint_freq": priorityMaintFreq}, merge: true);
+                                          acm.setData({"priority_maint_freq": priorityMaintFreq}, merge: true);
                                         });
                                       },
                                       selected: priorityMaintFreq == 2,
                                       score: 2,
+                                      tooltip: Tip.priority_maint_freq_2,
                                     ),),
                                     new Expanded(child:
                                     new ScoreButton(
@@ -1657,12 +1633,12 @@ class _EditACMState extends State<EditACM> {
                                         setState(() {
                                           if (priorityMaintFreq == 3) { priorityMaintFreq = null; }
                                           else { priorityMaintFreq = 3; }
-                                          Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-                                              {"priority_maint_freq": priorityMaintFreq}, merge: true);
+                                          acm.setData({"priority_maint_freq": priorityMaintFreq}, merge: true);
                                         });
                                       },
                                       selected: priorityMaintFreq == 3,
                                       score: 3,
+                                      tooltip: Tip.priority_maint_freq_3,
                                     ),),
 
                                   ],
@@ -1698,48 +1674,51 @@ class _EditACMState extends State<EditACM> {
 
   void _loadACM() async {
     // Load rooms from job
-    QuerySnapshot querySnapshot = await Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').getDocuments();
-    querySnapshot.documents.forEach((doc) => roomlist.add(doc.data['name'].toString()));
-//    print('ROOMLIST ' + roomlist.toString());
+    QuerySnapshot roomSnapshot = await Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').getDocuments();
+    roomSnapshot.documents.forEach((doc) => roomlist.add({"name": doc.data['name'],"path": doc.documentID}));
 
-    if (sample == null) {
+    // Load samples from job
+    QuerySnapshot sampleSnapshot = await Firestore.instance.collection('samplesasbestosbulk').where('jobnumber',isEqualTo: DataManager.get().currentJobNumber).orderBy("sampleNumber").getDocuments();
+    sampleSnapshot.documents.forEach((doc) => samplelist.add({"name": doc.data['samplenumber'] + ': ' + doc.data['description'],"path": doc.documentID}));
+    print('ROOMLIST ' + roomlist.toString());
+    print('SAMPLE ' + samplelist.toString());
+
+    if (acm == null) {
       _title = "Add New ACM";
       Map<String, dynamic> dataMap = new Map();
-      dataMap['jobNumber'] = DataManager
+      dataMap['jobnumber'] = DataManager
           .get()
           .currentJobNumber;
       //      sample.sampleNumber = DataManager.get().getHighestSampleNumber(DataManager.get().currentJob) + 1;
-      dataMap['sampleNumber'] = 1;
-      dataMap['idkey'] = 'i';
-      idKey = 'i';
+      dataMap['sample'] = null;
+      dataMap['idkey'] = null;
+      idKey = 'p';
       dataMap['description'] = null;
       dataMap['material'] = null;
-      dataMap['localPath'] = null;
-      dataMap['remotePath'] = null;
+      dataMap['path_local'] = null;
+      dataMap['path_remote'] = null;
       dataMap['materialrisk_asbestosscore'] = 3;
       materialAsbestosScore = 3;
-      localPath = null;
-      Firestore.instance.collection('samplesasbestosbulk').add(
-          dataMap).then((ref) {
-        sample = ref.documentID;
+      path_local = null;
+      Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').add(dataMap).then((ref) {
+        acm = Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').document(ref.documentID);
         setState(() {
           isLoading = false;
         });
       });
     } else {
       _title = "Edit ACM";
-      Firestore.instance.collection('samplesasbestosbulk').document(sample).get().then((doc) {
-        if (doc.data['sampleNumber'].toString() == 'null') {
-          controllerSampleNumber.text = '';
-        } else controllerSampleNumber.text = doc.data['sampleNumber'].toString();
+      acm.get().then((doc) {
+        // Get sample details if available
+        if (doc.data['sample'] != 'null') {
+          sample =  Firestore.instance.collection('samplesasbestosbulk').document(doc.data['sample']);
+        }
         idKey = doc.data['idkey'];
         if (idKey == 'i') {
           isSampled = true;
           stronglyPresumed = false;
-          _radioSample = 0;
         } else {
           isSampled = false;
-          _radioSample = 1;
           if (idKey == 's') {
             stronglyPresumed = true;
           } else {
@@ -1775,12 +1754,12 @@ class _EditACMState extends State<EditACM> {
         priorityMaintFreq = doc.data['priority_maint_freq'];
 
         // image
-        remotePath = doc.data['remotePath'];
-        localPath = doc.data['localPath'];
-        if (remotePath == null && localPath != null){
+        path_remote = doc.data['path_remote'];
+        path_local = doc.data['path_local'];
+        if (path_remote == null && path_local != null){
           // only local image available (e.g. when taking photos with no internet)
           localPhoto = true;
-        } else if (remotePath != null) {
+        } else if (path_remote != null) {
           localPhoto = false;
         }
         setState(() {
@@ -1794,12 +1773,12 @@ class _EditACMState extends State<EditACM> {
     ImageSync(
         image,
         50,
-        "sample" + controllerSampleNumber.text + "_" + sample + ".jpg",
+        "acm" + _room['name'] + "_" + acm.documentID + ".jpg",
         DataManager.get().currentJobNumber,
-        Firestore.instance.collection('samplesasbestosbulk').document(sample)
+        acm
     ).then((path) {
       setState(() {
-        remotePath = path;
+        path_remote = path;
         localPhoto = false;
       });
     });

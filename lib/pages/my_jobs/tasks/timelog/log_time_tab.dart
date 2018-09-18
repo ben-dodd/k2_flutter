@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/model/jobs/job.dart';
 import 'package:k2e/styles.dart';
+import 'package:k2e/widgets/pulsecard.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
 
@@ -12,9 +11,6 @@ class LogTimeTab extends StatefulWidget {
 }
 
 class _LogTimeTabState extends State<LogTimeTab> {
-
-  final Job job = DataManager.get().currentJob;
-
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -29,91 +25,65 @@ class _LogTimeTabState extends State<LogTimeTab> {
                 children: <Widget> [
                   Text('Log Time',
                   style: Styles.h1),
-                  FlatButton(
-                    onPressed: () => {},
-                    // TODO longpress: Share with other job numbers, add other site tech
-                    padding: EdgeInsets.all(10.0),
-                    child: Row(
-                      children: <Widget>[
-                        new Container(
-                          width: 80.0,
-                            height: 48.0,
-                          child: Icon(Icons.directions_car, size: 24.0,)
-                        ),
-                        Text('Travel', style: Styles.logButton)
-                      ],
-                    ),
+                  PulseCard(
+                      icon: Icon(Icons.directions_car,size: 24.0,),
+                      text: 'Travel',
+                      onCardClick: () {
+
+                      },
+                      onCardLongPress: () {
+                        // TODO longpress: Share with other job numbers, add other site tech
+                      },
                   ),
-                  FlatButton(
-                    onPressed: () => {},
-                    // TODO: longpress Do SSSP, add site tech
-                    padding: EdgeInsets.all(10.0),
-                    child: Row( // Replace with a Row for horizontal icon + text
-                      children: <Widget>[
-                        new Container(
-                            width: 80.0,
-                            height: 48.0,
-                            child: Icon(Icons.build, size: 24.0,)
-                        ),
-                        Text('Site Work', style: Styles.logButton)
-                      ],
-                    ),
+                  PulseCard(
+                    icon: Icon(Icons.build,size: 24.0,),
+                    text: 'Site Work',
+                    onCardClick: () {
+
+                    },
+                    onCardLongPress: () {
+                      // TODO: longpress Do SSSP, add site tech
+                    },
                   ),
-                  FlatButton(
-                    onPressed: () => {},
-                    padding: EdgeInsets.all(10.0),
-                    child: Row( // Replace with a Row for horizontal icon + text
-                      children: <Widget>[
-                        new Container(
-                            width: 80.0,
-                            height: 48.0,
-                            child: Icon(Icons.colorize, size: 24.0,)
-                        ),
-                        Text('Analysis', style: Styles.logButton)
-                      ],
-                    ),
+                  PulseCard(
+                    icon: Icon(Icons.colorize,size: 24.0,),
+                    text: 'Analysis',
+                    onCardClick: () {
+
+                    },
+                    onCardLongPress: () {
+
+                    },
                   ),
-                  FlatButton(
-                    onPressed: () => {},
-                    padding: EdgeInsets.all(10.0),
-                    child: Row( // Replace with a Row for horizontal icon + text
-                      children: <Widget>[
-                        new Container(
-                            width: 80.0,
-                            height: 48.0,
-                            child: Icon(Icons.insert_chart, size: 24.0,)
-                        ),
-                        Text('Report', style: Styles.logButton)
-                      ],
-                    ),
+                  PulseCard(
+                    icon: Icon(Icons.insert_chart,size: 24.0,),
+                    text: 'Report',
+                    onCardClick: () {
+
+                    },
+                    onCardLongPress: () {
+
+                    },
                   ),
-                  FlatButton(
-                    onPressed: () => {},
-                    padding: EdgeInsets.all(10.0),
-                    child: Row( // Replace with a Row for horizontal icon + text
-                      children: <Widget>[
-                        new Container(
-                            width: 80.0,
-                            height: 48.0,
-                            child: Icon(Icons.check_circle, size: 24.0,)
-                        ),
-                        Text('Review', style: Styles.logButton)
-                      ],
-                    ),
+                  PulseCard(
+                    icon: Icon(Icons.check_circle,size: 24.0,),
+                    text: 'Review',
+                    onCardClick: () {
+
+                    },
+                    onCardLongPress: () {
+
+                    },
                   ),
-                  FlatButton(
-                    onPressed: () => {},
-                    padding: EdgeInsets.all(10.0),
-                    child: Row( // Replace with a Row for horizontal icon + text
-                      children: <Widget>[
-                        new Container(
-                            width: 80.0,
-                            height: 48.0,
-                            child: Icon(Icons.assignment_ind, size: 24.0,)
-                        ),
-                        Text('KTP', style: Styles.logButton)
-                      ],
-                    ),
+                  PulseCard(
+                    icon: Icon(Icons.assignment_ind,size: 24.0,),
+                    text: 'KTP',
+                    onCardClick: () {
+
+                    },
+                    onCardLongPress: () {
+
+                    },
                   ),
                 ]
             )

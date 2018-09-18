@@ -1,7 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:k2e/model/samples/sample_asbestos_bulk.dart';
-import 'package:k2e/theme.dart';
 
 class SampleAsbestosBulkCard extends StatefulWidget {
 
@@ -23,7 +21,7 @@ class SampleAsbestosBulkCard extends StatefulWidget {
 }
 
 class _SampleAsbestosBulkCardState extends State<SampleAsbestosBulkCard>{
-  String jobNumber;
+  String jobnumber;
   String sampleNumber;
   String description;
   String material;
@@ -33,15 +31,15 @@ class _SampleAsbestosBulkCardState extends State<SampleAsbestosBulkCard>{
   @override
   Widget build(BuildContext context) {
     // todo is there a better way to assert this stuff
-    if (widget.doc['jobNumber'] == null) {
-      jobNumber = 'AS******';
+    if (widget.doc['jobnumber'] == null) {
+      jobnumber = 'AS******';
     } else {
-      jobNumber = widget.doc['jobNumber'];
+      jobnumber = widget.doc['jobnumber'];
     }
-    if (widget.doc['sampleNumber'] == null) {
+    if (widget.doc['samplenumber'] == null) {
       sampleNumber = '0';
     } else {
-      sampleNumber = widget.doc['sampleNumber'].toString();
+      sampleNumber = widget.doc['samplenumber'].toString();
     }
     if (widget.doc['description'] == null) {
       description = 'No description';
@@ -53,11 +51,11 @@ class _SampleAsbestosBulkCardState extends State<SampleAsbestosBulkCard>{
     } else {
       material = widget.doc['material'];
     }
-    if (widget.doc['localPath'] == null && widget.doc['remotePath'] == null) {
+    if (widget.doc['path_local'] == null && widget.doc['path_remote'] == null) {
       hasPhoto = false;
     } else {
       hasPhoto = true;
-      if (widget.doc['remotePath'] == null) {
+      if (widget.doc['path_remote'] == null) {
         photoSynced = false;
       } else {
         photoSynced = true;

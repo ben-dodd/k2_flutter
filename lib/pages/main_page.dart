@@ -163,7 +163,7 @@ class _MainPageState extends State<MainPage> {
 //                DataManager
 //                    .get()
 //                    .syncAllJobs;
-////                print(sample.jobNumber + '-' + sample.sampleNumber.toString() + ': ' + sample.description);
+////                print(sample.jobnumber + '-' + sample.sampleNumber.toString() + ': ' + sample.description);
 //              })
 //            ]
         ),

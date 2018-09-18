@@ -36,18 +36,12 @@ class _DetailsTabState extends State<DetailsTab> {
   File _imageFile;
 
   @override
-  Future initState() {
-    print("data manager " + DataManager.get().currentJobPath);
+  void initState() {
     fireStream = Firestore.instance.document(DataManager
         .get()
         .currentJobPath).snapshots();
     controllerAddress.addListener(_updateAddress);
     controllerDescription.addListener(_updateDescription);
-//    try {
-//      _imageFile = new File(jobHeader.imagePath);
-//    } catch (e) {
-//      print(e.toString());
-//    }
 
     super.initState();
   }
@@ -82,7 +76,7 @@ class _DetailsTabState extends State<DetailsTab> {
                 if (!snapshot.hasData) return
                   loadingPage(loadingText: 'Loading job info...');
                 if (snapshot.hasData) {
-                  if (snapshot.data['imagePath'] != null) print ('image path: ' + snapshot.data['imagePath']);
+                  if (snapshot.data['path_image'] != null) print ('image path: ' + snapshot.data['path_image']);
                   print (snapshot.data['address']);
                   if (controllerAddress.text == '') {
                     controllerAddress.text = snapshot.data['address'];
@@ -98,7 +92,7 @@ class _DetailsTabState extends State<DetailsTab> {
                             children: <Widget>[
                               Container(
                                   alignment: Alignment.topLeft,
-                                  child: Text(snapshot.data['clientName']
+                                  child: Text(snapshot.data['clientname']
                                       , style: Styles.h1)
                               ),
                               Container(
@@ -152,10 +146,9 @@ class _DetailsTabState extends State<DetailsTab> {
                                     },
 //                                    child: (_imageFile != null)
 //                                        ? Image.file(_imageFile)
-                                    child: (snapshot.data['imagePath'] != null)
+                                    child: (snapshot.data['path_image'] != null)
                                         ? new CachedNetworkImage(
-                                            imageUrl: snapshot.data['imagePath'],
-//                                            imageUrl: 'https://www.whaleoil.co.nz/wp-content/uploads/2018/08/Dog.jpg',
+                                            imageUrl: snapshot.data['path_image'],
                                             placeholder: new CircularProgressIndicator(),
                                             errorWidget: new Icon(Icons.error),
                                             fadeInDuration: new Duration(seconds: 1),
@@ -180,4 +173,3 @@ class _DetailsTabState extends State<DetailsTab> {
     );
   }
 }
-//https://stackoverflow.com/questions/46515679/flutter-firebase-compression-before-upload-image

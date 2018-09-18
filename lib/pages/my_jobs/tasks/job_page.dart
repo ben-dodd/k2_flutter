@@ -1,9 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/model/samples/sample_asbestos_bulk.dart';
-import 'package:k2e/model/jobs/job.dart';
-import 'package:k2e/pages/cameras/camera_generic.dart';
 import 'package:k2e/pages/my_jobs/tasks/check/check_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/details/details_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/documents/documents_tab.dart';
@@ -13,6 +10,8 @@ import 'package:k2e/pages/my_jobs/tasks/rooms/edit_room.dart';
 import 'package:k2e/pages/my_jobs/tasks/rooms/rooms_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/samples/asbestos_samples_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/samples/edit_acm.dart';
+import 'package:k2e/pages/my_jobs/tasks/samples/edit_sample_asbestos_air.dart';
+import 'package:k2e/pages/my_jobs/tasks/samples/edit_sample_asbestos_bulk.dart';
 import 'package:k2e/pages/my_jobs/tasks/samples/meth_samples_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/timelog/log_time_tab.dart';
 import 'package:k2e/theme.dart';
@@ -23,15 +22,14 @@ import 'package:k2e/widgets/loading.dart';
 // Have full functionality for editing WFM information though
 
 class JobPage extends StatefulWidget {
-  JobPage({Key key, @required this.path, @required this.jobNumber}) : super(key: key);
+  JobPage({Key key, @required this.path, @required this.jobnumber}) : super(key: key);
   String path;
-  String jobNumber;
+  String jobnumber;
   @override
   _JobPageState createState() => new _JobPageState();
 }
 
 class _JobPageState extends State<JobPage> {
-  final Job job = DataManager.get().currentJob;
   int jobType;
 
   TabBar tabBar;
@@ -39,17 +37,31 @@ class _JobPageState extends State<JobPage> {
   int tabCount;
 
   // FAB Methods
+  void _addNote() async {
+//    Navigator.of(context).push(
+//        new MaterialPageRoute(builder: (context) =>
+//            EditNote(
+//                note: null),
+//        )
+//    );
+  }
+
+  void _addMap() async {
+//    Navigator.of(context).push(
+//        new MaterialPageRoute(builder: (context) =>
+//            EditMap(
+//                map: null),
+//        )
+//    );
+  }
 
   void _addRoom() async {
-    String result = await Navigator.of(context).push(
-      new MaterialPageRoute(builder: (context) => EditRoom(room: null,)),
+    Navigator.of(context).push(
+        new MaterialPageRoute(builder: (context) =>
+            EditRoom(
+                room: null),
+        )
     );
-//    setState((){
-//      _jobs = JobRepository.get().myJobCache;
-//      Scaffold.of(context).showSnackBar(
-//          new SnackBar(
-//              content: new Text(result)));
-//    });
   }
 
   void _addACM() async {
@@ -57,8 +69,28 @@ class _JobPageState extends State<JobPage> {
     Navigator.of(context).push(
       new MaterialPageRoute(builder: (context) =>
           EditACM(
-              sample: null),
+              acm: null),
       )
+    );
+  }
+
+  void _addAirSample() async {
+//    DataManager.get().currentAsbestosBulkSample = null;
+    Navigator.of(context).push(
+        new MaterialPageRoute(builder: (context) =>
+            EditSampleAsbestosAir(
+                sample: null),
+        )
+    );
+  }
+
+  void _addBulkSample() async {
+//    DataManager.get().currentAsbestosBulkSample = null;
+    Navigator.of(context).push(
+        new MaterialPageRoute(builder: (context) =>
+            EditSampleAsbestosBulk(
+                sample: null),
+        )
     );
   }
 
@@ -69,17 +101,41 @@ class _JobPageState extends State<JobPage> {
 
     List<SpeedDialerButton> asbestosDialer = [
       new SpeedDialerButton(backgroundColor: CompanyColors.accent,
+        icon: Icons.filter,
+        onPressed: () {
+          _addNote();
+        },
+        text: "Note or Photo",),
+      new SpeedDialerButton(backgroundColor: CompanyColors.accent,
+        icon: Icons.map,
+        onPressed: () {
+          _addMap();
+        },
+        text: "Map",),
+      new SpeedDialerButton(backgroundColor: CompanyColors.accent,
         icon: Icons.domain,
         onPressed: () {
           _addRoom();
         },
-        text: "Add Room",),
+        text: "Room",),
       new SpeedDialerButton(backgroundColor: CompanyColors.accent,
         icon: Icons.whatshot,
         onPressed: () {
           _addACM();
         },
-        text: "Add ACM",),
+        text: "ACM",),
+      new SpeedDialerButton(backgroundColor: CompanyColors.accent,
+        icon: Icons.ac_unit,
+        onPressed: () {
+          _addAirSample();
+        },
+        text: "Air Sample",),
+      new SpeedDialerButton(backgroundColor: CompanyColors.accent,
+        icon: Icons.colorize,
+        onPressed: () {
+          _addBulkSample();
+        },
+        text: "Bulk Sample",),
     ];
 
     return StreamBuilder(
@@ -210,7 +266,7 @@ class _JobPageState extends State<JobPage> {
             child:
             Scaffold(
               appBar: new AppBar(
-                title: Text(snapshot.data['jobNumber'] + ': ' + snapshot.data['type'],
+                title: Text(snapshot.data['jobnumber'] + ': ' + snapshot.data['type'],
                     overflow: TextOverflow.ellipsis),
                 bottom: tabBar,
               ),
