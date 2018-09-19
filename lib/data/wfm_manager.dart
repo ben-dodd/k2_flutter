@@ -1,31 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/model/jobheader.dart';
 import 'package:k2e/strings.dart';
 import 'package:k2e/utils/custom_classes.dart';
 import 'package:http/http.dart' as http;
+import 'package:xml/xml.dart' as xml;
 
 final int NO_INTERNET = 404;
-
-class WfmManager {
-
-  static final WfmManager _wfm = new WfmManager._internal();
-
-//  JobHeaderDatabase database;
-
-  List<JobHeader> wfmJobCache = new List(); // this holds all jobs gathered from the last WFM api request
-  List<JobHeader> myJobCache = new List(); // this holds all jobs in the local database
-  JobHeader currentJob; // this holds the job object for the currently viewed job
-//  List<Samples>
-
-  static WfmManager get() {
-    return _wfm;
-  }
-
-  WfmManager._internal() {
-//    database = JobHeaderDatabase.get();
-  }
 
   ///
   /// WFM JOBS
@@ -58,7 +41,7 @@ class WfmManager {
       wfmJobs.add(job);
     }
 
-    wfmJobCache = wfmJobs;
+    DataManager.get().wfmJobCache = wfmJobs;
 
     return new ParsedResponse(response.statusCode, []..addAll(wfmJobs));
   }
@@ -82,8 +65,37 @@ class WfmManager {
     print(response.body.toString());
     List<dynamic> list = json.decode(response.body);
 
-    wfmJobCache.add(JobHeader.fromMap(list[0]));
+    DataManager.get().wfmJobCache.add(JobHeader.fromMap(list[0]));
 
     return new ParsedResponse(response.statusCode, JobHeader.fromMap(list[0]));
   }
-}
+
+  Future logTime(xml.XmlDocument TimeSheet, xml.XmlDocument Assign) async{
+          http.put(Strings.wfmRoot + 'job.api/assign?apiKey=' + Strings.wfmApi + '&accountKey=' + Strings.wfmAccount, body: Assign.toString())
+              .then((ass) {
+                if (ass != null) {
+                    print(ass.body.toString());
+                    http.post(Strings.wfmRoot + 'time.api/add?apiKey=' + Strings.wfmApi + '&accountKey=' + Strings.wfmAccount, body: TimeSheet.toString())
+                        .then((time) {
+//                          if(response == null) {
+//                            print ('null reponse from time');
+//                            return new ParsedResponse(NO_INTERNET, null);
+//                          }
+
+                          //If there was an error return an empty list
+//                          if(response.statusCode < 200 || response.statusCode >= 300) {
+//                            return new ParsedResponse(response.statusCode, null);
+//                          }
+                          // Decode and go to the jobs list
+                          print("ADD RESPONSE: " + time.body.toString());
+
+//                          return new ParsedResponse(response.statusCode, json.decode(response.body));
+                    });
+                } else print ('null reponse from assign');
+          });
+
+    print (Strings.wfmRoot + 'time.api/add?apiKey=' + Strings.wfmApi + '&accountKey=' + Strings.wfmAccount);
+    print(TimeSheet);
+    print (Strings.wfmRoot + 'job.api/assign?apiKey=' + Strings.wfmApi + '&accountKey=' + Strings.wfmAccount);
+    print(Assign);
+  }

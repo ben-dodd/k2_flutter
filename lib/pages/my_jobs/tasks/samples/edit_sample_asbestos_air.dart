@@ -44,8 +44,8 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
   final controllerNotes = TextEditingController();
 
   // IMAGES
-  String localPath;
-  String remotePath;
+  String path_local;
+  String path_remote;
 
   bool localPhoto = false;
 
@@ -134,7 +134,7 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
                                             onTap: () {
                                               ImagePicker.pickImage(source: ImageSource.camera).then((image) {
                                                 setState(() {
-                                                  localPath = image.path;
+                                                  path_local = image.path;
                                                   localPhoto = true;
                                                 });
                                                 _handleImageUpload(image);
@@ -143,12 +143,12 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
 //                                    child: (_imageFile != null)
 //                                        ? Image.file(_imageFile)
                                             child: (localPhoto) ?
-                                            (localPath != null) ?
-                                            new Image.file(new File(localPath))
+                                            (path_local != null) ?
+                                            new Image.file(new File(path_local))
                                                 : new Container()
-                                                : (remotePath != null) ?
+                                                : (path_remote != null) ?
                                             new CachedNetworkImage(
-                                              imageUrl: remotePath,
+                                              imageUrl: path_remote,
 //                                            imageUrl: 'https://www.whaleoil.co.nz/wp-content/uploads/2018/08/Dog.jpg',
                                               placeholder: new CircularProgressIndicator(),
                                               errorWidget: new Icon(Icons.error),
@@ -251,9 +251,9 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
       dataMap['samplenumber'] = null;
       dataMap['description'] = null;
       dataMap['material'] = null;
-      dataMap['localPath'] = null;
-      dataMap['remotePath'] = null;
-      localPath = null;
+      dataMap['path_local'] = null;
+      dataMap['path_remote'] = null;
+      path_local = null;
       Firestore.instance.collection('samplesasbestosair').add(
           dataMap).then((ref) {
         sample = Firestore.instance.collection('samplesasbestosair').document(ref.documentID);
@@ -274,12 +274,12 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
         controllerNotes.text = doc.data['notes'];
 
         // image
-        remotePath = doc.data['remotePath'];
-        localPath = doc.data['localPath'];
-        if (remotePath == null && localPath != null){
+        path_remote = doc.data['path_remote'];
+        path_local = doc.data['path_local'];
+        if (path_remote == null && path_local != null){
           // only local image available (e.g. when taking photos with no internet)
           localPhoto = true;
-        } else if (remotePath != null) {
+        } else if (path_remote != null) {
           localPhoto = false;
         }
         setState(() {
@@ -298,7 +298,7 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
         sample
     ).then((path) {
       setState(() {
-        remotePath = path;
+        path_remote = path;
         localPhoto = false;
       });
     });

@@ -32,11 +32,11 @@ class _RoomCardState extends State<RoomCard>{
       name = widget.doc['name'];
     }
 
-    if (widget.doc['localPath'] == null && widget.doc['remotePath'] == null) {
+    if (widget.doc['path_local'] == null && widget.doc['path_remote'] == null) {
       hasPhoto = false;
     } else {
       hasPhoto = true;
-      if (widget.doc['remotePath'] == null) {
+      if (widget.doc['path_remote'] == null) {
         photoSynced = false;
       } else {
         photoSynced = true;
@@ -46,7 +46,6 @@ class _RoomCardState extends State<RoomCard>{
 
     return new ListTile(
         contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-        dense: true,
 //      leading: const Icon(Icons.whatshot),
         title: Text(name),
 //        subtitle: Text(notes),

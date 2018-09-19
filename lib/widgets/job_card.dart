@@ -40,7 +40,15 @@ class _JobCardState extends State<JobCard>{
     } else {
       icon = CompanyColors.generalIcon;
     }
-    return new ListTile(
+    return Container(
+        margin: EdgeInsets.symmetric(vertical: 4.0),
+    padding: EdgeInsets.fromLTRB(8.0,0.0,4.0,0.0),
+    decoration: new BoxDecoration(
+    color: Colors.white,
+    border: new Border.all(color: Colors.black38, width: 2.0),
+    borderRadius: new BorderRadius.circular(16.0),
+    ),
+    child: new ListTile(
       leading: icon,
       title: Row(children: <Widget> [
         Text(widget.doc['jobnumber'] + ': ', style: Styles.h2,),
@@ -51,6 +59,7 @@ class _JobCardState extends State<JobCard>{
       onTap: widget.onCardClick,
       // Long tap -> add options to sync or delete
       onLongPress: widget.onCardLongPress,
+    )
     );
   }
 }

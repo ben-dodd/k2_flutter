@@ -27,8 +27,8 @@ class _WfmFragmentState extends State<WfmFragment> {
   @override
   void initState() {
     super.initState();
-    if (WfmManager.get().wfmJobCache.length == 0) {
-      WfmManager.get().getAllWfmJobs()
+    if (DataManager.get().wfmJobCache.length == 0) {
+      getAllWfmJobs()
           .then((jobs) {
         setState(() {
           _jobs = jobs.body;
@@ -37,7 +37,7 @@ class _WfmFragmentState extends State<WfmFragment> {
       });
     } else {
       setState(() {
-        _jobs = WfmManager
+        _jobs = DataManager
             .get()
             .wfmJobCache;
         _isLoading = false;
@@ -51,7 +51,7 @@ class _WfmFragmentState extends State<WfmFragment> {
   }
 
   Future<Null> _refreshWfmJobs() async{
-    await WfmManager.get().getAllWfmJobs().then((jobs) { _jobs = jobs.body; });
+    await getAllWfmJobs().then((jobs) { _jobs = jobs.body; });
   }
 
   @override

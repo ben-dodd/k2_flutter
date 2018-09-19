@@ -8,17 +8,20 @@ import 'dart:async';
 
 import 'package:camera/camera.dart';
 import 'package:k2e/model/jobheader.dart';
+import 'package:k2e/utils/timesheet.dart';
 
 class DataManager {
 
   static final DataManager _dm = new DataManager._internal();
   // Temp Storage
-  List<JobHeader> myJobCache;
+//  List<JobHeader> myJobCache;
+  List<JobHeader> wfmJobCache = new List(); // this holds all jobs gathered from the last WFM api request
 
   List<CameraDescription> cameras;
   String user;
   String currentJobPath;
   String currentJobNumber;
+  TimeCounter currentTimeCounter;
 
   static DataManager get() {
     return _dm;

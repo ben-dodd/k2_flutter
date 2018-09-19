@@ -251,8 +251,8 @@ class _EditSampleAsbestosBulkState extends State<EditSampleAsbestosBulk> {
       dataMap['samplenumber'] = null;
       dataMap['description'] = null;
       dataMap['material'] = null;
-      dataMap['localPath'] = null;
-      dataMap['remotePath'] = null;
+      dataMap['path_local'] = null;
+      dataMap['path_remote'] = null;
       localPath = null;
       Firestore.instance.collection('samplesasbestosbulk').add(
           dataMap).then((ref) {
@@ -274,8 +274,8 @@ class _EditSampleAsbestosBulkState extends State<EditSampleAsbestosBulk> {
         controllerNotes.text = doc.data['notes'];
 
         // image
-        remotePath = doc.data['remotePath'];
-        localPath = doc.data['localPath'];
+        remotePath = doc.data['path_remote'];
+        localPath = doc.data['path_local'];
         if (remotePath == null && localPath != null){
           // only local image available (e.g. when taking photos with no internet)
           localPhoto = true;

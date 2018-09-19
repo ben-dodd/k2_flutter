@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/theme.dart';
 
@@ -12,6 +13,7 @@ class PulseCard extends StatefulWidget {
     @required this.text,
     this.bordercolor,
     this.radius,
+    this.task_id,
   });
 
   final VoidCallback onCardClick;
@@ -20,6 +22,7 @@ class PulseCard extends StatefulWidget {
   final double radius;
   final Color bordercolor;
   final String text;
+  final String task_id;
   _PulseCardState createState() => _PulseCardState();
 }
 
@@ -28,7 +31,7 @@ class _PulseCardState extends State<PulseCard>
   Animation<Color> colorAnimation;
   AnimationController controller;
   String name;
-  bool pulsing = false;
+  bool pulsing;
 
   initState() {
     super.initState();
@@ -41,6 +44,13 @@ class _PulseCardState extends State<PulseCard>
 
 //    opacityAnimation = Tween(begin: 0, end: 255).animate(curve);
 
+    if (DataManager.get().currentTimeCounter != null) print(DataManager.get().currentTimeCounter.task_id + ' ' + DataManager.get().currentTimeCounter.job_ids.toString());
+    if (DataManager.get().currentTimeCounter == null) pulsing = false;
+    else if (DataManager.get().currentTimeCounter.task_id == widget.task_id && DataManager.get().currentTimeCounter.job_ids.contains(DataManager.get().currentJobNumber)){
+      pulsing = true;
+      controller.forward();
+    } else pulsing = false;
+
     colorAnimation.addListener(() {
       setState(() {});
     });
@@ -51,14 +61,19 @@ class _PulseCardState extends State<PulseCard>
       } else if (status == AnimationStatus.dismissed) {
         if (pulsing) controller.forward();
       }
-      setState(() {});
+      setState(() {
+        if (DataManager.get().currentTimeCounter == null) pulsing = false;
+        else if (DataManager.get().currentTimeCounter.task_id == widget.task_id && DataManager.get().currentTimeCounter.job_ids.contains(DataManager.get().currentJobNumber)){
+          pulsing = true;
+//          controller.forward();
+        } else pulsing = false;
+      });
     });
   }
   bool hasPhoto;
   bool photoSynced;
   @override
   Widget build(BuildContext context) {
-    print(pulsing);
     return Container(
       margin: EdgeInsets.symmetric(vertical: 4.0),
       padding: EdgeInsets.symmetric(vertical: 16.0),
@@ -70,12 +85,10 @@ class _PulseCardState extends State<PulseCard>
         child:
     new InkWell(
       onTap: () {
+        widget.onCardClick();
         pulsing = !pulsing;
         if (pulsing) { controller.forward(); }
-        else {
-          controller.reverse();
-        };
-        widget.onCardClick;
+        else controller.reverse();
       },
       onLongPress: () {
         widget.onCardLongPress;

@@ -5,6 +5,7 @@ import 'package:k2e/pages/my_jobs/tasks/check/check_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/details/details_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/documents/documents_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/map/maps_tab.dart';
+import 'package:k2e/pages/my_jobs/tasks/notepad/edit_note.dart';
 import 'package:k2e/pages/my_jobs/tasks/notepad/notepad_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/rooms/edit_room.dart';
 import 'package:k2e/pages/my_jobs/tasks/rooms/rooms_tab.dart';
@@ -38,12 +39,12 @@ class _JobPageState extends State<JobPage> {
 
   // FAB Methods
   void _addNote() async {
-//    Navigator.of(context).push(
-//        new MaterialPageRoute(builder: (context) =>
-//            EditNote(
-//                note: null),
-//        )
-//    );
+    Navigator.of(context).push(
+        new MaterialPageRoute(builder: (context) =>
+            EditNote(
+                note: null),
+        )
+    );
   }
 
   void _addMap() async {

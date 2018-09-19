@@ -24,7 +24,7 @@ class EditACM extends StatefulWidget {
 
 class _EditACMState extends State<EditACM> {
   // TITLE
-  String _title = "Edit Sample";
+  String _title;
 
   // DOCUMENT IDS
   DocumentReference sample;
@@ -103,10 +103,17 @@ class _EditACMState extends State<EditACM> {
     controllerSurfaceDesc.addListener(_updateSurfaceDesc);
 
     // set paths
-    acm = Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').document(widget.acm);
-    _loadACM();
+    if (widget.acm != null) {
+      acm = Firestore.instance.document(DataManager
+          .get()
+          .currentJobPath).collection('acm').document(widget.acm);
+      _title = "Edit ACM";
+    } else {
+      _title = "New ACM";
+    }
+      _loadACM();
 
-    super.initState();
+      super.initState();
   }
 
   //
@@ -303,11 +310,13 @@ class _EditACMState extends State<EditACM> {
                   Navigator.pop(context);
                 })
               ]),
-          body: new StreamBuilder(stream: acm.snapshots(),
+          body: isLoading ?
+          loadingPage(loadingText: 'Loading sample info...')
+          : new StreamBuilder(stream: acm.snapshots(),
               builder: (context, snapshot) {
-                if (isLoading || !snapshot.hasData) return
+                if (!snapshot.hasData) return
                   loadingPage(loadingText: 'Loading sample info...');
-                if (!isLoading && snapshot.hasData) {
+                if (snapshot.hasData) {
                   return GestureDetector(
                       onTap: () {
                         FocusScope.of(context).requestFocus(new FocusNode());
@@ -407,18 +416,18 @@ class _EditACMState extends State<EditACM> {
                                       child: new DropdownButtonHideUnderline(child: ButtonTheme(
                                         alignedDropdown: true,
                                         child: DropdownButton<String>(
-                                          value: _sample['name'],
+                                          value: (_sample == null) ? null : _sample['name'],
                                           iconSize: 24.0,
                                           items: samplelist.map((Map<String,String> sample) {
                                             return new DropdownMenuItem<String>(
-                                              value: sample['path'],
+                                              value: sample['name'],
                                               child: new Text(sample['name']),
                                             );
                                           }).toList(),
                                           onChanged: (value) {
                                             setState(() {
-                                              _sample = samplelist.firstWhere((e) => e['path'] == value);
-                                              acm.setData({"sample": value}, merge: true);
+                                              _sample = samplelist.firstWhere((e) => e['name'] == value);
+                                              acm.setData({"sample": _sample['path']}, merge: true);
                                             });
                                           },
                                         ),
@@ -464,18 +473,18 @@ class _EditACMState extends State<EditACM> {
                                       child: new DropdownButtonHideUnderline(child: ButtonTheme(
                                         alignedDropdown: true,
                                         child: DropdownButton<String>(
-                                          value: _room['name'],
+                                          value: (_room == null) ? null : _room['name'],
                                           iconSize: 24.0,
                                           items: roomlist.map((Map<String,String> room) {
                                             return new DropdownMenuItem<String>(
-                                              value: room['path'],
+                                              value: room['name'],
                                               child: new Text(room['name']),
                                             );
                                           }).toList(),
                                           onChanged: (value) {
                                             setState(() {
-                                              _room = roomlist.firstWhere((e) => e['path'] == value);
-                                              acm.setData({"room": value}, merge: true);
+                                              _room = roomlist.firstWhere((e) => e['name'] == value);
+                                              acm.setData({"room": _room['path']}, merge: true);
                                             });
                                           },
                                         ),
@@ -1676,14 +1685,15 @@ class _EditACMState extends State<EditACM> {
     // Load rooms from job
     QuerySnapshot roomSnapshot = await Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').getDocuments();
     roomSnapshot.documents.forEach((doc) => roomlist.add({"name": doc.data['name'],"path": doc.documentID}));
+    print('ROOMLIST ' + roomlist.toString());
 
     // Load samples from job
-    QuerySnapshot sampleSnapshot = await Firestore.instance.collection('samplesasbestosbulk').where('jobnumber',isEqualTo: DataManager.get().currentJobNumber).orderBy("sampleNumber").getDocuments();
-    sampleSnapshot.documents.forEach((doc) => samplelist.add({"name": doc.data['samplenumber'] + ': ' + doc.data['description'],"path": doc.documentID}));
+    QuerySnapshot sampleSnapshot = await Firestore.instance.collection('samplesasbestosbulk').where('jobnumber',isEqualTo: DataManager.get().currentJobNumber).orderBy("samplenumber").getDocuments();
+    sampleSnapshot.documents.forEach((doc) => samplelist.add({"name": doc.data['samplenumber'].toString() + ': ' + doc.data['description'],"path": doc.documentID}));
     print('ROOMLIST ' + roomlist.toString());
     print('SAMPLE ' + samplelist.toString());
 
-    if (acm == null) {
+    if (widget.acm == null) {
       _title = "Add New ACM";
       Map<String, dynamic> dataMap = new Map();
       dataMap['jobnumber'] = DataManager

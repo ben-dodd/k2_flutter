@@ -12,57 +12,47 @@ import 'package:k2e/utils/camera.dart';
 import 'package:k2e/widgets/loading.dart';
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 
-class EditRoom extends StatefulWidget {
-  EditRoom({Key key, this.room}) : super(key: key);
-  final String room;
+class EditNote extends StatefulWidget {
+  EditNote({Key key, this.note}) : super(key: key);
+  final String note;
   @override
-  _EditRoomState createState() => new _EditRoomState();
+  _EditNoteState createState() => new _EditNoteState();
 }
 
-class _EditRoomState extends State<EditRoom> {
-  String _title = "Edit Room";
+class _EditNoteState extends State<EditNote> {
+  String _title;
   bool isLoading = true;
-  String roomText;
 
   // images
   String path_local;
   String path_remote;
-
-  String room;
-
   bool localPhoto = false;
 
-  List<String> rooms = AutoComplete.rooms.split(';');
+  DocumentReference note;
 
-  final controllerName = TextEditingController();
-//  final controllerSuperRoom = TextEditingController();
-//  final controllerNotes = TextEditingController();
-
-
-  GlobalKey<AutoCompleteTextFieldState<String>> key = new GlobalKey();
+  final controllerTitle = TextEditingController();
+  final controllerNote = TextEditingController();
 
   @override
   void initState() {
-    controllerName.addListener(_updateName);
-//    controllerSuperRoom.addListener(_updateSuperRoom);
-//    controllerNotes.addListener(_updateNotes);
-    room = widget.room;
-    _loadRoom();
+    controllerTitle.addListener(_updateTitle);
+    controllerNote.addListener(_updateNote);
+    if (widget.note != null) note = Firestore.instance.document(DataManager.get().currentJobPath).collection('notes').document(widget.note);
+    _loadNote();
     super.initState();
   }
 
-  _updateName() {
-    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(room).setData(
-        {"name": controllerName.text}, merge: true);
+  _updateTitle() {
+    note.setData({"title": controllerTitle.text}, merge: true);
+  }
+
+  _updateNote() {
+    note.setData({"note": controllerNote.text}, merge: true);
   }
 
 
 
   Widget build(BuildContext context) {
-//    final DateTime today = new DateTime.now();
-
-    rooms.sort();
-
     return new Scaffold(
 //        resizeToAvoidBottomPadding: false,
         appBar:
@@ -72,11 +62,13 @@ class _EditRoomState extends State<EditRoom> {
                 Navigator.pop(context);
               })
             ]),
-        body: new StreamBuilder(stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(room).snapshots(),
+        body: isLoading ?
+          loadingPage(loadingText: 'Loading note...')
+        : new StreamBuilder(stream: note.snapshots(),
             builder: (context, snapshot) {
-              if (isLoading || !snapshot.hasData) return
-                loadingPage(loadingText: 'Loading room info...');
-              if (!isLoading && snapshot.hasData) {
+              if (!snapshot.hasData) return
+                loadingPage(loadingText: 'Loading note...');
+              if (snapshot.hasData) {
                 return GestureDetector(
                     onTap: () {
                       FocusScope.of(context).requestFocus(new FocusNode());
@@ -85,7 +77,10 @@ class _EditRoomState extends State<EditRoom> {
                         padding: new EdgeInsets.all(8.0),
                         child: ListView(
                           children: <Widget>[
-                            Row(children: <Widget>[
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
                               new Container(width: 150.0,
                                 child: new Column(children: <Widget>[
                                   Container(
@@ -125,36 +120,32 @@ class _EditRoomState extends State<EditRoom> {
                                   )],
                                 ),),
                               new Expanded(child: new Container(
-                              child: new Column(
-                                children: <Widget>[
-                                Container(
-                                  child: AutoCompleteTextField<String>(
-                                      decoration: new InputDecoration(
-                                          hintText: roomText,
-                                          labelText: "Room Name"
-
-//                                        border: new OutlineInputBorder(
-//                                            gapPadding: 0.0, borderRadius: new BorderRadius.circular(16.0)),
-//                                        suffixIcon: new Icon(Icons.search)
+                                  child: new Column(
+                                    children: <Widget>[
+                                      Container(
+                                        alignment: Alignment.topLeft,
+                                        child: TextField(
+                                            decoration: const InputDecoration(
+                                                labelText: "Title"),
+                                            autocorrect: false,
+                                            controller: controllerTitle,
+                                            keyboardType: TextInputType.multiline,
+                                            maxLines: null
+                                        ),
                                       ),
-                                      key: key,
-                                      suggestions: rooms,
-                                      textChanged: (item) {
-                                        controllerName.text = item;
-                                      },
-                                      itemBuilder: (context, item) {
-                                        return new Padding(
-                                            padding: EdgeInsets.all(8.0), child: new Text(item));
-                                      },
-                                      itemSorter: (a, b) {
-                                        return a.compareTo(b);
-                                      },
-                                      itemFilter: (item, query) {
-                                        return item.toLowerCase().contains(query.toLowerCase());
-                                      }),
-                                ),
-                              ],
-                              )
+                                      Container(
+                                        alignment: Alignment.topLeft,
+                                        child: TextField(
+                                            decoration: const InputDecoration(
+                                                labelText: "Note"),
+                                            autocorrect: false,
+                                            controller: controllerNote,
+                                            keyboardType: TextInputType.multiline,
+                                            maxLines: null
+                                        ),
+                                      ),
+                                    ],
+                                  )
                               ),)
                             ],
                             ),
@@ -168,42 +159,40 @@ class _EditRoomState extends State<EditRoom> {
     );
   }
 
-  void _loadRoom() async {
-    if (room == null) {
-      _title = "Add New Room";
+  void _loadNote() async {
+    if (widget.note == null) {
+      _title = "Add Note";
       Map<String, dynamic> dataMap = new Map();
 
-      dataMap['name'] = null;
-
+      dataMap['title'] = null;
+      dataMap['note'] = null;
       dataMap['path_local'] = null;
       dataMap['path_remote'] = null;
 
       path_local = null;
-      Firestore.instance.document(DataManager.get().currentJobPath)
-          .collection('rooms').add(dataMap).then((ref) {
-        room = ref.documentID;
+      Firestore.instance.document(DataManager.get().currentJobPath).collection('notes').add(dataMap).then((ref) {
+        note = Firestore.instance.document(DataManager.get().currentJobPath).collection('notes').document(ref.documentID);
         setState(() {
           isLoading = false;
         });
       });
     } else {
-      _title = "Edit Room";
-      Firestore.instance.document(DataManager.get().currentJobPath)
-          .collection('rooms').document(room).get().then((doc) {
-            controllerName.text = doc.data['name'];
-            roomText = doc.data['name'];
-            // image
-            path_remote = doc.data['path_remote'];
-            path_local = doc.data['path_local'];
-            if (path_remote == null && path_local != null){
-              // only local image available (e.g. when taking photos with no internet)
-              localPhoto = true;
-            } else if (path_remote != null) {
-              localPhoto = false;
-            }
-            setState(() {
-              isLoading = false;
-            });
+      _title = "Edit Note";
+      note.get().then((doc) {
+        controllerTitle.text = doc.data['title'];
+        controllerNote.text = doc.data['note'];
+        // image
+        path_remote = doc.data['path_remote'];
+        path_local = doc.data['path_local'];
+        if (path_remote == null && path_local != null){
+          // only local image available (e.g. when taking photos with no internet)
+          localPhoto = true;
+        } else if (path_remote != null) {
+          localPhoto = false;
+        }
+        setState(() {
+          isLoading = false;
+        });
       });
     }
   }
@@ -212,10 +201,9 @@ class _EditRoomState extends State<EditRoom> {
     ImageSync(
         image,
         50,
-        "room" + controllerName.text + "_" + room + ".jpg",
+        "note" + "_" + note.documentID + ".jpg",
         DataManager.get().currentJobNumber,
-        Firestore.instance.document(DataManager.get().currentJobPath)
-            .collection('rooms').document(room)
+        note
     ).then((path) {
       setState(() {
         path_remote = path;

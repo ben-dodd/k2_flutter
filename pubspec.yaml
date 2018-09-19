@@ -28,6 +28,8 @@ dependencies:
   image: ^2.0.4
   cloud_firestore: ^0.8.0
   dropdown_menu: ^1.1.0
+  intl: ^0.15.7
+  xml: ^3.2.1
 
 
   # The following adds the Cupertino Icons font to your application.

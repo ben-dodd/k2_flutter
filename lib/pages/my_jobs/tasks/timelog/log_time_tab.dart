@@ -1,5 +1,11 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:k2e/data/datamanager.dart';
+import 'package:k2e/strings.dart';
 import 'package:k2e/styles.dart';
+import 'package:k2e/utils/timesheet.dart';
 import 'package:k2e/widgets/pulsecard.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
@@ -11,6 +17,12 @@ class LogTimeTab extends StatefulWidget {
 }
 
 class _LogTimeTabState extends State<LogTimeTab> {
+  @override
+  void initState() {
+//    if (DataManager.get().currentTimeCounter != null) selectedTask = DataManager.get().currentTimeCounter.task_id;
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -28,8 +40,9 @@ class _LogTimeTabState extends State<LogTimeTab> {
                   PulseCard(
                       icon: Icon(Icons.directions_car,size: 24.0,),
                       text: 'Travel',
+                      task_id: Strings.taskTravel,
                       onCardClick: () {
-
+                        handleClick(Strings.taskTravel);
                       },
                       onCardLongPress: () {
                         // TODO longpress: Share with other job numbers, add other site tech
@@ -38,8 +51,9 @@ class _LogTimeTabState extends State<LogTimeTab> {
                   PulseCard(
                     icon: Icon(Icons.build,size: 24.0,),
                     text: 'Site Work',
+                    task_id: Strings.taskSiteWork,
                     onCardClick: () {
-
+                      handleClick(Strings.taskSiteWork);
                     },
                     onCardLongPress: () {
                       // TODO: longpress Do SSSP, add site tech
@@ -48,8 +62,9 @@ class _LogTimeTabState extends State<LogTimeTab> {
                   PulseCard(
                     icon: Icon(Icons.colorize,size: 24.0,),
                     text: 'Analysis',
+                    task_id: Strings.taskAnalysis,
                     onCardClick: () {
-
+                      handleClick(Strings.taskAnalysis);
                     },
                     onCardLongPress: () {
 
@@ -58,8 +73,9 @@ class _LogTimeTabState extends State<LogTimeTab> {
                   PulseCard(
                     icon: Icon(Icons.insert_chart,size: 24.0,),
                     text: 'Report',
+                    task_id: Strings.taskReport,
                     onCardClick: () {
-
+                      handleClick(Strings.taskReport);
                     },
                     onCardLongPress: () {
 
@@ -68,8 +84,9 @@ class _LogTimeTabState extends State<LogTimeTab> {
                   PulseCard(
                     icon: Icon(Icons.check_circle,size: 24.0,),
                     text: 'Review',
+                    task_id: Strings.taskReview,
                     onCardClick: () {
-
+                      handleClick(Strings.taskReview);
                     },
                     onCardLongPress: () {
 
@@ -78,8 +95,9 @@ class _LogTimeTabState extends State<LogTimeTab> {
                   PulseCard(
                     icon: Icon(Icons.assignment_ind,size: 24.0,),
                     text: 'KTP',
+                    task_id: Strings.taskKTP,
                     onCardClick: () {
-
+                      handleClick(Strings.taskKTP);
                     },
                     onCardLongPress: () {
 
@@ -89,5 +107,38 @@ class _LogTimeTabState extends State<LogTimeTab> {
             )
         )
     );
+  }
+
+  void handleClick(String task_id) {
+    if (DataManager.get().currentTimeCounter != null) {
+      if (DataManager.get().currentTimeCounter.task_id == task_id) {
+        print('turn off this task');
+        DataManager.get().currentTimeCounter.stopTimer();
+        DataManager.get().currentTimeCounter = null;
+      } else {
+        print('turn off another task, start this task');
+        DataManager.get().currentTimeCounter.stopTimer();
+        DataManager.get().currentTimeCounter = new TimeCounter(
+          task_id: task_id,
+          time_start: new DateTime.now(),
+          job_ids: new List<String>.filled(1, DataManager.get().currentJobNumber),
+          wfm_user_ids: new List<String>.filled(1,'403502'),
+          note: 'Driving on the road!',
+        );
+      }
+    } else {
+      print('start this task');
+      DataManager.get().currentTimeCounter = new TimeCounter(
+          task_id: task_id,
+          time_start: new DateTime.now(),
+          job_ids: new List<String>.filled(1, DataManager.get().currentJobNumber),
+          wfm_user_ids: new List<String>.filled(1,'403502'),
+          note: 'Driving on the road!',
+      );
+    }
+  }
+
+  void _handleLongPress() {
+
   }
 }

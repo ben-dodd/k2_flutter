@@ -31,9 +31,12 @@ class _DetailsTabState extends State<DetailsTab> {
   Stream fireStream;
   final controllerAddress = TextEditingController();
   final controllerDescription = TextEditingController();
-  DocumentSnapshot jobDoc;
-  String imageUrl;
-  File _imageFile;
+
+  // IMAGES
+  String path_local;
+  String path_remote;
+
+  bool localPhoto = false;
 
   @override
   void initState() {
@@ -122,43 +125,47 @@ class _DetailsTabState extends State<DetailsTab> {
                                 alignment: Alignment.bottomLeft,
                                 child: Text("Main Site Photo", style: Styles.h2,)
                               ),
-                              Row(
+                        Row(
                               children: <Widget>[Container(
                                 alignment: Alignment.center,
                                 height: 156.0,
                                 width: 206.0,
-                                decoration: BoxDecoration(border: new Border.all(color: Colors.black)),
-                                child: GestureDetector(
+                                margin: EdgeInsets.symmetric(vertical: 4.0),
+                                padding: EdgeInsets.fromLTRB(8.0,0.0,4.0,0.0),
+                                decoration: new BoxDecoration(
+                                  color: Colors.white,
+                                  border: new Border.all(color: Colors.black38, width: 2.0),
+                                  borderRadius: new BorderRadius.circular(16.0),
+                                ), child: GestureDetector(
                                     onTap: () {
                                         ImagePicker.pickImage(source: ImageSource.camera).then((image) {
 //                                          _imageFile = image;
-                                          ImageSync(
-                                            image,
-                                            50,
-                                            "site_photo.jpg",
-                                            DataManager.get().currentJobNumber,
-                                            Firestore.instance.document(DataManager
-                                                .get()
-                                                .currentJobPath)
-                                          );
-                                          print (image.path + " added!");
+                                          setState(() {
+                                            path_local = image.path;
+                                            localPhoto = true;
+                                          });
+                                          _handleImageUpload(image);
                                         });
                                     },
 //                                    child: (_imageFile != null)
 //                                        ? Image.file(_imageFile)
-                                    child: (snapshot.data['path_image'] != null)
-                                        ? new CachedNetworkImage(
-                                            imageUrl: snapshot.data['path_image'],
-                                            placeholder: new CircularProgressIndicator(),
-                                            errorWidget: new Icon(Icons.error),
-                                            fadeInDuration: new Duration(seconds: 1),
-                                        )
-                                        : new Icon(
-                                          Icons.camera, color: CompanyColors.accent,
-                                            size: 48.0,)
+                                  child: (localPhoto) ?
+                                  (path_local != null) ?
+                                  new Image.file(new File(path_local))
+                                      : new Container()
+                                      : (path_remote != null) ?
+                                  new CachedNetworkImage(
+                                    imageUrl: path_remote,
+                                    placeholder: new CircularProgressIndicator(),
+                                    errorWidget: new Icon(Icons.error),
+                                    fadeInDuration: new Duration(seconds: 1),
+                                  )
+                                      : new Icon(
+                                    Icons.camera, color: CompanyColors.accent,
+                                    size: 48.0,)
                                 ),
                               )]),
-                            ]
+                        ]
                         ),
                       )
                   );
@@ -171,5 +178,22 @@ class _DetailsTabState extends State<DetailsTab> {
             }
         )
     );
+  }
+
+  void _handleImageUpload(File image) async {
+    ImageSync(
+        image,
+        50,
+        "sitephoto.jpg",
+        DataManager.get().currentJobNumber,
+        Firestore.instance.document(DataManager
+            .get()
+            .currentJobPath)
+    ).then((path) {
+      setState(() {
+        path_remote = path;
+        localPhoto = false;
+      });
+    });
   }
 }
