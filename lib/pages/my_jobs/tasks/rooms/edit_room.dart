@@ -25,11 +25,7 @@ class _EditRoomState extends State<EditRoom> {
   String roomText;
 
   // images
-  String path_local;
-  String path_remote;
-
   String room;
-
   bool localPhoto = false;
 
   List<String> rooms = AutoComplete.rooms.split(';');
@@ -72,11 +68,13 @@ class _EditRoomState extends State<EditRoom> {
                 Navigator.pop(context);
               })
             ]),
-        body: new StreamBuilder(stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(room).snapshots(),
+        body: isLoading ?
+        loadingPage(loadingText: 'Loading room info...')
+        : new StreamBuilder(stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(room).snapshots(),
             builder: (context, snapshot) {
-              if (isLoading || !snapshot.hasData) return
+              if (!snapshot.hasData) return
                 loadingPage(loadingText: 'Loading room info...');
-              if (!isLoading && snapshot.hasData) {
+              if (snapshot.hasData) {
                 return GestureDetector(
                     onTap: () {
                       FocusScope.of(context).requestFocus(new FocusNode());
@@ -96,29 +94,23 @@ class _EditRoomState extends State<EditRoom> {
                                     child: GestureDetector(
                                         onTap: () {
                                           ImagePicker.pickImage(source: ImageSource.camera).then((image) {
-                                            setState(() {
-                                              path_local = image.path;
-                                              localPhoto = true;
-                                            });
+//                                          _imageFile = image;
+                                            localPhoto = true;
                                             _handleImageUpload(image);
-                                            print (image.path + " added!");
                                           });
                                         },
 //                                    child: (_imageFile != null)
 //                                        ? Image.file(_imageFile)
-                                        child: (localPhoto) ?
-                                        (path_local != null) ?
-                                        new Image.file(new File(path_local))
-                                            : new Container()
-                                            : (path_remote != null) ?
+                                        child: localPhoto ?
+                                        new Image.file(new File(snapshot.data['path_local']))
+                                            : (snapshot.data['path_remote'] != null) ?
                                         new CachedNetworkImage(
-                                          imageUrl: path_remote,
-//                                            imageUrl: 'https://www.whaleoil.co.nz/wp-content/uploads/2018/08/Dog.jpg',
+                                          imageUrl: snapshot.data['path_remote'],
                                           placeholder: new CircularProgressIndicator(),
                                           errorWidget: new Icon(Icons.error),
                                           fadeInDuration: new Duration(seconds: 1),
                                         )
-                                            : new Icon(
+                                            :  new Icon(
                                           Icons.camera, color: CompanyColors.accent,
                                           size: 48.0,)
                                     ),
@@ -178,7 +170,6 @@ class _EditRoomState extends State<EditRoom> {
       dataMap['path_local'] = null;
       dataMap['path_remote'] = null;
 
-      path_local = null;
       Firestore.instance.document(DataManager.get().currentJobPath)
           .collection('rooms').add(dataMap).then((ref) {
         room = ref.documentID;
@@ -193,12 +184,11 @@ class _EditRoomState extends State<EditRoom> {
             controllerName.text = doc.data['name'];
             roomText = doc.data['name'];
             // image
-            path_remote = doc.data['path_remote'];
-            path_local = doc.data['path_local'];
-            if (path_remote == null && path_local != null){
+            if (doc.data['path_remote'] == null && doc.data['path_local'] != null){
               // only local image available (e.g. when taking photos with no internet)
               localPhoto = true;
-            } else if (path_remote != null) {
+              _handleImageUpload(File(doc.data['path_local']));
+            } else if (doc.data['path_remote'] != null) {
               localPhoto = false;
             }
             setState(() {
@@ -209,18 +199,22 @@ class _EditRoomState extends State<EditRoom> {
   }
 
   void _handleImageUpload(File image) async {
+    Firestore.instance.document(DataManager.get().currentJobPath)
+        .collection('rooms').document(room).setData({"path_local": image.path},merge: true).then((_) {
+      setState((){});
+    });
     ImageSync(
         image,
         50,
-        "room" + controllerName.text + "_" + room + ".jpg",
+        "sitephoto.jpg",
         DataManager.get().currentJobNumber,
         Firestore.instance.document(DataManager.get().currentJobPath)
             .collection('rooms').document(room)
-    ).then((path) {
-      setState(() {
-        path_remote = path;
+    ).then((_) {
+      setState((){
         localPhoto = false;
       });
     });
   }
+
 }

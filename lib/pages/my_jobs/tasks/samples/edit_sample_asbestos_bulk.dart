@@ -44,9 +44,6 @@ class _EditSampleAsbestosBulkState extends State<EditSampleAsbestosBulk> {
   final controllerNotes = TextEditingController();
 
   // IMAGES
-  String localPath;
-  String remotePath;
-
   bool localPhoto = false;
 
 
@@ -133,28 +130,23 @@ class _EditSampleAsbestosBulkState extends State<EditSampleAsbestosBulk> {
                                         child: GestureDetector(
                                             onTap: () {
                                               ImagePicker.pickImage(source: ImageSource.camera).then((image) {
-                                                setState(() {
-                                                  localPath = image.path;
-                                                  localPhoto = true;
-                                                });
+//                                          _imageFile = image;
+                                                localPhoto = true;
                                                 _handleImageUpload(image);
                                               });
                                             },
 //                                    child: (_imageFile != null)
 //                                        ? Image.file(_imageFile)
-                                            child: (localPhoto) ?
-                                            (localPath != null) ?
-                                            new Image.file(new File(localPath))
-                                                : new Container()
-                                                : (remotePath != null) ?
+                                            child: localPhoto ?
+                                            new Image.file(new File(snapshot.data['path_local']))
+                                                : (snapshot.data['path_remote'] != null) ?
                                             new CachedNetworkImage(
-                                              imageUrl: remotePath,
-//                                            imageUrl: 'https://www.whaleoil.co.nz/wp-content/uploads/2018/08/Dog.jpg',
+                                              imageUrl: snapshot.data['path_remote'],
                                               placeholder: new CircularProgressIndicator(),
                                               errorWidget: new Icon(Icons.error),
                                               fadeInDuration: new Duration(seconds: 1),
                                             )
-                                                : new Icon(
+                                                :  new Icon(
                                               Icons.camera, color: CompanyColors.accent,
                                               size: 48.0,)
                                         ),
@@ -253,7 +245,6 @@ class _EditSampleAsbestosBulkState extends State<EditSampleAsbestosBulk> {
       dataMap['material'] = null;
       dataMap['path_local'] = null;
       dataMap['path_remote'] = null;
-      localPath = null;
       Firestore.instance.collection('samplesasbestosbulk').add(
           dataMap).then((ref) {
         sample = Firestore.instance.collection('samplesasbestosbulk').document(ref.documentID);
@@ -274,12 +265,11 @@ class _EditSampleAsbestosBulkState extends State<EditSampleAsbestosBulk> {
         controllerNotes.text = doc.data['notes'];
 
         // image
-        remotePath = doc.data['path_remote'];
-        localPath = doc.data['path_local'];
-        if (remotePath == null && localPath != null){
+        if (doc.data['path_remote'] == null && doc.data['path_local'] != null){
           // only local image available (e.g. when taking photos with no internet)
+          _handleImageUpload(File(doc.data['path_local']));
           localPhoto = true;
-        } else if (remotePath != null) {
+        } else if (doc.data['path_remote'] != null) {
           localPhoto = false;
         }
         setState(() {
@@ -288,17 +278,18 @@ class _EditSampleAsbestosBulkState extends State<EditSampleAsbestosBulk> {
       });
     }
   }
-
   void _handleImageUpload(File image) async {
+    sample.setData({"path_local": image.path},merge: true).then((_) {
+      setState((){});
+    });
     ImageSync(
         image,
         50,
         "sample" + controllerSampleNumber.text + "_" + sample.documentID + ".jpg",
         DataManager.get().currentJobNumber,
         sample
-    ).then((path) {
-      setState(() {
-        remotePath = path;
+    ).then((_) {
+      setState((){
         localPhoto = false;
       });
     });

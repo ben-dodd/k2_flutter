@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/styles.dart';
@@ -11,9 +9,7 @@ import 'package:k2e/styles.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
-import 'package:k2e/utils/helpers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:k2e/widgets/loading.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
@@ -28,7 +24,8 @@ class DetailsTab extends StatefulWidget {
 //todo: https://stackoverflow.com/questions/37699688/cache-images-local-from-google-firebase-storage
 
 class _DetailsTabState extends State<DetailsTab> {
-  Stream fireStream;
+  DocumentReference details;
+  Stream detailsStream;
   final controllerAddress = TextEditingController();
   final controllerDescription = TextEditingController();
 
@@ -40,26 +37,20 @@ class _DetailsTabState extends State<DetailsTab> {
 
   @override
   void initState() {
-    fireStream = Firestore.instance.document(DataManager
-        .get()
-        .currentJobPath).snapshots();
     controllerAddress.addListener(_updateAddress);
     controllerDescription.addListener(_updateDescription);
+    _loadDetails();
 
     super.initState();
   }
 
   _updateAddress() {
-    Firestore.instance.document(DataManager
-        .get()
-        .currentJobPath).setData(
+    details.setData(
         {"address": controllerAddress.text}, merge: true);
   }
 
   _updateDescription() {
-    Firestore.instance.document(DataManager
-        .get()
-        .currentJobPath).setData(
+    details.setData(
         {"description": controllerDescription.text}, merge: true);
   }
 
@@ -70,21 +61,20 @@ class _DetailsTabState extends State<DetailsTab> {
     return new Scaffold(
         resizeToAvoidBottomPadding: false,
         // this field stops the keyboard hiding the view when inputs are selected
-        body:
-        new StreamBuilder(
-            stream: fireStream,
+        body: new StreamBuilder(
+            stream: detailsStream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.active) {
-                print(snapshot.data.toString());
                 if (!snapshot.hasData) return
                   loadingPage(loadingText: 'Loading job info...');
                 if (snapshot.hasData) {
-                  if (snapshot.data['path_image'] != null) print ('image path: ' + snapshot.data['path_image']);
                   print (snapshot.data['address']);
                   if (controllerAddress.text == '') {
                     controllerAddress.text = snapshot.data['address'];
                     controllerDescription.text = snapshot.data['description'];
                   }
+                  if (snapshot.data['path_local'] != null) print ('local path: ' + snapshot.data['path_local']);
+                  if (snapshot.data['path_remote'] != null) print ('remote path: ' + snapshot.data['path_remote']);
                   return GestureDetector(
                       onTap: () {
                         FocusScope.of(context).requestFocus(new FocusNode());
@@ -131,39 +121,34 @@ class _DetailsTabState extends State<DetailsTab> {
                                 height: 156.0,
                                 width: 206.0,
                                 margin: EdgeInsets.symmetric(vertical: 4.0),
-                                padding: EdgeInsets.fromLTRB(8.0,0.0,4.0,0.0),
+                                padding: EdgeInsets.fromLTRB(4.0,0.0,4.0,0.0),
                                 decoration: new BoxDecoration(
                                   color: Colors.white,
                                   border: new Border.all(color: Colors.black38, width: 2.0),
-                                  borderRadius: new BorderRadius.circular(16.0),
+//                                  borderRadius: new BorderRadius.circular(16.0),
                                 ), child: GestureDetector(
                                     onTap: () {
                                         ImagePicker.pickImage(source: ImageSource.camera).then((image) {
 //                                          _imageFile = image;
-                                          setState(() {
-                                            path_local = image.path;
-                                            localPhoto = true;
-                                          });
+                                          localPhoto = true;
                                           _handleImageUpload(image);
                                         });
                                     },
 //                                    child: (_imageFile != null)
 //                                        ? Image.file(_imageFile)
-                                  child: (localPhoto) ?
-                                  (path_local != null) ?
-                                  new Image.file(new File(path_local))
-                                      : new Container()
-                                      : (path_remote != null) ?
+                                  child: localPhoto ?
+                                  new Image.file(new File(snapshot.data['path_local']))
+                                  : (snapshot.data['path_remote'] != null) ?
                                   new CachedNetworkImage(
-                                    imageUrl: path_remote,
+                                    imageUrl: snapshot.data['path_remote'],
                                     placeholder: new CircularProgressIndicator(),
                                     errorWidget: new Icon(Icons.error),
                                     fadeInDuration: new Duration(seconds: 1),
                                   )
-                                      : new Icon(
+                                  :  new Icon(
                                     Icons.camera, color: CompanyColors.accent,
                                     size: 48.0,)
-                                ),
+                              ),
                               )]),
                         ]
                         ),
@@ -180,18 +165,35 @@ class _DetailsTabState extends State<DetailsTab> {
     );
   }
 
+  void _loadDetails() async {
+    details = Firestore.instance.document(DataManager.get().currentJobPath);
+    detailsStream = details.snapshots();
+    DocumentSnapshot doc = await details.get();
+    if (doc.data['path_local'] != null && doc.data['path_remote'] == null){
+      // only local image available (e.g. when taking photos with no internet)
+      localPhoto = true;
+      // try to upload
+      _handleImageUpload(File(doc.data['path_local']));
+    } else if (doc.data['path_remote'] != null) {
+      localPhoto = false;
+    }
+    setState(() {
+      print('is loading set to false');
+    });
+  }
+
   void _handleImageUpload(File image) async {
+    details.setData({"path_local": image.path},merge: true).then((_) {
+      setState((){});
+    });
     ImageSync(
         image,
         50,
         "sitephoto.jpg",
         DataManager.get().currentJobNumber,
-        Firestore.instance.document(DataManager
-            .get()
-            .currentJobPath)
-    ).then((path) {
-      setState(() {
-        path_remote = path;
+        details
+    ).then((_) {
+      setState((){
         localPhoto = false;
       });
     });

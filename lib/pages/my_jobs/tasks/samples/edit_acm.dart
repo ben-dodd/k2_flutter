@@ -51,9 +51,6 @@ class _EditACMState extends State<EditACM> {
   final controllerNotes = TextEditingController();
 
   // IMAGES
-  String path_local;
-  String path_remote;
-
   bool localPhoto = false;
 
   // ACCESSIBILITY
@@ -376,28 +373,23 @@ class _EditACMState extends State<EditACM> {
                                       child: GestureDetector(
                                           onTap: () {
                                             ImagePicker.pickImage(source: ImageSource.camera).then((image) {
-                                              setState(() {
-                                                path_local = image.path;
-                                                localPhoto = true;
-                                              });
+//                                          _imageFile = image;
+                                              localPhoto = true;
                                               _handleImageUpload(image);
                                             });
                                           },
 //                                    child: (_imageFile != null)
 //                                        ? Image.file(_imageFile)
-                                          child: (localPhoto) ?
-                                          (path_local != null) ?
-                                          new Image.file(new File(path_local))
-                                              : new Container()
-                                              : (path_remote != null) ?
+                                          child: localPhoto ?
+                                          new Image.file(new File(snapshot.data['path_local']))
+                                              : (snapshot.data['path_remote'] != null) ?
                                           new CachedNetworkImage(
-                                            imageUrl: path_remote,
-//                                            imageUrl: 'https://www.whaleoil.co.nz/wp-content/uploads/2018/08/Dog.jpg',
+                                            imageUrl: snapshot.data['path_remote'],
                                             placeholder: new CircularProgressIndicator(),
                                             errorWidget: new Icon(Icons.error),
                                             fadeInDuration: new Duration(seconds: 1),
                                           )
-                                              : new Icon(
+                                              :  new Icon(
                                             Icons.camera, color: CompanyColors.accent,
                                             size: 48.0,)
                                       ),
@@ -1701,7 +1693,7 @@ class _EditACMState extends State<EditACM> {
           .currentJobNumber;
       //      sample.sampleNumber = DataManager.get().getHighestSampleNumber(DataManager.get().currentJob) + 1;
       dataMap['sample'] = null;
-      dataMap['idkey'] = null;
+      dataMap['idkey'] = 'p';
       idKey = 'p';
       dataMap['description'] = null;
       dataMap['material'] = null;
@@ -1709,7 +1701,6 @@ class _EditACMState extends State<EditACM> {
       dataMap['path_remote'] = null;
       dataMap['materialrisk_asbestosscore'] = 3;
       materialAsbestosScore = 3;
-      path_local = null;
       Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').add(dataMap).then((ref) {
         acm = Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').document(ref.documentID);
         setState(() {
@@ -1764,12 +1755,11 @@ class _EditACMState extends State<EditACM> {
         priorityMaintFreq = doc.data['priority_maint_freq'];
 
         // image
-        path_remote = doc.data['path_remote'];
-        path_local = doc.data['path_local'];
-        if (path_remote == null && path_local != null){
+        if (doc.data['path_remote'] == null && doc.data['path_local'] != null){
           // only local image available (e.g. when taking photos with no internet)
+          _handleImageUpload(File(doc.data['path_local']));
           localPhoto = true;
-        } else if (path_remote != null) {
+        } else if (doc.data['path_remote'] != null) {
           localPhoto = false;
         }
         setState(() {
@@ -1780,15 +1770,23 @@ class _EditACMState extends State<EditACM> {
   }
 
   void _handleImageUpload(File image) async {
+    String room_name;
+    if (_room == null)
+      room_name = '';
+    else if (_room['name'] == null)
+      room_name = '';
+    else room_name = _room['name'];
+    acm.setData({"path_local": image.path},merge: true).then((_) {
+      setState((){});
+    });
     ImageSync(
         image,
         50,
-        "acm" + _room['name'] + "_" + acm.documentID + ".jpg",
+        "acm" + room_name + "_" + acm.documentID + ".jpg",
         DataManager.get().currentJobNumber,
         acm
-    ).then((path) {
-      setState(() {
-        path_remote = path;
+    ).then((_) {
+      setState((){
         localPhoto = false;
       });
     });

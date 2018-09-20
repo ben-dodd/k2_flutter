@@ -133,28 +133,23 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
                                         child: GestureDetector(
                                             onTap: () {
                                               ImagePicker.pickImage(source: ImageSource.camera).then((image) {
-                                                setState(() {
-                                                  path_local = image.path;
-                                                  localPhoto = true;
-                                                });
+//                                          _imageFile = image;
+                                                localPhoto = true;
                                                 _handleImageUpload(image);
                                               });
                                             },
 //                                    child: (_imageFile != null)
 //                                        ? Image.file(_imageFile)
-                                            child: (localPhoto) ?
-                                            (path_local != null) ?
-                                            new Image.file(new File(path_local))
-                                                : new Container()
-                                                : (path_remote != null) ?
+                                            child: localPhoto ?
+                                            new Image.file(new File(snapshot.data['path_local']))
+                                                : (snapshot.data['path_remote'] != null) ?
                                             new CachedNetworkImage(
-                                              imageUrl: path_remote,
-//                                            imageUrl: 'https://www.whaleoil.co.nz/wp-content/uploads/2018/08/Dog.jpg',
+                                              imageUrl: snapshot.data['path_remote'],
                                               placeholder: new CircularProgressIndicator(),
                                               errorWidget: new Icon(Icons.error),
                                               fadeInDuration: new Duration(seconds: 1),
                                             )
-                                                : new Icon(
+                                                :  new Icon(
                                               Icons.camera, color: CompanyColors.accent,
                                               size: 48.0,)
                                         ),
@@ -274,12 +269,11 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
         controllerNotes.text = doc.data['notes'];
 
         // image
-        path_remote = doc.data['path_remote'];
-        path_local = doc.data['path_local'];
-        if (path_remote == null && path_local != null){
+        if (doc.data['path_remote'] == null && doc.data['path_local'] != null){
           // only local image available (e.g. when taking photos with no internet)
+          _handleImageUpload(File(doc.data['path_local']));
           localPhoto = true;
-        } else if (path_remote != null) {
+        } else if (doc.data['path_remote'] != null) {
           localPhoto = false;
         }
         setState(() {
@@ -288,17 +282,21 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
       });
     }
   }
-
   void _handleImageUpload(File image) async {
+    sample.setData({"path_local": image.path}, merge: true).then((_) {
+      setState(() {});
+    });
     ImageSync(
         image,
         50,
-        "sample" + controllerSampleNumber.text + "_" + sample.documentID + ".jpg",
-        DataManager.get().currentJobNumber,
+        "sample" + controllerSampleNumber.text + "_" + sample.documentID +
+            ".jpg",
+        DataManager
+            .get()
+            .currentJobNumber,
         sample
-    ).then((path) {
+    ).then((_) {
       setState(() {
-        path_remote = path;
         localPhoto = false;
       });
     });

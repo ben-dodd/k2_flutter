@@ -16,6 +16,7 @@ class AsbestosSamplesTab extends StatefulWidget {
 
 class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
   String _loadingText = 'Loading samples...';
+  bool hasSamples = true;
 
   @override
   Widget build(BuildContext context) {
@@ -48,21 +49,7 @@ class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
                               Text(_loadingText)
                           )
                         ]));
-              if (snapshot.data.documents.length == 0) return
-                Center(
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Icon(Icons.not_interested, size: 64.0),
-                          Container(
-                              alignment: Alignment.center,
-                              height: 64.0,
-                              child:
-                              Text('This job has no bulk samples.')
-                          )
-                        ]
-                    )
-                );
+              if (snapshot.data.documents.length == 0) setState(() {hasSamples = false;});
               return ListView.builder(
                   shrinkWrap: true,
                   itemCount: snapshot.data.documents.length,
@@ -116,7 +103,7 @@ class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
                               Text(_loadingText)
                           )
                         ]));
-              if (snapshot.data.documents.length == 0) return
+              if (snapshot.data.documents.length == 0) setState(() {hasSamples = false;});
                 Center(
                     child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,

@@ -29,53 +29,26 @@ Future <File> getPicture() async {
 //  return image;
 }
 
-Future<String> ImageSync (File image, int compressionFactor, String fileName, String folder, DocumentReference ref) async {
-  ref.setData(
-      {"path_local": image.path.toString()},merge: true);
-  print('compressing image');
-  File compImage;
-  UploadTaskSnapshot uploadSnapshot;
+  Future<void> ImageSync (File image, int compressionFactor, String fileName, String folder, DocumentReference ref) async {
+    print('compressing image');
+    File compImage;
+    UploadTaskSnapshot uploadSnapshot;
 
-  FlutterNativeImage.compressImage(
+    compImage = await FlutterNativeImage.compressImage(
       image.path,
       quality: compressionFactor,
       // todo: set to target widths etc.
       percentage: 60,
-      ).then((image) {
-        compImage = image;
-        compImage.length().then((int) {
-          print('Compressed size ' + int.toString());
-        });
-        print(fileName);
-        StorageUploadTask putFile =
-        FirebaseStorage.instance.ref().child(
-            "$folder/$fileName").putFile(
-            compImage);
-//                          putFile.future.catchError(onError);
+    );
 
-    putFile.future.then((snapshot) {
-          uploadSnapshot = snapshot;
+    StorageUploadTask putFile =
+      FirebaseStorage.instance.ref().child(
+          "$folder/$fileName").putFile(
+          compImage);
+      //                          putFile.future.catchError(onError);
 
-          print('Image path: ' + uploadSnapshot.downloadUrl.toString());
-          ref.setData(
-              {"path_remote": uploadSnapshot.downloadUrl.toString()}, merge: true);
-    });
-
-    print("image uploaded");
-    return uploadSnapshot.downloadUrl.toString();
-  });
-
-
-//
-//
-//  DocumentReference collectionReference =
-//  Firestore.instance.collection(
-//      "collection")
-//      .document(fileName);
-//
-//  await Firestore.instance.runTransaction((transaction) async {
-//    await transaction.set(
-//        collectionReference, pictureData);
-//    print("instance created");
-//  });
+      uploadSnapshot = await putFile.future;
+      print('Image path: ' + uploadSnapshot.downloadUrl.toString());
+      ref.setData({"path_remote": uploadSnapshot.downloadUrl.toString()}, merge: true);
+      print("image uploaded");
 }
