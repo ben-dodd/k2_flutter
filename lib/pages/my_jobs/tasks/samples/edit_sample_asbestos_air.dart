@@ -63,7 +63,7 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
     controllerNotes.addListener(_updateNotes);
 
     // set paths
-    if (widget.sample != null) sample =  Firestore.instance.collection('samplesasbestosair').document(widget.sample);
+    if (widget.sample != null) sample =  Firestore.instance.collection('samplesasbestos').document(widget.sample);
     _loadACM();
 
     super.initState();
@@ -248,10 +248,11 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
       dataMap['material'] = null;
       dataMap['path_local'] = null;
       dataMap['path_remote'] = null;
+      dataMap['sampletype'] = 'air';
       path_local = null;
-      Firestore.instance.collection('samplesasbestosair').add(
+      Firestore.instance.collection('samplesasbestos').add(
           dataMap).then((ref) {
-        sample = Firestore.instance.collection('samplesasbestosair').document(ref.documentID);
+        sample = Firestore.instance.collection('samplesasbestos').document(ref.documentID);
         setState(() {
           isLoading = false;
         });
