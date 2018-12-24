@@ -73,7 +73,7 @@ class _MainPageState extends State<MainPage> {
       idToken: googleAuth.idToken,
     );
     print(user.email);
-    QuerySnapshot query = await Firestore.instance.collection('users').where('email',isEqualTo: user.email).getDocuments();
+    QuerySnapshot query = await Firestore.instance.collection('users').where('gmail',isEqualTo: user.email).getDocuments();
 
     if (query.documents.length == 0){
       // User is not registered

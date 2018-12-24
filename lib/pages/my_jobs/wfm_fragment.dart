@@ -141,11 +141,11 @@ class _WfmFragmentState extends State<WfmFragment> {
             print ('No jobs have been added or job not in list');
             // No jobs have been added, or job number not in 'my jobs' list. Add job
             // First check if job has been moved from WFM into firestore
-            var query = await Firestore.instance.collection('jobheaders').where('jobnumber',isEqualTo: jobHeader.jobnumber).getDocuments();
+            var query = await Firestore.instance.collection('jobs').where('jobnumber',isEqualTo: jobHeader.jobnumber).getDocuments();
             if (query.documents.length == 0) {
               // Job has not been imported from WFM, add
               Firestore.instance.runTransaction((Transaction tx) async {
-                var _result = await Firestore.instance.collection('jobheaders')
+                var _result = await Firestore.instance.collection('jobs')
                     .add(jobHeader.toMap());
                 dataMap['path'] = _result.path;
                 await Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').add(dataMap);

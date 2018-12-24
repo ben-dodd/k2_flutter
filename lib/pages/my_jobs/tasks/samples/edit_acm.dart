@@ -34,7 +34,7 @@ class _EditACMState extends State<EditACM> {
 
   // UI STATE
   bool isLoading = true;
-  bool isSampled = true;
+  bool isSampled = false;
   bool stronglyPresumed = false;
   String presumedText = 'Presumed';
   List<Map<String, String>> roomlist = new List();
@@ -106,7 +106,7 @@ class _EditACMState extends State<EditACM> {
           .currentJobPath).collection('acm').document(widget.acm);
       _title = "Edit ACM";
     } else {
-      _title = "New ACM";
+      _title = "Add New ACM";
     }
       _loadACM();
 
@@ -308,11 +308,11 @@ class _EditACMState extends State<EditACM> {
                 })
               ]),
           body: isLoading ?
-          loadingPage(loadingText: 'Loading sample info...')
+          loadingPage(loadingText: 'Loading ACM...')
           : new StreamBuilder(stream: acm.snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) return
-                  loadingPage(loadingText: 'Loading sample info...');
+                  loadingPage(loadingText: 'Loading ACM...');
                 if (snapshot.hasData) {
                   return GestureDetector(
                       onTap: () {
@@ -405,26 +405,32 @@ class _EditACMState extends State<EditACM> {
 //                                  new Row(children: <Widget> [
                                   new Container(
                                       alignment: Alignment.topLeft,
-                                      child: new DropdownButtonHideUnderline(child: ButtonTheme(
-                                        alignedDropdown: true,
-                                        child: DropdownButton<String>(
-                                          value: (_sample == null) ? null : _sample['name'],
-                                          iconSize: 24.0,
-                                          items: samplelist.map((Map<String,String> sample) {
-                                            return new DropdownMenuItem<String>(
-                                              value: sample['name'],
-                                              child: new Text(sample['name']),
-                                            );
-                                          }).toList(),
-                                          onChanged: (value) {
-                                            setState(() {
-                                              _sample = samplelist.firstWhere((e) => e['name'] == value);
-                                              acm.setData({"sample": _sample['path']}, merge: true);
-                                            });
-                                          },
-                                        ),
-                                      )
-                                      )
+                                      child: TextField(
+                                        decoration: const InputDecoration(
+                                            labelText: "Description"),
+                                        autocorrect: false,
+                                        keyboardType: TextInputType.text,
+                                      ),
+//                                      child: new DropdownButtonHideUnderline(child: ButtonTheme(
+//                                        alignedDropdown: true,
+//                                        child: DropdownButton<String>(
+//                                          value: (_sample == null) ? null : _sample['name'],
+//                                          iconSize: 24.0,
+//                                          items: samplelist.map((Map<String,String> sample) {
+//                                            return new DropdownMenuItem<String>(
+//                                              value: sample['name'],
+//                                              child: new Text(sample['name']),
+//                                            );
+//                                          }).toList(),
+//                                          onChanged: (value) {
+//                                            setState(() {
+//                                              _sample = samplelist.firstWhere((e) => e['name'] == value);
+//                                              acm.setData({"sample": _sample['path']}, merge: true);
+//                                            });
+//                                          },
+//                                        ),
+//                                      )
+//                                      )
                                   )
 //                                    new Container(
 //                                    child: new IconButton(
@@ -1680,13 +1686,14 @@ class _EditACMState extends State<EditACM> {
     print('ROOMLIST ' + roomlist.toString());
 
     // Load samples from job
-    QuerySnapshot sampleSnapshot = await Firestore.instance.collection('samplesasbestosbulk').where('jobnumber',isEqualTo: DataManager.get().currentJobNumber).orderBy("samplenumber").getDocuments();
+    QuerySnapshot sampleSnapshot = await Firestore.instance.collection('samplesasbestos').where('jobNumber',isEqualTo: DataManager.get().currentJobNumber).orderBy("samplenumber").getDocuments();
     sampleSnapshot.documents.forEach((doc) => samplelist.add({"name": doc.data['samplenumber'].toString() + ': ' + doc.data['description'],"path": doc.documentID}));
     print('ROOMLIST ' + roomlist.toString());
     print('SAMPLE ' + samplelist.toString());
 
+//    roomlist = [{"name": "Lounge","path": "lounge"}];
+
     if (widget.acm == null) {
-      _title = "Add New ACM";
       Map<String, dynamic> dataMap = new Map();
       dataMap['jobnumber'] = DataManager
           .get()
@@ -1703,6 +1710,7 @@ class _EditACMState extends State<EditACM> {
       materialAsbestosScore = 3;
       Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').add(dataMap).then((ref) {
         acm = Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').document(ref.documentID);
+        print(ref.documentID);
         setState(() {
           isLoading = false;
         });
@@ -1712,7 +1720,7 @@ class _EditACMState extends State<EditACM> {
       acm.get().then((doc) {
         // Get sample details if available
         if (doc.data['sample'] != 'null') {
-          sample =  Firestore.instance.collection('samplesasbestosbulk').document(doc.data['sample']);
+//          sample =  Firestore.instance.collection('samplesasbestosbulk').document(doc.data['sample']);
         }
         idKey = doc.data['idkey'];
         if (idKey == 'i') {

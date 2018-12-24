@@ -25,7 +25,7 @@ class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
         alignment: Alignment.center,
         padding: new EdgeInsets.all(8.0),
         child: StreamBuilder(
-            stream: Firestore.instance.collection('samplesasbestos').where('jobnumber',isEqualTo: DataManager.get().currentJobNumber).orderBy("samplenumber").snapshots(),
+            stream: Firestore.instance.collection('samplesasbestos').where('jobNumber',isEqualTo: DataManager.get().currentJobNumber).orderBy("samplenumber").snapshots(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) return
                 Container(

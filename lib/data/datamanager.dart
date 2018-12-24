@@ -21,6 +21,7 @@ class DataManager {
   String user;
   String currentJobPath;
   String currentJobNumber;
+  List<Map<String, String>> currentJobSamples;
   TimeCounter currentTimeCounter;
 
   static DataManager get() {
