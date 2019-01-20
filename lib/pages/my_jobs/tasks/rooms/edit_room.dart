@@ -83,7 +83,10 @@ class _EditRoomState extends State<EditRoom> {
                         padding: new EdgeInsets.all(8.0),
                         child: ListView(
                           children: <Widget>[
-                            Row(children: <Widget>[
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
                               new Container(width: 150.0,
                                 child: new Column(children: <Widget>[
                                   Container(
@@ -116,7 +119,8 @@ class _EditRoomState extends State<EditRoom> {
                                     ),
                                   )],
                                 ),),
-                              new Expanded(child: new Container(
+                              new Expanded(
+                              child: new Container(
                               child: new Column(
                                 children: <Widget>[
                                 Container(

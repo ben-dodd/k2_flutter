@@ -112,10 +112,11 @@ class _DetailsTabState extends State<DetailsTab> {
                               ),
                               Container(
                                 height: 40.0,
-                                alignment: Alignment.bottomLeft,
+                                alignment: Alignment.bottomCenter,
                                 child: Text("Main Site Photo", style: Styles.h2,)
                               ),
                         Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[Container(
                                 alignment: Alignment.center,
                                 height: 156.0,

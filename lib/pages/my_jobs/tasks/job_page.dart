@@ -37,13 +37,6 @@ class _JobPageState extends State<JobPage> {
   TabBarView tabBarView;
   int tabCount;
 
-//  @override
-//  void initState() {
-//    _getCocs();
-//
-//    super.initState();
-//  }
-
   // FAB Methods
   void _addNote() async {
     Navigator.of(context).push(
@@ -92,33 +85,18 @@ class _JobPageState extends State<JobPage> {
     );
   }
 
-  void _addBulkSample() async {
-//    DataManager.get().currentAsbestosBulkSample = null;
-    Navigator.of(context).push(
-        new MaterialPageRoute(builder: (context) =>
-            EditSampleAsbestosBulk(
-                sample: null),
-        )
-    );
-  }
-
-//  void _getCocs() async {
-//    Firestore.instance.collection('cocs').where('jobnumber',isEqualTo: DataManager.get().currentJobNumber).getDocuments().then((querySnapshot) =>
-//        querySnapshot.
-//    );
-//  }
-
-//  void _getSamples() async {
-//    Firestore.instance.collection('samplesasbestos').where('jobNumber',isEqualTo: DataManager.get().currentJobNumber).getDocuments().then((querySnapshot) =>
-//    );
-//  }
-
   @override
   Widget build(BuildContext context) {
 
     print ('job page' + DataManager.get().currentJobPath);
 
     List<SpeedDialerButton> asbestosDialer = [
+      new SpeedDialerButton(backgroundColor: CompanyColors.accent,
+        icon: Icons.ac_unit,
+        onPressed: () {
+          _addAirSample();
+        },
+        text: "Air Sample",),
       new SpeedDialerButton(backgroundColor: CompanyColors.accent,
         icon: Icons.filter,
         onPressed: () {
@@ -138,23 +116,11 @@ class _JobPageState extends State<JobPage> {
         },
         text: "Room",),
       new SpeedDialerButton(backgroundColor: CompanyColors.accent,
-        icon: Icons.ac_unit,
-        onPressed: () {
-          _addAirSample();
-        },
-        text: "Air Sample",),
-      new SpeedDialerButton(backgroundColor: CompanyColors.accent,
         icon: Icons.whatshot,
         onPressed: () {
           _addACM();
         },
         text: "ACM",),
-//      new SpeedDialerButton(backgroundColor: CompanyColors.accent,
-//        icon: Icons.colorize,
-//        onPressed: () {
-//          _addBulkSample();
-//        },
-//        text: "Bulk Sample",),
     ];
 
     return StreamBuilder(
@@ -170,8 +136,6 @@ class _JobPageState extends State<JobPage> {
             if (snapshot.data['type'] != null) {
               if (snapshot.data['type'].toLowerCase().contains('asbestos')) {
                 _isAsbestos = true;
-//                _getCocs();
-//                _getSamples();
                 jobType = 1;
               } else if (snapshot.data['type'].toLowerCase().contains('meth')) {
                 jobType = 2;
