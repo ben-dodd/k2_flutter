@@ -9,7 +9,7 @@ import 'package:k2e/pages/my_jobs/tasks/notepad/edit_note.dart';
 import 'package:k2e/pages/my_jobs/tasks/notepad/notepad_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/rooms/edit_room.dart';
 import 'package:k2e/pages/my_jobs/tasks/rooms/rooms_tab.dart';
-import 'package:k2e/pages/my_jobs/tasks/samples/asbestos_samples_tab.dart';
+import 'package:k2e/pages/my_jobs/tasks/samples/acm_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/samples/edit_acm.dart';
 import 'package:k2e/pages/my_jobs/tasks/samples/edit_sample_asbestos_air.dart';
 import 'package:k2e/pages/my_jobs/tasks/samples/edit_sample_asbestos_bulk.dart';
@@ -179,7 +179,7 @@ class _JobPageState extends State<JobPage> {
                 new DetailsTab(),
                 new LogTimeTab(),
                 new RoomsTab(),
-                new AsbestosSamplesTab(),
+                new AcmTab(),
                 new NotepadTab(),
                 new MapsTab(),
                 new CheckTab(),

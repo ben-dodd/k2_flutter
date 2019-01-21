@@ -2,20 +2,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_jobs/tasks/samples/edit_sample_asbestos_air.dart';
-import 'package:k2e/pages/my_jobs/tasks/samples/edit_sample_asbestos_bulk.dart';
-import 'package:k2e/styles.dart';
-import 'package:k2e/widgets/sample_asbestos_air_card.dart';
-import 'package:k2e/widgets/sample_asbestos_card.dart';
+import 'package:k2e/pages/my_jobs/tasks/samples/edit_acm.dart';
+import 'package:k2e/widgets/acm_card.dart';
 
-class AsbestosSamplesTab extends StatefulWidget {
-  AsbestosSamplesTab() : super();
+class AcmTab extends StatefulWidget {
+  AcmTab() : super();
 
   @override
-  _AsbestosSamplesTabState createState() => new _AsbestosSamplesTabState();
+  _AcmTabState createState() => new _AcmTabState();
 }
 
-class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
-  String _loadingText = 'Loading samples...';
+class _AcmTabState extends State<AcmTab> {
+  String _loadingText = 'Loading ACM...';
   bool hasSamples = true;
 
   @override
@@ -25,7 +23,7 @@ class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
         alignment: Alignment.center,
         padding: new EdgeInsets.all(8.0),
         child: StreamBuilder(
-            stream: Firestore.instance.collection('samplesasbestos').where('jobNumber',isEqualTo: DataManager.get().currentJobNumber).orderBy("samplenumber").snapshots(),
+            stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').orderBy("room").snapshots(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) return
                 Container(
@@ -55,7 +53,7 @@ class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
                               alignment: Alignment.center,
                               height: 64.0,
                               child:
-                              Text('This job has no samples.')
+                              Text('This job has no ACM items.')
                           )
                         ]
                     )
@@ -64,7 +62,7 @@ class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
                   itemCount: snapshot.data.documents.length,
                   itemBuilder: (context, index) {
                     print(snapshot.data.documents[index]['jobnumber']);
-                    return SampleAsbestosCard(
+                    return AcmCard(
                       doc: snapshot.data.documents[index],
                       onCardClick: () async {
                         if (snapshot.data.documents[index]['sampletype'] == 'air'){
@@ -77,8 +75,8 @@ class _AsbestosSamplesTabState extends State<AsbestosSamplesTab> {
                         } else {
                           Navigator.of(context).push(
                             new MaterialPageRoute(builder: (context) =>
-                                EditSampleAsbestosBulk(
-                                    sample: snapshot.data.documents[index]
+                                EditACM(
+                                    acm: snapshot.data.documents[index]
                                         .documentID)),
                           );
                         }

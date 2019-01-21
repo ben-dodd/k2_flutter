@@ -86,7 +86,9 @@ class _EditACMState extends State<EditACM> {
 
   // MATERIAL AUTOCOMPLETE
   List<String> materials = AutoComplete.materials.split(';');
-  GlobalKey<AutoCompleteTextFieldState<String>> key = new GlobalKey();
+  GlobalKey<AutoCompleteTextFieldState<String>> keyMaterial = new GlobalKey();
+  List<String> items = AutoComplete.items.split(';');
+  GlobalKey<AutoCompleteTextFieldState<String>> keyItems = new GlobalKey();
 
   @override
   void initState() {
@@ -123,7 +125,7 @@ class _EditACMState extends State<EditACM> {
 //  }
 
   _updateDescription() {
-    acm.setData({"address": controllerDescription.text}, merge: true);
+    acm.setData({"description": controllerDescription.text}, merge: true);
   }
 
   _updateMaterial() {
@@ -278,7 +280,12 @@ class _EditACMState extends State<EditACM> {
     String totalRiskText;
     bool totalRiskSet;
     // Calculate total
-    if (priorityRiskSet && materialRiskSet){
+    if (materialRiskSet && !showPriorityRisk) {
+      totalRiskSet = true;
+      totalRiskScore = materialRiskScore;
+      totalRiskLevel = materialRiskLevel;
+      totalRiskText = materialRiskText;
+    } else if (priorityRiskSet && materialRiskSet){
       totalRiskSet = true;
       totalRiskScore = priorityRiskScore + materialRiskScore;
       if (totalRiskScore > 18) {
@@ -355,20 +362,17 @@ class _EditACMState extends State<EditACM> {
                                 ),),
                               ],
                               ),
-
                               new Divider(),
 
-                              Row(
+                              // SAMPLE PHOTO
+                              new Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: <Widget>[
-                                new Container(width: 150.0,
-                                  child: new Column(
-                                    children: <Widget>[
-                                    Container(
+                                new Container(
                                       alignment: Alignment.center,
-                                      height: 156.0,
-                                      width: 120.0,
+                                      height: 312.0,
+                                      width: 240.0,
                                       decoration: BoxDecoration(border: new Border.all(color: Colors.black)),
                                       child: GestureDetector(
                                           onTap: () {
@@ -394,23 +398,21 @@ class _EditACMState extends State<EditACM> {
                                             size: 48.0,)
                                       ),
                                     )],
-                                  ),),
+                                  ),
 
-                                // HEADER INFO
+                              // HEADER INFO
 
-                                new Expanded(child: new Container(child:
-                                new Column(children: <Widget>[
-                                  isSampled ?
-                                  // SAMPLE NUMBER
+                              isSampled ?
+                                // SAMPLE NUMBER
 //                                  new Row(children: <Widget> [
-                                  new Container(
-                                      alignment: Alignment.topLeft,
-                                      child: TextField(
-                                        decoration: const InputDecoration(
-                                            labelText: "Description"),
-                                        autocorrect: false,
-                                        keyboardType: TextInputType.text,
-                                      ),
+                                new Container(
+                                    alignment: Alignment.topLeft,
+                                    child: TextField(
+                                      decoration: const InputDecoration(
+                                          labelText: "Description"),
+                                      autocorrect: false,
+                                      keyboardType: TextInputType.text,
+                                    ),
 //                                      child: new DropdownButtonHideUnderline(child: ButtonTheme(
 //                                        alignedDropdown: true,
 //                                        child: DropdownButton<String>(
@@ -431,7 +433,7 @@ class _EditACMState extends State<EditACM> {
 //                                        ),
 //                                      )
 //                                      )
-                                  )
+                                )
 //                                    new Container(
 //                                    child: new IconButton(
 //                                      icon: new Icon(Icons.add),
@@ -444,71 +446,98 @@ class _EditACMState extends State<EditACM> {
 //                                    ]
 //                                  )
 
-                                  :
-                                  // PRESUMED/STRONGLY
+                                :
+                                // PRESUMED/STRONGLY
+                                new Container(
+                                    child: new Row(children: <Widget>[
+                                      new Switch(
+                                        value: stronglyPresumed,
+                                        onChanged: (bool strong) {
+                                          setState(() {
+                                            if (strong) {
+                                              presumedText = 'Strongly presumed';
+                                              stronglyPresumed = true;
+                                            } else {
+                                              presumedText = 'Presumed';
+                                              stronglyPresumed = false;
+                                            }
+                                          });
+                                        },
+                                      ),
+                                      new Text("Strongly presume"),
+                                    ],)
+                                ),
+                                stronglyPresumed ?
                                   new Container(
-                                      child: new Row(children: <Widget>[
-                                        new Switch(
-                                          value: stronglyPresumed,
-                                          onChanged: (bool strong) {
-                                            setState(() {
-                                              if (strong) {
-                                                presumedText = 'Strongly presumed';
-                                                stronglyPresumed = true;
-                                              } else {
-                                                presumedText = 'Presumed';
-                                                stronglyPresumed = false;
-                                              }
-                                            });
-                                          },
-                                        ),
-                                        new Text("Strongly presume"),
-                                      ],)
-                                  ),
+
+                                  )
+                                :
+                                  new Container(),
 //                             // DROPDOWN ROOM
-                                  new Container(
-                                      alignment: Alignment.topLeft,
-                                      child: new DropdownButtonHideUnderline(child: ButtonTheme(
-                                        alignedDropdown: true,
-                                        child: DropdownButton<String>(
-                                          value: (_room == null) ? null : _room['name'],
-                                          iconSize: 24.0,
-                                          items: roomlist.map((Map<String,String> room) {
-                                            return new DropdownMenuItem<String>(
-                                              value: room['name'],
-                                              child: new Text(room['name']),
-                                            );
-                                          }).toList(),
-                                          onChanged: (value) {
-                                            setState(() {
-                                              _room = roomlist.firstWhere((e) => e['name'] == value);
-                                              acm.setData({"room": _room['path']}, merge: true);
-                                            });
-                                          },
-                                        ),
-                                      )
-                                      )
+                                new Container(
+                                  alignment: Alignment.topLeft,
+                                  child: DropdownButton<String>(
+                                    value: (_room == null) ? null : _room['name'],
+                                    iconSize: 24.0,
+                                    items: roomlist.map((Map<String,String> room) {
+                                      return new DropdownMenuItem<String>(
+                                        value: room['name'],
+                                        child: new Text(room['name']),
+                                      );
+                                    }).toList(),
+                                    hint: Text("Room"),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _room = roomlist.firstWhere((e) => e['name'] == value);
+                                        acm.setData({"room": _room}, merge: true);
+                                      });
+                                    },
                                   ),
-                                  Container(
-                                    alignment: Alignment.topLeft,
-                                    child: TextField(
-                                      decoration: const InputDecoration(
-                                          labelText: "Description"),
-                                      autocorrect: false,
-                                      controller: controllerDescription,
-                                      keyboardType: TextInputType.text,
-                                    ),
+                                ),
+                                new Container(
+                                  alignment: Alignment.topLeft,
+                                  child: AutoCompleteTextField<String>(
+                                      decoration: new InputDecoration(
+                                          hintText: controllerDescription.text,
+                                          labelText: "Description/Item"
+
+//                                        border: new OutlineInputBorder(
+//                                            gapPadding: 0.0, borderRadius: new BorderRadius.circular(16.0)),
+//                                        suffixIcon: new Icon(Icons.search)
+                                      ),
+                                      key: keyItems,
+                                      suggestions: items,
+                                      textChanged: (item) {
+                                        controllerDescription.text = item;
+                                      },
+                                      itemBuilder: (context, item) {
+                                        return new Padding(
+                                            padding: EdgeInsets.all(8.0), child: new Text(item));
+                                      },
+                                      itemSorter: (a, b) {
+                                        return a.compareTo(b);
+                                      },
+                                      itemFilter: (item, query) {
+                                        return item.toLowerCase().contains(query.toLowerCase());
+                                      }),
+//                                  child: TextField(
+//                                    decoration: const InputDecoration(
+//                                        labelText: "Description/Item"),
+//                                    autocorrect: false,
+//                                    controller: controllerDescription,
+//                                    keyboardType: TextInputType.text,
+//                                  ),
+                                ),
+                                new Container(
+                                  alignment: Alignment.topLeft,
+                                  child: TextField(
+                                    decoration: const InputDecoration(
+                                        labelText: "Material"),
+                                    autocorrect: false,
+                                    controller: controllerMaterial,
+                                    keyboardType: TextInputType.text,
                                   ),
-                                  Container(
-                                    alignment: Alignment.topLeft,
-                                    child: TextField(
-                                      decoration: const InputDecoration(
-                                          labelText: "Material"),
-                                      autocorrect: false,
-                                      controller: controllerMaterial,
-                                      keyboardType: TextInputType.text,
-                                    ),
-                                  ),
+                                ),
 //                                  Container(
 //                                    alignment: Alignment.topLeft,
 //                                    child: AutoCompleteTextField<String>(
@@ -536,11 +565,6 @@ class _EditACMState extends State<EditACM> {
 //                                          return item.toLowerCase().contains(query.toLowerCase());
 //                                        }),
 //                                  ),
-                                ],
-                                )
-                                ),)
-                              ],
-                              ),
                               Container(
                                 alignment: Alignment.topLeft,
                                 child: TextField(
@@ -1718,11 +1742,13 @@ class _EditACMState extends State<EditACM> {
     } else {
       _title = "Edit ACM";
       acm.get().then((doc) {
+        print(doc.data.toString());
         // Get sample details if available
         if (doc.data['sample'] != 'null') {
 //          sample =  Firestore.instance.collection('samplesasbestosbulk').document(doc.data['sample']);
         }
         idKey = doc.data['idkey'];
+        print (idKey);
         if (idKey == 'i') {
           isSampled = true;
           stronglyPresumed = false;
@@ -1734,7 +1760,8 @@ class _EditACMState extends State<EditACM> {
             stronglyPresumed = false;
           }
         }
-        _room = doc.data['room'];
+        _room = new Map<String, String>.from(doc.data['room']);
+        print('Loading acm');
         controllerDescription.text = doc.data['description'];
 //        materialText = doc.data['material'];
         controllerMaterial.text = doc.data['material'];

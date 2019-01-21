@@ -2,9 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/theme.dart';
 
-class SampleAsbestosCard extends StatefulWidget {
+class AcmCard extends StatefulWidget {
 
-  SampleAsbestosCard({
+  AcmCard({
     this.doc,
     @required this.onCardClick,
     @required this.onCardLongPress,
@@ -17,11 +17,11 @@ class SampleAsbestosCard extends StatefulWidget {
   final VoidCallback onCardLongPress;
 
   @override
-  _SampleAsbestosCardState createState() => new _SampleAsbestosCardState();
+  _AcmCardState createState() => new _AcmCardState();
 
 }
 
-class _SampleAsbestosCardState extends State<SampleAsbestosCard>{
+class _AcmCardState extends State<AcmCard>{
   String jobnumber;
   String sampletype;
   String sampleNumber;
@@ -127,7 +127,6 @@ class _SampleAsbestosCardState extends State<SampleAsbestosCard>{
           onTap: widget.onCardClick,
           // Long tap -> add options to sync or delete
           onLongPress: widget.onCardLongPress,
-          // TODO: Icons display whether sample has photo or not
           trailing:
           Container(width: 100.0,
               alignment: Alignment.centerRight,

@@ -52,8 +52,6 @@ class _EditRoomState extends State<EditRoom> {
         {"name": controllerName.text}, merge: true);
   }
 
-
-
   Widget build(BuildContext context) {
 //    final DateTime today = new DateTime.now();
 
