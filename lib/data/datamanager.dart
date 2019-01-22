@@ -24,6 +24,12 @@ class DataManager {
   List<Map<String, String>> currentJobSamples;
   TimeCounter currentTimeCounter;
 
+  // Autocompletes
+  Map<String, dynamic> constants;
+  List<String> asbestosmaterials;
+  List<String> buildingitems;
+  List<String> buildingmaterials;
+
   static DataManager get() {
     return _dm;
   }

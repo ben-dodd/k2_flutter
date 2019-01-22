@@ -54,7 +54,6 @@ class _RoomCardState extends State<RoomCard>{
         onTap: widget.onCardClick,
         // Long tap -> add options to sync or delete
         onLongPress: widget.onCardLongPress,
-        // TODO: Icons display whether sample has photo or not
         trailing:
         hasPhoto ? photoSynced ? Icon(Icons.camera_alt, color: Colors.green,)
             : Icon(Icons.camera_alt, color: Colors.orange)

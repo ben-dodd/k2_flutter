@@ -12,7 +12,6 @@ import 'package:k2e/pages/my_jobs/tasks/rooms/rooms_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/samples/acm_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/samples/edit_acm.dart';
 import 'package:k2e/pages/my_jobs/tasks/samples/edit_sample_asbestos_air.dart';
-import 'package:k2e/pages/my_jobs/tasks/samples/edit_sample_asbestos_bulk.dart';
 import 'package:k2e/pages/my_jobs/tasks/samples/meth_samples_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/timelog/log_time_tab.dart';
 import 'package:k2e/theme.dart';
@@ -110,7 +109,7 @@ class _JobPageState extends State<JobPage> {
         },
         text: "Map",),
       new SpeedDialerButton(backgroundColor: CompanyColors.accent,
-        icon: Icons.domain,
+        icon: Icons.hotel,
         onPressed: () {
           _addRoom();
         },

@@ -33,6 +33,11 @@ class Styles {
     fontSize: 14.0,
   );
 
+  static TextStyle label = new TextStyle(
+    color: Colors.black54,
+    fontSize: 12.0,
+  );
+
   static TextStyle logButton = new TextStyle(
     fontSize: 16.0,
   );

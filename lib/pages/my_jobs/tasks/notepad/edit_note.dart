@@ -10,7 +10,6 @@ import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
 import 'package:k2e/widgets/loading.dart';
-import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 
 class EditNote extends StatefulWidget {
   EditNote({Key key, this.note}) : super(key: key);

@@ -12,8 +12,8 @@ import 'package:k2e/theme.dart';
 import 'package:k2e/tooltips.dart';
 import 'package:k2e/utils/camera.dart';
 import 'package:k2e/widgets/buttons.dart';
+import 'package:k2e/widgets/custom_auto_complete.dart';
 import 'package:k2e/widgets/loading.dart';
-import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 
 class EditACM extends StatefulWidget {
   EditACM({Key key, this.acm}) : super(key: key);
@@ -474,21 +474,28 @@ class _EditACMState extends State<EditACM> {
                                 :
                                   new Container(),
 //                             // DROPDOWN ROOM
+                                new Text("Room Name", style: Styles.label,),
                                 new Container(
-                                  alignment: Alignment.topLeft,
                                   child: DropdownButton<String>(
-                                    value: (_room == null) ? null : _room['name'],
+                                    value: (_room == null) ? null : _room['path'],
                                     iconSize: 24.0,
                                     items: roomlist.map((Map<String,String> room) {
+                                      print(room.toString());
+                                      String val = "Untitled";
+                                      if (room['namecode'] != null) {
+                                        val = room['namecode'];
+                                      } else if (room['name'] != null) {
+                                        val = room['name'];
+                                      }
                                       return new DropdownMenuItem<String>(
-                                        value: room['name'],
-                                        child: new Text(room['name']),
+                                        value: room["path"],
+                                        child: new Text(val),
                                       );
                                     }).toList(),
                                     hint: Text("Room"),
                                     onChanged: (value) {
                                       setState(() {
-                                        _room = roomlist.firstWhere((e) => e['name'] == value);
+                                        _room = roomlist.firstWhere((e) => e['path'] == value);
                                         acm.setData({"room": _room}, merge: true);
                                       });
                                     },
@@ -498,13 +505,14 @@ class _EditACMState extends State<EditACM> {
                                   alignment: Alignment.topLeft,
                                   child: AutoCompleteTextField<String>(
                                       decoration: new InputDecoration(
-                                          hintText: controllerDescription.text,
+                                          hintText: "e.g. Ceiling, Walls, Floor (2nd layer)",
                                           labelText: "Description/Item"
 
 //                                        border: new OutlineInputBorder(
 //                                            gapPadding: 0.0, borderRadius: new BorderRadius.circular(16.0)),
 //                                        suffixIcon: new Icon(Icons.search)
                                       ),
+                                      controller: controllerDescription,
                                       key: keyItems,
                                       suggestions: items,
                                       textChanged: (item) {
@@ -520,51 +528,35 @@ class _EditACMState extends State<EditACM> {
                                       itemFilter: (item, query) {
                                         return item.toLowerCase().contains(query.toLowerCase());
                                       }),
-//                                  child: TextField(
-//                                    decoration: const InputDecoration(
-//                                        labelText: "Description/Item"),
-//                                    autocorrect: false,
-//                                    controller: controllerDescription,
-//                                    keyboardType: TextInputType.text,
-//                                  ),
                                 ),
                                 new Container(
                                   alignment: Alignment.topLeft,
-                                  child: TextField(
-                                    decoration: const InputDecoration(
-                                        labelText: "Material"),
-                                    autocorrect: false,
-                                    controller: controllerMaterial,
-                                    keyboardType: TextInputType.text,
-                                  ),
+                                  child: AutoCompleteTextField<String>(
+                                      decoration: new InputDecoration(
+                                          hintText: "e.g. textured plaster, paper-backed vinyl",
+                                          labelText: "Material"
+
+//                                        border: new OutlineInputBorder(
+//                                            gapPadding: 0.0, borderRadius: new BorderRadius.circular(16.0)),
+//                                        suffixIcon: new Icon(Icons.search)
+                                      ),
+                                      controller: controllerMaterial,
+                                      key: keyMaterial,
+                                      suggestions: materials,
+                                      textChanged: (item) {
+                                        controllerMaterial.text = item;
+                                      },
+                                      itemBuilder: (context, item) {
+                                        return new Padding(
+                                            padding: EdgeInsets.all(8.0), child: new Text(item));
+                                      },
+                                      itemSorter: (a, b) {
+                                        return a.compareTo(b);
+                                      },
+                                      itemFilter: (item, query) {
+                                        return item.toLowerCase().contains(query.toLowerCase());
+                                      }),
                                 ),
-//                                  Container(
-//                                    alignment: Alignment.topLeft,
-//                                    child: AutoCompleteTextField<String>(
-//                                        decoration: new InputDecoration(
-//                                            hintText: materialText,
-//                                            labelText: "Material"
-//
-////                                        border: new OutlineInputBorder(
-////                                            gapPadding: 0.0, borderRadius: new BorderRadius.circular(16.0)),
-////                                        suffixIcon: new Icon(Icons.search)
-//                                        ),
-//                                        key: key,
-//                                        suggestions: materials,
-//                                        textChanged: (item) {
-//                                          controllerMaterial.text = item;
-//                                        },
-//                                        itemBuilder: (context, item) {
-//                                          return new Padding(
-//                                              padding: EdgeInsets.all(8.0), child: new Text(item));
-//                                        },
-//                                        itemSorter: (a, b) {
-//                                          return a.compareTo(b);
-//                                        },
-//                                        itemFilter: (item, query) {
-//                                          return item.toLowerCase().contains(query.toLowerCase());
-//                                        }),
-//                                  ),
                               Container(
                                 alignment: Alignment.topLeft,
                                 child: TextField(

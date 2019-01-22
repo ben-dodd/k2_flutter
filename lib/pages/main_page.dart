@@ -94,6 +94,13 @@ class _MainPageState extends State<MainPage> {
         print('user is ' + user.displayName);
         currentUser = user;
         _isSignedIn = true;
+        Firestore.instance.collection('appsettings').document('constants').get().then((DocumentSnapshot doc) {
+          DataManager.get().constants = Map<String,dynamic>.from(doc.data);
+//          DataManager.get().buildingmaterials = doc.data["buildingmaterials"].map((bm) => bm["label"].toString()).toList();
+//          DataManager.get().asbestosmaterials = doc.data["asbestosmaterials"].map((bm) => bm["label"].toString()).toList();
+//          DataManager.get().buildingitems = doc.data["buildingitems"].map((bm) => bm["label"].toString()).toList();
+//          print(DataManager.get().buildingmaterials);
+        });
       });
     }
   }

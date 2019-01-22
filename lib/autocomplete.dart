@@ -6,4 +6,6 @@ class AutoComplete {
 
   static String rooms =
       "Kitchen;Kitchen/Dining Room;Lounge;Family Room;House Exterior;Shed;Garage;Bathroom;Toilet;Garage;Shed;Dining Room;Laundry;Bedroom 1;Bedroom 2;Bedroom 3;Bedroom 4;Bedroom 5;Bedroom 6;Study;Hallway;Landing;Entry";
+
+  static String roomgrouptemplates = "{name: 'Blank'};{name: '3 Bedroom House'};{name: '4 Bedroom House'};{name: 'DC Train'}";
 }

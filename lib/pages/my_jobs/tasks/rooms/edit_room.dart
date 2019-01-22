@@ -9,8 +9,8 @@ import 'package:k2e/autocomplete.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
+import 'package:k2e/widgets/custom_auto_complete.dart';
 import 'package:k2e/widgets/loading.dart';
-import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 
 class EditRoom extends StatefulWidget {
   EditRoom({Key key, this.room}) : super(key: key);
@@ -35,7 +35,7 @@ class _EditRoomState extends State<EditRoom> {
 //  final controllerNotes = TextEditingController();
 
 
-  GlobalKey<AutoCompleteTextFieldState<String>> key = new GlobalKey();
+  GlobalKey key = new GlobalKey<AutoCompleteTextFieldState<String>>();
 
   @override
   void initState() {
@@ -44,6 +44,7 @@ class _EditRoomState extends State<EditRoom> {
 //    controllerNotes.addListener(_updateNotes);
     room = widget.room;
     _loadRoom();
+
     super.initState();
   }
 
@@ -85,75 +86,64 @@ class _EditRoomState extends State<EditRoom> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
-                              new Container(width: 150.0,
-                                child: new Column(children: <Widget>[
-                                  Container(
-                                    alignment: Alignment.center,
-                                    height: 156.0,
-                                    width: 120.0,
-                                    decoration: BoxDecoration(border: new Border.all(color: Colors.black)),
-                                    child: GestureDetector(
-                                        onTap: () {
-                                          ImagePicker.pickImage(source: ImageSource.camera).then((image) {
+                              new Container(
+                                alignment: Alignment.center,
+                                height: 312.0,
+                                width: 240.0,
+                                decoration: BoxDecoration(border: new Border.all(color: Colors.black)),
+                                child: GestureDetector(
+                                    onTap: () {
+                                      ImagePicker.pickImage(source: ImageSource.camera).then((image) {
 //                                          _imageFile = image;
-                                            localPhoto = true;
-                                            _handleImageUpload(image);
-                                          });
-                                        },
+                                        localPhoto = true;
+                                        _handleImageUpload(image);
+                                      });
+                                    },
 //                                    child: (_imageFile != null)
 //                                        ? Image.file(_imageFile)
-                                        child: localPhoto ?
-                                        new Image.file(new File(snapshot.data['path_local']))
-                                            : (snapshot.data['path_remote'] != null) ?
-                                        new CachedNetworkImage(
-                                          imageUrl: snapshot.data['path_remote'],
-                                          placeholder: new CircularProgressIndicator(),
-                                          errorWidget: new Icon(Icons.error),
-                                          fadeInDuration: new Duration(seconds: 1),
-                                        )
-                                            :  new Icon(
-                                          Icons.camera, color: CompanyColors.accent,
-                                          size: 48.0,)
-                                    ),
-                                  )],
-                                ),),
-                              new Expanded(
-                              child: new Container(
-                              child: new Column(
-                                children: <Widget>[
-                                Container(
-                                  child: AutoCompleteTextField<String>(
-                                      decoration: new InputDecoration(
-                                          hintText: roomText,
-                                          labelText: "Room Name"
+                                    child: localPhoto ?
+                                    new Image.file(new File(snapshot.data['path_local']))
+                                        : (snapshot.data['path_remote'] != null) ?
+                                    new CachedNetworkImage(
+                                      imageUrl: snapshot.data['path_remote'],
+                                      placeholder: new CircularProgressIndicator(),
+                                      errorWidget: new Icon(Icons.error),
+                                      fadeInDuration: new Duration(seconds: 1),
+                                    )
+                                        :  new Icon(
+                                      Icons.camera, color: CompanyColors.accent,
+                                      size: 48.0,)
+                                  ),
+                                )],
+                              ),
+                              new Container(
+                                child: new AutoCompleteTextField<String>(
+                                  decoration: new InputDecoration(
+                                      labelText: "Room Name"
 
 //                                        border: new OutlineInputBorder(
 //                                            gapPadding: 0.0, borderRadius: new BorderRadius.circular(16.0)),
 //                                        suffixIcon: new Icon(Icons.search)
-                                      ),
-                                      key: key,
-                                      suggestions: rooms,
-                                      textChanged: (item) {
-                                        controllerName.text = item;
-                                      },
-                                      itemBuilder: (context, item) {
-                                        return new Padding(
-                                            padding: EdgeInsets.all(8.0), child: new Text(item));
-                                      },
-                                      itemSorter: (a, b) {
-                                        return a.compareTo(b);
-                                      },
-                                      itemFilter: (item, query) {
-                                        return item.toLowerCase().contains(query.toLowerCase());
-                                      }),
-                                ),
-                              ],
-                              )
-                              ),)
+                                  ),
+                                  key: key,
+                                  controller: controllerName,
+                                  suggestions: rooms,
+                                  textChanged: (item) {
+                                    controllerName.text = item;
+                                  },
+                                  itemBuilder: (context, item) {
+                                    return new Padding(
+                                        padding: EdgeInsets.all(8.0), child: new Text(item));
+                                  },
+                                  itemSorter: (a, b) {
+                                    return a.compareTo(b);
+                                  },
+                                  itemFilter: (item, query) {
+                                    return item.toLowerCase().contains(query.toLowerCase());
+                                  }),
+                              ),
                             ],
-                            ),
-                          ],
-                        )
+                        ),
                     )
                 );
               }
@@ -194,6 +184,7 @@ class _EditRoomState extends State<EditRoom> {
               localPhoto = false;
             }
             setState(() {
+              print(controllerName.text);
               isLoading = false;
             });
       });
