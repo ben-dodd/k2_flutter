@@ -31,11 +31,12 @@ class AutoCompleteTextField<T> extends StatefulWidget {
   TextInputType keyboardType;
   TextInputAction textInputAction;
   TextCapitalization textCapitalization;
+  String initialValue;
   TextEditingController controller;
+  ScrollController scrollController;
 
   AutoCompleteTextField(
-      {@required
-      this.itemSubmitted, //Callback on item selected, this is the item selected of type <T>
+      { this.itemSubmitted, //Callback on item selected, this is the item selected of type <T>
         @required
         this.key, //GlobalKey used to enable addSuggestion etc
         @required
@@ -49,17 +50,19 @@ class AutoCompleteTextField<T> extends StatefulWidget {
         this.inputFormatters,
         this.style,
         this.decoration: const InputDecoration(),
-        this.textChanged, //Callback on input text changed, this is a string
+        this.textChanged,
+        @required//Callback on input text changed, this is a string
         this.textSubmitted, //Callback on input text submitted, this is also a string
         this.keyboardType: TextInputType.text,
         this.suggestionsAmount:
         5, //The amount of suggestions to show, larger values may result in them going off screen
         this.submitOnSuggestionTap:
         true, //Call textSubmitted on suggestion tap, itemSubmitted will be called no matter what
-        this.clearOnSubmit: true, //Clear autoCompleteTextfield on submit
+        this.clearOnSubmit: false, //Clear autoCompleteTextfield on submit
         this.textInputAction: TextInputAction.done,
         this.textCapitalization: TextCapitalization.sentences,
-        this.controller,
+        this.initialValue,
+        this.scrollController,
       })
       : super(key: key);
 
@@ -83,6 +86,7 @@ class AutoCompleteTextField<T> extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() => new AutoCompleteTextFieldState<T>(
+      initialValue,
       suggestions,
       textChanged,
       textSubmitted,
@@ -93,6 +97,7 @@ class AutoCompleteTextField<T> extends StatefulWidget {
       suggestionsAmount,
       submitOnSuggestionTap,
       clearOnSubmit,
+      scrollController,
       inputFormatters,
       textCapitalization,
       decoration,
@@ -115,16 +120,20 @@ class AutoCompleteTextFieldState<T> extends State<AutoCompleteTextField> {
   int suggestionsAmount;
   bool submitOnSuggestionTap, clearOnSubmit;
   TextEditingController controller;
+  ScrollController scrollController;
+  String initialValue;
+  RelativeRect position;
 
   String currentText = "";
 
   @override
   void initState() {
     super.initState();
-    controller = widget.controller;
+    initialValue = widget.initialValue;
   }
 
   AutoCompleteTextFieldState(
+      this.initialValue,
       this.suggestions,
       this.textChanged,
       this.textSubmitted,
@@ -135,6 +144,7 @@ class AutoCompleteTextFieldState<T> extends State<AutoCompleteTextField> {
       this.suggestionsAmount,
       this.submitOnSuggestionTap,
       this.clearOnSubmit,
+      this.scrollController,
       List<TextInputFormatter> inputFormatters,
       TextCapitalization textCapitalization,
       InputDecoration decoration,
@@ -148,7 +158,7 @@ class AutoCompleteTextFieldState<T> extends State<AutoCompleteTextField> {
       style: style,
       keyboardType: keyboardType,
       focusNode: new FocusNode(),
-      controller: this.controller,
+      controller: new TextEditingController(text: this.initialValue),
       textInputAction: textInputAction,
       onChanged: (newText) {
         currentText = newText;
@@ -168,11 +178,14 @@ class AutoCompleteTextFieldState<T> extends State<AutoCompleteTextField> {
         }
       },
     );
-    textField.focusNode.addListener(() {
+
+    textField.focusNode.addListener(() async {
       if (!textField.focusNode.hasFocus) {
         filteredSuggestions = [];
       }
     });
+
+    // TODO make overlay scroll with textfield
   }
 
   void clear() {
@@ -194,7 +207,6 @@ class AutoCompleteTextFieldState<T> extends State<AutoCompleteTextField> {
 
   void updateSuggestions(List<T> suggestions) {
     this.suggestions = suggestions;
-    updateOverlay(currentText);
   }
 
   void updateOverlay(String query) {
@@ -202,7 +214,7 @@ class AutoCompleteTextFieldState<T> extends State<AutoCompleteTextField> {
       final RenderBox textFieldRenderBox = context.findRenderObject();
       final RenderBox overlay = Overlay.of(context).context.findRenderObject();
       final width = textFieldRenderBox.size.width;
-      final RelativeRect position = new RelativeRect.fromRect(
+      position = new RelativeRect.fromRect(
         new Rect.fromPoints(
           textFieldRenderBox.localToGlobal(
               textFieldRenderBox.size.bottomLeft(Offset.zero),
@@ -215,6 +227,7 @@ class AutoCompleteTextFieldState<T> extends State<AutoCompleteTextField> {
       );
 
       listSuggestionsEntry = new OverlayEntry(builder: (context) {
+        print(position.toString());
         return new Positioned(
             top: position.top,
             left: position.left,
@@ -313,15 +326,15 @@ class SimpleAutoCompleteTextField extends AutoCompleteTextField<String> {
 
   @override
   State<StatefulWidget> createState() => new AutoCompleteTextFieldState<String>(
-      suggestions, textChanged, textSubmitted, itemSubmitted,
+      initialValue, suggestions, textChanged, textSubmitted, itemSubmitted,
           (context, item) {
         return new Padding(padding: EdgeInsets.all(8.0), child: new Text(item));
       }, (a, b) {
     return a.compareTo(b);
   }, (item, query) {
     return item.toLowerCase().startsWith(query.toLowerCase());
-  }, suggestionsAmount, submitOnSuggestionTap, clearOnSubmit, [],
-      textCapitalization, decoration, style, keyboardType, textInputAction);
+  }, suggestionsAmount, submitOnSuggestionTap, clearOnSubmit, scrollController, [],
+      textCapitalization, decoration, style, keyboardType, textInputAction,);
 }
 
 

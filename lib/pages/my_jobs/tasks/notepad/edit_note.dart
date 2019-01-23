@@ -192,8 +192,8 @@ class _EditNoteState extends State<EditNote> {
     ImageSync(
         image,
         50,
-        "note" + "_" + note.documentID + ".jpg",
-        DataManager.get().currentJobNumber,
+        "note",
+        "jobs/" + DataManager.get().currentJobNumber,
         note
     ).then((_) {
       setState((){

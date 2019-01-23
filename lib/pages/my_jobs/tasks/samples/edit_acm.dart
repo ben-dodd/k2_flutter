@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,6 +14,7 @@ import 'package:k2e/tooltips.dart';
 import 'package:k2e/utils/camera.dart';
 import 'package:k2e/widgets/buttons.dart';
 import 'package:k2e/widgets/custom_auto_complete.dart';
+import 'package:k2e/widgets/dialogs.dart';
 import 'package:k2e/widgets/loading.dart';
 
 class EditACM extends StatefulWidget {
@@ -32,6 +34,8 @@ class _EditACMState extends State<EditACM> {
   Map<String,String> _room;
   Map<String,String> _sample;
 
+  Map<String,dynamic> acmObj = new Map<String,dynamic>();
+
   // UI STATE
   bool isLoading = true;
   bool isSampled = false;
@@ -44,10 +48,10 @@ class _EditACMState extends State<EditACM> {
 
   String idKey;
 
+  ScrollController _scrollController;
+
   // GENERAL INFO
   final controllerSampleNumber = TextEditingController();
-  final controllerDescription = TextEditingController();
-  final controllerMaterial = TextEditingController();
   final controllerNotes = TextEditingController();
 
   // IMAGES
@@ -61,8 +65,8 @@ class _EditACMState extends State<EditACM> {
   int materialSurfaceScore;
   int materialProductScore;
   int materialAsbestosScore;
-  final controllerDamageDesc = TextEditingController();
-  final controllerSurfaceDesc = TextEditingController();
+//  final controllerDamageDesc = TextEditingController();
+//  final controllerSurfaceDesc = TextEditingController();
 
   int materialRiskScore;
   String materialRiskText;
@@ -89,17 +93,22 @@ class _EditACMState extends State<EditACM> {
   GlobalKey<AutoCompleteTextFieldState<String>> keyMaterial = new GlobalKey();
   List<String> items = AutoComplete.items.split(';');
   GlobalKey<AutoCompleteTextFieldState<String>> keyItems = new GlobalKey();
+  List<String> damage = ['A few scratches and surface marks', 'No visible damage','High delamination of material','Chipped edges',];
+  GlobalKey<AutoCompleteTextFieldState<String>> keyDamage = new GlobalKey();
+  List<String> surface = ['Painted','Pitch-bonded material','Resin-bonded material','Unpainted','Unsealed','Laminated'];
+  GlobalKey<AutoCompleteTextFieldState<String>> keySurface = new GlobalKey();
+
+  String initialDescription;
+  String initialMaterial;
+  String initialDamage;
+  String initialSurface;
 
   @override
   void initState() {
     // init text controllers
 //    controllerSampleNumber.addListener(_updateSampleNumber);
-    controllerDescription.addListener(_updateDescription);
-    controllerMaterial.addListener(_updateMaterial);
     controllerNotes.addListener(_updateNotes);
-
-    controllerDamageDesc.addListener(_updateDamageDesc);
-    controllerSurfaceDesc.addListener(_updateSurfaceDesc);
+    _scrollController = ScrollController();
 
     // set paths
     if (widget.acm != null) {
@@ -124,24 +133,34 @@ class _EditACMState extends State<EditACM> {
 //        {"sampleNumber": int.tryParse(controllerSampleNumber.text)}, merge: true);
 //  }
 
-  _updateDescription() {
-    acm.setData({"description": controllerDescription.text}, merge: true);
+  _updateDescription(text) {
+    this.setState(() {
+      acmObj["description"] = text.trim();
+    });
   }
 
-  _updateMaterial() {
-    acm.setData({"material": controllerMaterial.text}, merge: true);
+  _updateMaterial(text) {
+    this.setState(() {
+      acmObj["material"] = text.trim();
+    });
   }
 
   _updateNotes() {
-    acm.setData({"notes": controllerNotes.text}, merge: true);
+    this.setState(() {
+      acmObj["notes"] = controllerNotes.text.trim();
+    });
   }
 
-  _updateDamageDesc() {
-    acm.setData({"materialrisk_damagedesc": controllerDamageDesc.text}, merge: true);
+  _updateDamageDesc(text) {
+    this.setState(() {
+      acmObj["materialrisk_damagedesc"] = text.trim();
+    });
   }
 
-  _updateSurfaceDesc() {
-    acm.setData({"materialrisk_surfacedesc": controllerSurfaceDesc.text}, merge: true);
+  _updateSurfaceDesc(text) {
+    this.setState(() {
+      acmObj["materialrisk_surfacedesc"] = text.trim();
+    });
   }
 
   Widget build(BuildContext context) {
@@ -303,1395 +322,1510 @@ class _EditACMState extends State<EditACM> {
       }
     } else totalRiskSet = false;
 
-      materials.sort();
-
       return new Scaffold(
 //        resizeToAvoidBottomPadding: false,
           appBar:
           new AppBar(title: Text(_title),
+              leading: new IconButton(
+                icon: new Icon(Icons.clear),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
               actions: <Widget>[
                 new IconButton(icon: const Icon(Icons.check), onPressed: () {
+//                  if (acmObj["material"] == null || acmObj["material"] == "") {
+//                    showValidationAlertDialog(context, "Fields Incomplete", "You must give the ACM a material type.");
+//                    return;
+//                  }
+                  Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(widget.acm).setData(
+                      acmObj, merge: true);
+//                  acm.setData(acmObj, merge: true);
                   Navigator.pop(context);
                 })
-              ]),
+              ]
+          ),
           body: isLoading ?
           loadingPage(loadingText: 'Loading ACM...')
-          : new StreamBuilder(stream: acm.snapshots(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) return
-                  loadingPage(loadingText: 'Loading ACM...');
-                if (snapshot.hasData) {
-                  return GestureDetector(
-                      onTap: () {
-                        FocusScope.of(context).requestFocus(new FocusNode());
-                      },
-                      child: Container(
-                          padding: new EdgeInsets.all(8.0),
-                          child: ListView(
-                            children: <Widget>[
+          : GestureDetector(
+            onTap: () {
+              FocusScope.of(context).requestFocus(new FocusNode());
+            },
+            child: SingleChildScrollView(
+                controller: _scrollController,
+                padding: new EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 500.0),
+                child: new Column(
+    //                            controller: _scrollController,
+    //                            padding: new EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 500.0),
+                  children: <Widget>[
 
-                              // SAMPLED/PRESUMED
-                              new Row(
-                                children: <Widget>[
-                                new Expanded(child:
-                                new SelectButton(
-                                    onClick: () {
-                                      // firestore change score
-                                      setState(() {
-                                        idKey = 'i';
-                                        isSampled = true;
-                                        acm.setData({"idkey": 'i'}, merge: true);
-                                      });
-                                    },
-                                    selected: idKey == 'i',
-                                    text: 'Sampled',
-                                ),),
-                                new Expanded(child:
-                                new SelectButton(
-                                  onClick: () {
-                                    // firestore change score
+                    // SAMPLED/PRESUMED
+                    new Row(
+                      children: <Widget>[
+                      new Expanded(child:
+                      new SelectButton(
+                          onClick: () {
+                            // firestore change score
+                            setState(() {
+                              idKey = 'i';
+                              isSampled = true;
+                              acmObj["idkey"] = 'i';
+//                              acm.setData({"idkey": 'i'}, merge: true);
+                            });
+                          },
+                          selected: idKey == 'i',
+                          text: 'Sampled',
+                      ),),
+                      new Expanded(child:
+                      new SelectButton(
+                        onClick: () {
+                          // firestore change score
+                          setState(() {
+                            idKey = stronglyPresumed ? 's' : 'p';
+                            isSampled = false;
+                            acmObj["idkey"] = idKey;
+//                            acm.setData({"idkey": idKey}, merge: true);
+                          });
+                        },
+                        selected: idKey != 'i',
+                        text: presumedText,
+                      ),),
+                    ],
+                    ),
+                    new Divider(),
+
+                    // SAMPLE PHOTO
+                    new Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                      new Container(
+                            alignment: Alignment.center,
+                            height: 312.0,
+                            width: 240.0,
+                            decoration: BoxDecoration(border: new Border.all(color: Colors.black)),
+                            child: GestureDetector(
+                                onTap: () {
+                                  ImagePicker.pickImage(source: ImageSource.camera).then((image) {
+    //                                          _imageFile = image;
+                                    localPhoto = true;
+                                    _handleImageUpload(image);
+                                  });
+                                },
+    //                                    child: (_imageFile != null)
+    //                                        ? Image.file(_imageFile)
+                                child: localPhoto ?
+                                new Image.file(new File(acmObj['path_local']))
+                                    : (acmObj['path_remote'] != null) ?
+                                new CachedNetworkImage(
+                                  imageUrl: acmObj['path_remote'],
+                                  placeholder: new CircularProgressIndicator(),
+                                  errorWidget: new Icon(Icons.error),
+                                  fadeInDuration: new Duration(seconds: 1),
+                                )
+                                    :  new Icon(
+                                  Icons.camera, color: CompanyColors.accent,
+                                  size: 48.0,)
+                            ),
+                          )],
+                        ),
+
+                    // HEADER INFO
+
+                    isSampled ?
+                      // SAMPLE NUMBER
+    //                                  new Row(children: <Widget> [
+                      new Container(
+                          alignment: Alignment.topLeft,
+                          child: TextField(
+                            decoration: const InputDecoration(
+                                labelText: "Description"),
+                            autocorrect: false,
+                            keyboardType: TextInputType.text,
+                          ),
+    //                                      child: new DropdownButtonHideUnderline(child: ButtonTheme(
+    //                                        alignedDropdown: true,
+    //                                        child: DropdownButton<String>(
+    //                                          value: (_sample == null) ? null : _sample['name'],
+    //                                          iconSize: 24.0,
+    //                                          items: samplelist.map((Map<String,String> sample) {
+    //                                            return new DropdownMenuItem<String>(
+    //                                              value: sample['name'],
+    //                                              child: new Text(sample['name']),
+    //                                            );
+    //                                          }).toList(),
+    //                                          onChanged: (value) {
+    //                                            setState(() {
+    //                                              _sample = samplelist.firstWhere((e) => e['name'] == value);
+    //                                              acm.setData({"sample": _sample['path']}, merge: true);
+    //                                            });
+    //                                          },
+    //                                        ),
+    //                                      )
+    //                                      )
+                      )
+    //                                    new Container(
+    //                                    child: new IconButton(
+    //                                      icon: new Icon(Icons.add),
+    //                                      color: CompanyColors.accent,
+    //                                      iconSize: 16.0,
+    //                                      onPressed: () {
+    //                                      // Go to new Sample page
+    //                                      },
+    //                                    ),),
+    //                                    ]
+    //                                  )
+
+                      :
+                      // PRESUMED/STRONGLY
+                      new Container(
+                          child: new Row(children: <Widget>[
+                            new Switch(
+                              value: stronglyPresumed,
+                              onChanged: (bool strong) {
+                                setState(() {
+                                  if (strong) {
+                                    presumedText = 'Strongly presumed';
+                                    stronglyPresumed = true;
+                                  } else {
+                                    presumedText = 'Presumed';
+                                    stronglyPresumed = false;
+                                  }
+                                });
+                              },
+                            ),
+                            new Text("Strongly presume"),
+                          ],)
+                      ),
+                      stronglyPresumed ?
+                        new Container(
+
+                        )
+                      :
+                        new Container(),
+    //                             // DROPDOWN ROOM
+                      new Container(
+                        alignment: Alignment.topLeft,
+                        child: new Text("Room Name", style: Styles.label,),
+                      ),
+                      new Container(
+                        alignment: Alignment.topLeft,
+                        child: DropdownButton<String>(
+                          value: (_room == null) ? null : _room['path'],
+                          iconSize: 24.0,
+                          items: roomlist.map((Map<String,String> room) {
+                            print(room.toString());
+                            String val = "Untitled";
+                            if (room['name'] != null && room['roomcode'] != null) {
+                              val = room['name'] + "(" + room['roomcode'] + ")";
+                            } else if (room['name'] != null) {
+                              val = room['name'];
+                            } else if (room['roomcode'] != null) {
+                              val = room['roomcode'];
+                            }
+                            return new DropdownMenuItem<String>(
+                              value: room["path"],
+                              child: new Text(val),
+                            );
+                          }).toList(),
+                          hint: Text("Room"),
+                          onChanged: (value) {
+                            setState(() {
+                              _room = roomlist.firstWhere((e) => e['path'] == value);
+                              acmObj["room"] = _room;
+//                              acm.setData({"room": _room}, merge: true);
+                            });
+                          },
+                        ),
+                      ),
+                      new Container(
+                        alignment: Alignment.topLeft,
+                        child: AutoCompleteTextField<String>(
+                            decoration: new InputDecoration(
+                                hintText: "e.g. Ceiling, Walls, Floor (2nd layer)",
+                                labelText: "Description/Item"
+
+    //                                        border: new OutlineInputBorder(
+    //                                            gapPadding: 0.0, borderRadius: new BorderRadius.circular(16.0)),
+    //                                        suffixIcon: new Icon(Icons.search)
+                            ),
+                            initialValue: initialDescription,
+                            key: keyItems,
+                            scrollController: _scrollController,
+                            suggestions: items,
+                            textChanged: (item) {
+                              _updateDescription(item);
+                            },
+                            itemSubmitted: (item) {
+                              _updateDescription(item.toString());
+                            },
+                            itemBuilder: (context, item) {
+                              return new Padding(
+                                  padding: EdgeInsets.all(8.0), child: new Text(item));
+                            },
+                            itemSorter: (a, b) {
+                              return a.compareTo(b);
+                            },
+                            itemFilter: (item, query) {
+                              return item.toLowerCase().contains(query.toLowerCase());
+                            }),
+                      ),
+                      new Container(
+                        alignment: Alignment.topLeft,
+                        child: AutoCompleteTextField<String>(
+                            decoration: new InputDecoration(
+                                hintText: "e.g. textured plaster, paper-backed vinyl",
+                                labelText: "Material"
+
+    //                                        border: new OutlineInputBorder(
+    //                                            gapPadding: 0.0, borderRadius: new BorderRadius.circular(16.0)),
+    //                                        suffixIcon: new Icon(Icons.search)
+                            ),
+                            initialValue: initialMaterial,
+                            key: keyMaterial,
+                            scrollController: _scrollController,
+                            suggestions: materials,
+                            textChanged: (item) {
+                              _updateMaterial(item);
+                            },
+                            itemSubmitted: (item) {
+                              _updateMaterial(item.toString());
+                            },
+                            itemBuilder: (context, item) {
+                              return new Padding(
+                                  padding: EdgeInsets.all(8.0), child: new Text(item));
+                            },
+                            itemSorter: (a, b) {
+                              return a.compareTo(b);
+                            },
+                            itemFilter: (item, query) {
+                              return item.toLowerCase().contains(query.toLowerCase());
+                            }),
+                      ),
+                    Container(
+                      alignment: Alignment.topLeft,
+                      child: TextField(
+                        decoration: const InputDecoration(
+                            labelText: "Notes"),
+                        autocorrect: false,
+                        controller: controllerNotes,
+                        textCapitalization: TextCapitalization.sentences,
+                        keyboardType: TextInputType.multiline,
+                        maxLines: null,
+                      ),
+                    ),
+
+                    // Accessibility Section
+                    new Container(alignment: Alignment.bottomLeft,
+                        height: 25.0,
+                        margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                        child: new Text('Accessibility', style: Styles.h3,)
+                    ),
+                    new Row(children: <Widget>[
+                      new Expanded(child:
+                      new ScoreButton(
+                          onClick: () {
+                            // firestore change score
+                            setState(() {
+                              if (accessibilityScore == 1) { accessibilityScore = null; }
+                              else { accessibilityScore = 1; }
+                              acmObj["accessibility"] = accessibilityScore;
+//                              acm.setData({"accessibility": accessibilityScore}, merge: true);
+                            });
+                          },
+                          selected: accessibilityScore == 1,
+                          score: 1,
+                          text: 'Easy',
+                          tooltip: Tip.accessibility_easy
+                      ),),
+                      new Expanded(child:
+                      new ScoreButton(
+                          onClick: () {
+                            // firestore change score
+                            setState(() {
+                              if (accessibilityScore == 2) { accessibilityScore = null; }
+                              else { accessibilityScore = 2; }
+                              acmObj["accessibility"] = accessibilityScore;
+//                              acm.setData({"accessibility": accessibilityScore}, merge: true);
+                            });
+                          },
+                          selected: accessibilityScore == 2,
+                          score: 2,
+                          text: 'Medium',
+                          tooltip: Tip.accessibility_medium
+                      ),),
+                      new Expanded(child:
+                      new ScoreButton(
+                          onClick: () {
+                            // firestore change score
+                            setState(() {
+                              if (accessibilityScore == 3) { accessibilityScore = null; }
+                              else { accessibilityScore = 3; }
+                              acmObj["accessibility"] = accessibilityScore;
+//                              acm.setData({"accessibility": accessibilityScore}, merge: true);
+                            });
+                          },
+                          selected: accessibilityScore == 3,
+                          score: 3,
+                          text: 'Difficult',
+                          tooltip: Tip.accessibility_difficult
+                      ),),
+                    ],
+                    ),
+
+                    // Material Section
+                    new Divider(),
+                    new Container(
+                        child: new Row(children: <Widget>[
+                          new Container(
+                              width: 200.0,
+                            child: Row(children: <Widget>[
+                          new Switch(
+                            value: showMaterialRisk,
+                            onChanged: (bool show) {
+                              setState(() {
+                                showMaterialRisk = show;
+                              });
+                            },
+                          ),
+                          new Text("Material Risk"),])
+                          ),
+                          new Container(
+                              width: 120.0,
+                              alignment: Alignment.centerRight,
+                              padding: EdgeInsets.symmetric(horizontal: 4.0),
+                              child: ScoreButton(
+                                bordercolor: materialRiskSet ? Colors.black26 : Colors.white,
+                                onClick: () {},
+                                selected: true,
+                                score: materialRiskSet ? materialRiskLevel : -1,
+                                textcolor: Colors.black54,
+                                text: materialRiskSet? materialRiskText : 'Incomplete',
+                                radius: 0.0,
+                              )
+                          ),
+                        ],)
+                    ),
+                    showMaterialRisk ?
+                    new Container(
+                        child: new Column(children: <Widget>[
+
+                          // PRODUCT SCORE
+
+                          new Container(alignment: Alignment.bottomLeft,
+                              height: 25.0,
+                              margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                              child: new Text('Product', style: Styles.h3,)
+                          ),
+                          new Row(children: <Widget>[
+                            new Expanded(child:
+                            new ScoreButton(
+                              onClick: () {
+
+                              },
+                              selected: false,
+                              // -1 = disabled button
+                              score: -1,
+                            ),),
+                            new Expanded(child:
+                            new ScoreButton(
+                              onClick: () {
+                                // firestore change score
+                                setState(() {
+                                  if (materialProductScore == 1) { materialProductScore = null; }
+                                  else { materialProductScore = 1; }
+                                  acmObj["materialrisk_productscore"] = materialProductScore;
+//                                  acm.setData({"materialrisk_productscore": materialProductScore}, merge: true);
+                                });
+                              },
+                              selected: materialProductScore == 1,
+                              score: 1,
+                              tooltip: Tip.material_product_1,
+                            ),),
+                            new Expanded(child:
+                            new ScoreButton(
+                              onClick: () {
+                                // firestore change score
+                                setState(() {
+                                  if (materialProductScore == 2) { materialProductScore = null; }
+                                  else { materialProductScore = 2; }
+                                  acmObj["materialrisk_productscore"] = materialProductScore;
+//                                  acm.setData({"materialrisk_productscore": materialProductScore}, merge: true);
+                                });
+                              },
+                              selected: materialProductScore == 2,
+                              score: 2,
+                              tooltip: Tip.material_product_2,
+                            ),),
+                            new Expanded(child:
+                            new ScoreButton(
+                              onClick: () {
+                                // firestore change score
+                                setState(() {
+                                  if (materialProductScore == 3) { materialProductScore = null; }
+                                  else { materialProductScore = 3; }
+                                  acmObj["materialrisk_productscore"] = materialProductScore;
+//                                  acm.setData({"materialrisk_productscore": materialProductScore}, merge: true);
+                                });
+                              },
+                              selected: materialProductScore == 3,
+                              score: 3,
+                              tooltip: Tip.material_product_3,
+                            ),),
+
+                          ],
+                          ),
+
+                          // DAMAGE SCORE
+
+                          new Container(alignment: Alignment.bottomLeft,
+                              height: 25.0,
+                              margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                              child: new Text('Damage', style: Styles.h3,)
+                          ),
+                          new Row(children: <Widget>[
+                            new Expanded(child:
+                            new ScoreButton(
+                              onClick: () {
+                                // firestore change
+                                setState(() {
+                                  if (materialDamageScore == 0) { materialDamageScore = null; }
+                                  else { materialDamageScore = 0; }
+                                  acmObj["materialrisk_damagescore"] = materialDamageScore;
+//                                  acm.setData({"materialrisk_damagescore": materialDamageScore}, merge: true);
+                                });
+                              },
+                              selected: materialDamageScore == 0,
+                              score: 0,
+                              tooltip: Tip.material_damage_0,
+                            ),),
+                            new Expanded(child:
+                            new ScoreButton(
+                              onClick: () {
+                                // firestore change score
+                                setState(() {
+                                  if (materialDamageScore == 1) { materialDamageScore = null; }
+                                  else { materialDamageScore = 1; }
+                                  acmObj["materialrisk_damagescore"] = materialDamageScore;
+//                                  acm.setData({"materialrisk_damagescore": materialDamageScore}, merge: true);
+                                });
+                              },
+                              selected: materialDamageScore == 1,
+                              score: 1,
+                              tooltip: Tip.material_damage_1,
+                            ),),
+                            new Expanded(child:
+                            new ScoreButton(
+                              onClick: () {
+                                // firestore change score
+                                setState(() {
+                                  if (materialDamageScore == 2) { materialDamageScore = null; }
+                                  else { materialDamageScore = 2; }
+                                  acmObj["materialrisk_damagescore"] = materialDamageScore;
+//                                  acm.setData({"materialrisk_damagescore": materialDamageScore}, merge: true);
+                                });
+                              },
+                              selected: materialDamageScore == 2,
+                              score: 2,
+                              tooltip: Tip.material_damage_2,
+                            ),),
+                            new Expanded(child:
+                            new ScoreButton(
+                              onClick: () {
+                                // firestore change score
+                                setState(() {
+                                  if (materialDamageScore == 3) { materialDamageScore = null; }
+                                  else { materialDamageScore = 3; }
+                                  acmObj["materialrisk_damagescore"] = materialDamageScore;
+//                                  acm.setData({"materialrisk_damagescore": materialDamageScore}, merge: true);
+                                });
+                              },
+                              selected: materialDamageScore == 3,
+                              score: 3,
+                              tooltip: Tip.material_damage_3,
+                            ),),
+
+                          ],
+                          ),
+
+                          // SURFACE SCORE
+
+                          new Container(alignment: Alignment.bottomLeft,
+                              height: 25.0,
+                              margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                              child: new Text('Surface', style: Styles.h3,)
+                          ),
+                          new Row(children: <Widget>[
+                            new Expanded(child:
+                            new ScoreButton(
+                              onClick: () {
+                                // firestore change score
+                                setState(() {
+                                  if (materialSurfaceScore == 0) { materialSurfaceScore = null; }
+                                  else { materialSurfaceScore = 0; }
+                                  acmObj["materialrisk_surfacescore"] = materialSurfaceScore;
+//                                  acm.setData({"materialrisk_surfacescore": materialSurfaceScore}, merge: true);
+                                });
+                              },
+                              selected: materialSurfaceScore == 0,
+                              score: 0,
+                              tooltip: Tip.material_surface_0,
+                            ),),
+                            new Expanded(child:
+                            new ScoreButton(
+                              onClick: () {
+                                // firestore change score
+                                setState(() {
+                                  if (materialSurfaceScore == 1) { materialSurfaceScore = null; }
+                                  else { materialSurfaceScore = 1; }
+                                  acmObj["materialrisk_surfacescore"] = materialSurfaceScore;
+//                                  acm.setData({"materialrisk_surfacescore": materialSurfaceScore}, merge: true);
+                                });
+                              },
+                              selected: materialSurfaceScore == 1,
+                              score: 1,
+                              tooltip: Tip.material_surface_1,
+                            ),),
+                            new Expanded(child:
+                            new ScoreButton(
+                              onClick: () {
+                                // firestore change score
+                                setState(() {
+                                  if (materialSurfaceScore == 2) { materialSurfaceScore = null; }
+                                  else { materialSurfaceScore = 2; }
+                                  acmObj["materialrisk_surfacescore"] = materialSurfaceScore;
+//                                  acm.setData({"materialrisk_surfacescore": materialSurfaceScore}, merge: true);
+                                });
+                              },
+                              selected: materialSurfaceScore == 2,
+                              score: 2,
+                              tooltip: Tip.material_surface_2,
+                            ),),
+                            new Expanded(child:
+                            new ScoreButton(
+                              onClick: () {
+                                // firestore change score
+                                setState(() {
+                                  if (materialSurfaceScore == 3) { materialSurfaceScore = null; }
+                                  else { materialSurfaceScore = 3; }
+                                  acmObj["materialrisk_surfacescore"] = materialSurfaceScore;
+//                                  acm.setData({"materialrisk_surfacescore": materialSurfaceScore}, merge: true);
+                                });
+                              },
+                              selected: materialSurfaceScore == 3,
+                              score: 3,
+                              tooltip: Tip.material_surface_3,
+                            ),),
+
+                          ],
+                          ),
+
+                          // ASBESTOS SCORE
+
+                          new Container(alignment: Alignment.bottomLeft,
+                              height: 25.0,
+                              margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                              child: new Text('Asbestos Type', style: Styles.h3,)
+                          ),
+                          new Row(children: <Widget>[
+                            new Expanded(child:
+                            new ScoreButton(
+                              onClick: () {
+
+                              },
+                              selected: false,
+                              // -1 = disabled button
+                              score: -1,
+                            ),),
+                            new Expanded(child:
+                            new ScoreButton(
+                              onClick: () {
+                                // firestore change score
+                                setState(() {
+                                  if (materialAsbestosScore == 1) { materialAsbestosScore = null; }
+                                  else { materialAsbestosScore = 1; }
+                                  acmObj["materialrisk_asbestosscore"] = materialAsbestosScore;
+//                                  acm.setData({"materialrisk_asbestosscore": materialAsbestosScore}, merge: true);
+                                });
+                              },
+                              selected: materialAsbestosScore == 1,
+                              score: 1,
+                              tooltip: Tip.material_asbestos_1,
+    //                                        text: 'ch'
+                            ),),
+                            new Expanded(child:
+                            new ScoreButton(
+                              onClick: () {
+                                // firestore change score
+                                setState(() {
+                                  if (materialAsbestosScore == 2) { materialAsbestosScore = null; }
+                                  else { materialAsbestosScore = 2; }
+                                  acmObj["materialrisk_asbestosscore"] = materialAsbestosScore;
+//                                  acm.setData({"materialrisk_asbestosscore": materialAsbestosScore}, merge: true);
+                                });
+                              },
+                              selected: materialAsbestosScore == 2,
+                              score: 2,
+                              tooltip: Tip.material_asbestos_2,
+    //                                        text: 'am'
+                            ),),
+                            new Expanded(child:
+                            new ScoreButton(
+                              onClick: () {
+                                // firestore change score
+                                setState(() {
+                                  if (materialAsbestosScore == 3) { materialAsbestosScore = null; }
+                                  else { materialAsbestosScore = 3; }
+                                  acmObj["materialrisk_asbestosscore"] = materialAsbestosScore;
+//                                  acm.setData({"materialrisk_asbestosscore": materialAsbestosScore}, merge: true);
+                                });
+                              },
+                              selected: materialAsbestosScore == 3,
+                              score: 3,
+                              tooltip: Tip.material_asbestos_3,
+    //                                        text: 'cr'
+                            ),),
+
+                          ],
+                          ),
+
+                          new Container(
+                            alignment: Alignment.topLeft,
+                            child: AutoCompleteTextField<String>(
+                                decoration: new InputDecoration(
+                                    hintText: "e.g. Chipped edges, exposed fibres",
+                                    labelText: "Damage Description"
+                                ),
+                                initialValue: initialDamage,
+                                key: keyDamage,
+                                scrollController: _scrollController,
+                                suggestions: damage,
+                                textChanged: (item) {
+                                  _updateDamageDesc(item);
+                                },
+                                itemSubmitted: (item) {
+                                  _updateDamageDesc(item.toString());
+                                },
+                                itemBuilder: (context, item) {
+                                  return new Padding(
+                                      padding: EdgeInsets.all(8.0), child: new Text(item));
+                                },
+                                itemSorter: (a, b) {
+                                  return a.compareTo(b);
+                                },
+                                itemFilter: (item, query) {
+                                  return item.toLowerCase().contains(query.toLowerCase());
+                                }),
+                          ),
+                          new Container(
+                            alignment: Alignment.topLeft,
+                            child: AutoCompleteTextField<String>(
+                                decoration: new InputDecoration(
+                                    hintText: "e.g. Painted on the outside face",
+                                    labelText: "Surface Treatment"
+                                ),
+                                initialValue: initialSurface,
+                                key: keySurface,
+                                scrollController: _scrollController,
+                                suggestions: surface,
+                                textChanged: (item) {
+                                  _updateSurfaceDesc(item);
+                                },
+                                itemSubmitted: (item) {
+                                  _updateSurfaceDesc(item.toString());
+                                },
+                                itemBuilder: (context, item) {
+                                  return new Padding(
+                                      padding: EdgeInsets.all(8.0), child: new Text(item));
+                                },
+                                itemSorter: (a, b) {
+                                  return a.compareTo(b);
+                                },
+                                itemFilter: (item, query) {
+                                  return item.toLowerCase().contains(query.toLowerCase());
+                                }),
+                          ),
+                          // Damage
+                        ],
+                        )
+                    )
+                        : Container(),
+
+                    // Priority Section
+                    new Divider(),
+                    new Container(
+                        child: new Row(children: <Widget>[
+                          new Container(
+                              width: 200.0,
+                              child: Row(children: <Widget>[
+                                new Switch(
+                                  value: showPriorityRisk,
+                                  onChanged: (bool show) {
                                     setState(() {
-                                      idKey = stronglyPresumed ? 's' : 'p';
-                                      isSampled = false;
-                                      acm.setData(
-                                          {"idkey": idKey}, merge: true);
+                                      showPriorityRisk = show;
                                     });
                                   },
-                                  selected: idKey != 'i',
-                                  text: presumedText,
-                                ),),
-                              ],
-                              ),
-                              new Divider(),
-
-                              // SAMPLE PHOTO
-                              new Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                new Container(
-                                      alignment: Alignment.center,
-                                      height: 312.0,
-                                      width: 240.0,
-                                      decoration: BoxDecoration(border: new Border.all(color: Colors.black)),
-                                      child: GestureDetector(
-                                          onTap: () {
-                                            ImagePicker.pickImage(source: ImageSource.camera).then((image) {
-//                                          _imageFile = image;
-                                              localPhoto = true;
-                                              _handleImageUpload(image);
-                                            });
-                                          },
-//                                    child: (_imageFile != null)
-//                                        ? Image.file(_imageFile)
-                                          child: localPhoto ?
-                                          new Image.file(new File(snapshot.data['path_local']))
-                                              : (snapshot.data['path_remote'] != null) ?
-                                          new CachedNetworkImage(
-                                            imageUrl: snapshot.data['path_remote'],
-                                            placeholder: new CircularProgressIndicator(),
-                                            errorWidget: new Icon(Icons.error),
-                                            fadeInDuration: new Duration(seconds: 1),
-                                          )
-                                              :  new Icon(
-                                            Icons.camera, color: CompanyColors.accent,
-                                            size: 48.0,)
-                                      ),
-                                    )],
-                                  ),
-
-                              // HEADER INFO
-
-                              isSampled ?
-                                // SAMPLE NUMBER
-//                                  new Row(children: <Widget> [
-                                new Container(
-                                    alignment: Alignment.topLeft,
-                                    child: TextField(
-                                      decoration: const InputDecoration(
-                                          labelText: "Description"),
-                                      autocorrect: false,
-                                      keyboardType: TextInputType.text,
-                                    ),
-//                                      child: new DropdownButtonHideUnderline(child: ButtonTheme(
-//                                        alignedDropdown: true,
-//                                        child: DropdownButton<String>(
-//                                          value: (_sample == null) ? null : _sample['name'],
-//                                          iconSize: 24.0,
-//                                          items: samplelist.map((Map<String,String> sample) {
-//                                            return new DropdownMenuItem<String>(
-//                                              value: sample['name'],
-//                                              child: new Text(sample['name']),
-//                                            );
-//                                          }).toList(),
-//                                          onChanged: (value) {
-//                                            setState(() {
-//                                              _sample = samplelist.firstWhere((e) => e['name'] == value);
-//                                              acm.setData({"sample": _sample['path']}, merge: true);
-//                                            });
-//                                          },
-//                                        ),
-//                                      )
-//                                      )
-                                )
-//                                    new Container(
-//                                    child: new IconButton(
-//                                      icon: new Icon(Icons.add),
-//                                      color: CompanyColors.accent,
-//                                      iconSize: 16.0,
-//                                      onPressed: () {
-//                                      // Go to new Sample page
-//                                      },
-//                                    ),),
-//                                    ]
-//                                  )
-
-                                :
-                                // PRESUMED/STRONGLY
-                                new Container(
-                                    child: new Row(children: <Widget>[
-                                      new Switch(
-                                        value: stronglyPresumed,
-                                        onChanged: (bool strong) {
-                                          setState(() {
-                                            if (strong) {
-                                              presumedText = 'Strongly presumed';
-                                              stronglyPresumed = true;
-                                            } else {
-                                              presumedText = 'Presumed';
-                                              stronglyPresumed = false;
-                                            }
-                                          });
-                                        },
-                                      ),
-                                      new Text("Strongly presume"),
-                                    ],)
                                 ),
-                                stronglyPresumed ?
-                                  new Container(
-
-                                  )
-                                :
-                                  new Container(),
-//                             // DROPDOWN ROOM
-                                new Text("Room Name", style: Styles.label,),
-                                new Container(
-                                  child: DropdownButton<String>(
-                                    value: (_room == null) ? null : _room['path'],
-                                    iconSize: 24.0,
-                                    items: roomlist.map((Map<String,String> room) {
-                                      print(room.toString());
-                                      String val = "Untitled";
-                                      if (room['namecode'] != null) {
-                                        val = room['namecode'];
-                                      } else if (room['name'] != null) {
-                                        val = room['name'];
-                                      }
-                                      return new DropdownMenuItem<String>(
-                                        value: room["path"],
-                                        child: new Text(val),
-                                      );
-                                    }).toList(),
-                                    hint: Text("Room"),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _room = roomlist.firstWhere((e) => e['path'] == value);
-                                        acm.setData({"room": _room}, merge: true);
-                                      });
-                                    },
-                                  ),
-                                ),
-                                new Container(
-                                  alignment: Alignment.topLeft,
-                                  child: AutoCompleteTextField<String>(
-                                      decoration: new InputDecoration(
-                                          hintText: "e.g. Ceiling, Walls, Floor (2nd layer)",
-                                          labelText: "Description/Item"
-
-//                                        border: new OutlineInputBorder(
-//                                            gapPadding: 0.0, borderRadius: new BorderRadius.circular(16.0)),
-//                                        suffixIcon: new Icon(Icons.search)
-                                      ),
-                                      controller: controllerDescription,
-                                      key: keyItems,
-                                      suggestions: items,
-                                      textChanged: (item) {
-                                        controllerDescription.text = item;
-                                      },
-                                      itemBuilder: (context, item) {
-                                        return new Padding(
-                                            padding: EdgeInsets.all(8.0), child: new Text(item));
-                                      },
-                                      itemSorter: (a, b) {
-                                        return a.compareTo(b);
-                                      },
-                                      itemFilter: (item, query) {
-                                        return item.toLowerCase().contains(query.toLowerCase());
-                                      }),
-                                ),
-                                new Container(
-                                  alignment: Alignment.topLeft,
-                                  child: AutoCompleteTextField<String>(
-                                      decoration: new InputDecoration(
-                                          hintText: "e.g. textured plaster, paper-backed vinyl",
-                                          labelText: "Material"
-
-//                                        border: new OutlineInputBorder(
-//                                            gapPadding: 0.0, borderRadius: new BorderRadius.circular(16.0)),
-//                                        suffixIcon: new Icon(Icons.search)
-                                      ),
-                                      controller: controllerMaterial,
-                                      key: keyMaterial,
-                                      suggestions: materials,
-                                      textChanged: (item) {
-                                        controllerMaterial.text = item;
-                                      },
-                                      itemBuilder: (context, item) {
-                                        return new Padding(
-                                            padding: EdgeInsets.all(8.0), child: new Text(item));
-                                      },
-                                      itemSorter: (a, b) {
-                                        return a.compareTo(b);
-                                      },
-                                      itemFilter: (item, query) {
-                                        return item.toLowerCase().contains(query.toLowerCase());
-                                      }),
-                                ),
-                              Container(
-                                alignment: Alignment.topLeft,
-                                child: TextField(
-                                  decoration: const InputDecoration(
-                                      labelText: "Notes"),
-                                  autocorrect: false,
-                                  controller: controllerNotes,
-                                  keyboardType: TextInputType.multiline,
-                                  maxLines: null,
-                                ),
-                              ),
-
-                              // Accessibility Section
-                              new Container(alignment: Alignment.bottomLeft,
-                                  height: 25.0,
-                                  margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
-                                  child: new Text('Accessibility', style: Styles.h3,)
-                              ),
-                              new Row(children: <Widget>[
-                                new Expanded(child:
-                                new ScoreButton(
-                                    onClick: () {
-                                      // firestore change score
-                                      setState(() {
-                                        if (accessibilityScore == 1) { accessibilityScore = null; }
-                                        else { accessibilityScore = 1; }
-                                        acm.setData({"accessibility": accessibilityScore}, merge: true);
-                                      });
-                                    },
-                                    selected: accessibilityScore == 1,
-                                    score: 1,
-                                    text: 'Easy',
-                                    tooltip: Tip.accessibility_easy
-                                ),),
-                                new Expanded(child:
-                                new ScoreButton(
-                                    onClick: () {
-                                      // firestore change score
-                                      setState(() {
-                                        if (accessibilityScore == 2) { accessibilityScore = null; }
-                                        else { accessibilityScore = 2; }
-                                        acm.setData({"accessibility": accessibilityScore}, merge: true);
-                                      });
-                                    },
-                                    selected: accessibilityScore == 2,
-                                    score: 2,
-                                    text: 'Medium',
-                                    tooltip: Tip.accessibility_medium
-                                ),),
-                                new Expanded(child:
-                                new ScoreButton(
-                                    onClick: () {
-                                      // firestore change score
-                                      setState(() {
-                                        if (accessibilityScore == 3) { accessibilityScore = null; }
-                                        else { accessibilityScore = 3; }
-                                        acm.setData({"accessibility": accessibilityScore}, merge: true);
-                                      });
-                                    },
-                                    selected: accessibilityScore == 3,
-                                    score: 3,
-                                    text: 'Difficult',
-                                    tooltip: Tip.accessibility_difficult
-                                ),),
-                              ],
-                              ),
-
-                              // Material Section
-                              new Divider(),
-                              new Container(
-                                  child: new Row(children: <Widget>[
-                                    new Container(
-                                        width: 200.0,
-                                      child: Row(children: <Widget>[
-                                    new Switch(
-                                      value: showMaterialRisk,
-                                      onChanged: (bool show) {
-                                        setState(() {
-                                          showMaterialRisk = show;
-                                        });
-                                      },
-                                    ),
-                                    new Text("Material Risk"),])
-                                    ),
-                                    new Container(
-                                        width: 120.0,
-                                        alignment: Alignment.centerRight,
-                                        padding: EdgeInsets.symmetric(horizontal: 4.0),
-                                        child: ScoreButton(
-                                          bordercolor: materialRiskSet ? Colors.black26 : Colors.white,
-                                          onClick: () {},
-                                          selected: true,
-                                          score: materialRiskSet ? materialRiskLevel : -1,
-                                          textcolor: Colors.black54,
-                                          text: materialRiskSet? materialRiskText : 'Incomplete',
-                                          radius: 0.0,
-                                        )
-                                    ),
-                                  ],)
-                              ),
-                              showMaterialRisk ?
-                              new Container(
-                                  child: new Column(children: <Widget>[
-
-                                    // PRODUCT SCORE
-
-                                    new Container(alignment: Alignment.bottomLeft,
-                                        height: 25.0,
-                                        margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
-                                        child: new Text('Product', style: Styles.h3,)
-                                    ),
-                                    new Row(children: <Widget>[
-                                      new Expanded(child:
-                                      new ScoreButton(
-                                        onClick: () {
-
-                                        },
-                                        selected: false,
-                                        // -1 = disabled button
-                                        score: -1,
-                                      ),),
-                                      new Expanded(child:
-                                      new ScoreButton(
-                                        onClick: () {
-                                          // firestore change score
-                                          setState(() {
-                                            if (materialProductScore == 1) { materialProductScore = null; }
-                                            else { materialProductScore = 1; }
-                                            acm.setData({"materialrisk_productscore": materialProductScore}, merge: true);
-                                          });
-                                        },
-                                        selected: materialProductScore == 1,
-                                        score: 1,
-                                        tooltip: Tip.material_product_1,
-                                      ),),
-                                      new Expanded(child:
-                                      new ScoreButton(
-                                        onClick: () {
-                                          // firestore change score
-                                          setState(() {
-                                            if (materialProductScore == 2) { materialProductScore = null; }
-                                            else { materialProductScore = 2; }
-                                            acm.setData({"materialrisk_productscore": materialProductScore}, merge: true);
-                                          });
-                                        },
-                                        selected: materialProductScore == 2,
-                                        score: 2,
-                                        tooltip: Tip.material_product_2,
-                                      ),),
-                                      new Expanded(child:
-                                      new ScoreButton(
-                                        onClick: () {
-                                          // firestore change score
-                                          setState(() {
-                                            if (materialProductScore == 3) { materialProductScore = null; }
-                                            else { materialProductScore = 3; }
-                                            acm.setData({"materialrisk_productscore": materialProductScore}, merge: true);
-                                          });
-                                        },
-                                        selected: materialProductScore == 3,
-                                        score: 3,
-                                        tooltip: Tip.material_product_3,
-                                      ),),
-
-                                    ],
-                                    ),
-
-                                    // DAMAGE SCORE
-
-                                    new Container(alignment: Alignment.bottomLeft,
-                                        height: 25.0,
-                                        margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
-                                        child: new Text('Damage', style: Styles.h3,)
-                                    ),
-                                    new Row(children: <Widget>[
-                                      new Expanded(child:
-                                      new ScoreButton(
-                                        onClick: () {
-                                          // firestore change
-                                          setState(() {
-                                            if (materialDamageScore == 0) { materialDamageScore = null; }
-                                            else { materialDamageScore = 0; }
-                                            acm.setData({"materialrisk_damagescore": materialDamageScore}, merge: true);
-                                          });
-                                        },
-                                        selected: materialDamageScore == 0,
-                                        score: 0,
-                                        tooltip: Tip.material_damage_0,
-                                      ),),
-                                      new Expanded(child:
-                                      new ScoreButton(
-                                        onClick: () {
-                                          // firestore change score
-                                          setState(() {
-                                            if (materialDamageScore == 1) { materialDamageScore = null; }
-                                            else { materialDamageScore = 1; }
-                                            acm.setData({"materialrisk_damagescore": materialDamageScore}, merge: true);
-                                          });
-                                        },
-                                        selected: materialDamageScore == 1,
-                                        score: 1,
-                                        tooltip: Tip.material_damage_1,
-                                      ),),
-                                      new Expanded(child:
-                                      new ScoreButton(
-                                        onClick: () {
-                                          // firestore change score
-                                          setState(() {
-                                            if (materialDamageScore == 2) { materialDamageScore = null; }
-                                            else { materialDamageScore = 2; }
-                                            acm.setData({"materialrisk_damagescore": materialDamageScore}, merge: true);
-                                          });
-                                        },
-                                        selected: materialDamageScore == 2,
-                                        score: 2,
-                                        tooltip: Tip.material_damage_2,
-                                      ),),
-                                      new Expanded(child:
-                                      new ScoreButton(
-                                        onClick: () {
-                                          // firestore change score
-                                          setState(() {
-                                            if (materialDamageScore == 3) { materialDamageScore = null; }
-                                            else { materialDamageScore = 3; }
-                                            acm.setData({"materialrisk_damagescore": materialDamageScore}, merge: true);
-                                          });
-                                        },
-                                        selected: materialDamageScore == 3,
-                                        score: 3,
-                                        tooltip: Tip.material_damage_3,
-                                      ),),
-
-                                    ],
-                                    ),
-
-                                    // SURFACE SCORE
-
-                                    new Container(alignment: Alignment.bottomLeft,
-                                        height: 25.0,
-                                        margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
-                                        child: new Text('Surface', style: Styles.h3,)
-                                    ),
-                                    new Row(children: <Widget>[
-                                      new Expanded(child:
-                                      new ScoreButton(
-                                        onClick: () {
-                                          // firestore change score
-                                          setState(() {
-                                            if (materialSurfaceScore == 0) { materialSurfaceScore = null; }
-                                            else { materialSurfaceScore = 0; }
-                                            acm.setData({"materialrisk_surfacescore": materialSurfaceScore}, merge: true);
-                                          });
-                                        },
-                                        selected: materialSurfaceScore == 0,
-                                        score: 0,
-                                        tooltip: Tip.material_surface_0,
-                                      ),),
-                                      new Expanded(child:
-                                      new ScoreButton(
-                                        onClick: () {
-                                          // firestore change score
-                                          setState(() {
-                                            if (materialSurfaceScore == 1) { materialSurfaceScore = null; }
-                                            else { materialSurfaceScore = 1; }
-                                            acm.setData({"materialrisk_surfacescore": materialSurfaceScore}, merge: true);
-                                          });
-                                        },
-                                        selected: materialSurfaceScore == 1,
-                                        score: 1,
-                                        tooltip: Tip.material_surface_1,
-                                      ),),
-                                      new Expanded(child:
-                                      new ScoreButton(
-                                        onClick: () {
-                                          // firestore change score
-                                          setState(() {
-                                            if (materialSurfaceScore == 2) { materialSurfaceScore = null; }
-                                            else { materialSurfaceScore = 2; }
-                                            acm.setData({"materialrisk_surfacescore": materialSurfaceScore}, merge: true);
-                                          });
-                                        },
-                                        selected: materialSurfaceScore == 2,
-                                        score: 2,
-                                        tooltip: Tip.material_surface_2,
-                                      ),),
-                                      new Expanded(child:
-                                      new ScoreButton(
-                                        onClick: () {
-                                          // firestore change score
-                                          setState(() {
-                                            if (materialSurfaceScore == 3) { materialSurfaceScore = null; }
-                                            else { materialSurfaceScore = 3; }
-                                            acm.setData({"materialrisk_surfacescore": materialSurfaceScore}, merge: true);
-                                          });
-                                        },
-                                        selected: materialSurfaceScore == 3,
-                                        score: 3,
-                                        tooltip: Tip.material_surface_3,
-                                      ),),
-
-                                    ],
-                                    ),
-
-                                    // ASBESTOS SCORE
-
-                                    new Container(alignment: Alignment.bottomLeft,
-                                        height: 25.0,
-                                        margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
-                                        child: new Text('Asbestos Type', style: Styles.h3,)
-                                    ),
-                                    new Row(children: <Widget>[
-                                      new Expanded(child:
-                                      new ScoreButton(
-                                        onClick: () {
-
-                                        },
-                                        selected: false,
-                                        // -1 = disabled button
-                                        score: -1,
-                                      ),),
-                                      new Expanded(child:
-                                      new ScoreButton(
-                                        onClick: () {
-                                          // firestore change score
-                                          setState(() {
-                                            if (materialAsbestosScore == 1) { materialAsbestosScore = null; }
-                                            else { materialAsbestosScore = 1; }
-                                            acm.setData({"materialrisk_asbestosscore": materialAsbestosScore}, merge: true);
-                                          });
-                                        },
-                                        selected: materialAsbestosScore == 1,
-                                        score: 1,
-                                        tooltip: Tip.material_asbestos_1,
-//                                        text: 'ch'
-                                      ),),
-                                      new Expanded(child:
-                                      new ScoreButton(
-                                        onClick: () {
-                                          // firestore change score
-                                          setState(() {
-                                            if (materialAsbestosScore == 2) { materialAsbestosScore = null; }
-                                            else { materialAsbestosScore = 2; }
-                                            acm.setData({"materialrisk_asbestosscore": materialAsbestosScore}, merge: true);
-                                          });
-                                        },
-                                        selected: materialAsbestosScore == 2,
-                                        score: 2,
-                                        tooltip: Tip.material_asbestos_2,
-//                                        text: 'am'
-                                      ),),
-                                      new Expanded(child:
-                                      new ScoreButton(
-                                        onClick: () {
-                                          // firestore change score
-                                          setState(() {
-                                            if (materialAsbestosScore == 3) { materialAsbestosScore = null; }
-                                            else { materialAsbestosScore = 3; }
-                                            acm.setData({"materialrisk_asbestosscore": materialAsbestosScore}, merge: true);
-                                          });
-                                        },
-                                        selected: materialAsbestosScore == 3,
-                                        score: 3,
-                                        tooltip: Tip.material_asbestos_3,
-//                                        text: 'cr'
-                                      ),),
-
-                                    ],
-                                    ),
-
-                                    new Container(
-                                      alignment: Alignment.topLeft,
-                                      child: TextField(
-                                        decoration: const InputDecoration(
-                                            labelText: "Damage Description"),
-                                        autocorrect: false,
-                                        controller: controllerDamageDesc,
-                                        keyboardType: TextInputType.text,
-                                      ),
-                                    ),
-                                    new Container(
-                                      alignment: Alignment.topLeft,
-                                      child: TextField(
-                                        decoration: const InputDecoration(
-                                            labelText: "Surface Treatment"),
-                                        autocorrect: false,
-                                        controller: controllerSurfaceDesc,
-                                        keyboardType: TextInputType.text,
-                                      ),
-                                    ),
-                                    // Damage
-                                  ],
-                                  )
+                                new Text("Priority Risk"),])
+                          ),
+                          new Container(
+                              width: 120.0,
+                              alignment: Alignment.centerRight,
+                              padding: EdgeInsets.symmetric(horizontal: 4.0),
+                              child: ScoreButton(
+                                bordercolor: priorityRiskSet ? Colors.black26 : Colors.white,
+                                onClick: () {},
+                                selected: true,
+                                score: priorityRiskSet ? priorityRiskLevel : -1,
+                                textcolor: Colors.black54,
+                                text: priorityRiskSet ? priorityRiskText : 'Incomplete',
+                                radius: 0.0,
                               )
-                                  : Container(),
+                          ),
+                        ],)
+                    ),
 
-                              // Priority Section
-                              new Divider(),
-                              new Container(
-                                  child: new Row(children: <Widget>[
-                                    new Container(
-                                        width: 200.0,
-                                        child: Row(children: <Widget>[
-                                          new Switch(
-                                            value: showPriorityRisk,
-                                            onChanged: (bool show) {
-                                              setState(() {
-                                                showPriorityRisk = show;
-                                              });
-                                            },
-                                          ),
-                                          new Text("Priority Risk"),])
-                                    ),
-                                    new Container(
-                                        width: 120.0,
-                                        alignment: Alignment.centerRight,
-                                        padding: EdgeInsets.symmetric(horizontal: 4.0),
-                                        child: ScoreButton(
-                                          bordercolor: priorityRiskSet ? Colors.black26 : Colors.white,
-                                          onClick: () {},
-                                          selected: true,
-                                          score: priorityRiskSet ? priorityRiskLevel : -1,
-                                          textcolor: Colors.black54,
-                                          text: priorityRiskSet ? priorityRiskText : 'Incomplete',
-                                          radius: 0.0,
-                                        )
-                                    ),
-                                  ],)
-                              ),
+                    showPriorityRisk ?
+                    new Container(
+                      child: new Column(children: <Widget>[
+                        // ACTIVITY
 
-                              showPriorityRisk ?
-                              new Container(
-                                child: new Column(children: <Widget>[
-                                  // ACTIVITY
+                        // MAIN ACTIVITY
+                        new Container(alignment: Alignment.bottomLeft,
+                            height: 25.0,
+                            margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                            child: new Text('Main Activity', style: Styles.h3,)
+                        ),
+                        new Row(children: <Widget>[
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityActivityMain == 0) { priorityActivityMain = null; }
+                                else { priorityActivityMain = 0; }
+                                acmObj["priority_activity_main"] = priorityActivityMain;
+//                                acm.setData({"priority_activity_main": priorityActivityMain}, merge: true);
+                              });
+                            },
+                            selected: priorityActivityMain == 0,
+                            score: 0,
+                            tooltip: Tip.priority_activity_main_0,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityActivityMain == 1) { priorityActivityMain = null; }
+                                else { priorityActivityMain = 1; }
+                                acmObj["priority_activity_main"] = priorityActivityMain;
+//                                acm.setData({"priority_activity_main": priorityActivityMain}, merge: true);
+                              });
+                            },
+                            selected: priorityActivityMain == 1,
+                            score: 1,
+                            tooltip: Tip.priority_activity_main_1,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityActivityMain == 2) { priorityActivityMain = null; }
+                                else { priorityActivityMain = 2; }
+                                acmObj["priority_activity_main"] = priorityActivityMain;
+//                                acm.setData({"priority_activity_main": priorityActivityMain}, merge: true);
+                              });
+                            },
+                            selected: priorityActivityMain == 2,
+                            score: 2,
+                            tooltip: Tip.priority_activity_main_2,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityActivityMain == 3) { priorityActivityMain = null; }
+                                else { priorityActivityMain = 3; }
+                                acmObj["priority_activity_main"] = priorityActivityMain;
+//                                acm.setData({"priority_activity_main": priorityActivityMain}, merge: true);
+                              });
+                            },
+                            selected: priorityActivityMain == 3,
+                            score: 3,
+                            tooltip: Tip.priority_activity_main_3,
+                          ),),
 
-                                  // MAIN ACTIVITY
-                                  new Container(alignment: Alignment.bottomLeft,
-                                      height: 25.0,
-                                      margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
-                                      child: new Text('Main Activity', style: Styles.h3,)
-                                  ),
-                                  new Row(children: <Widget>[
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityActivityMain == 0) { priorityActivityMain = null; }
-                                          else { priorityActivityMain = 0; }
-                                          acm.setData({"priority_activity_main": priorityActivityMain}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityActivityMain == 0,
-                                      score: 0,
-                                      tooltip: Tip.priority_activity_main_0,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityActivityMain == 1) { priorityActivityMain = null; }
-                                          else { priorityActivityMain = 1; }
-                                          acm.setData({"priority_activity_main": priorityActivityMain}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityActivityMain == 1,
-                                      score: 1,
-                                      tooltip: Tip.priority_activity_main_1,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityActivityMain == 2) { priorityActivityMain = null; }
-                                          else { priorityActivityMain = 2; }
-                                          acm.setData({"priority_activity_main": priorityActivityMain}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityActivityMain == 2,
-                                      score: 2,
-                                      tooltip: Tip.priority_activity_main_2,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityActivityMain == 3) { priorityActivityMain = null; }
-                                          else { priorityActivityMain = 3; }
-                                          acm.setData({"priority_activity_main": priorityActivityMain}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityActivityMain == 3,
-                                      score: 3,
-                                      tooltip: Tip.priority_activity_main_3,
-                                    ),),
+                        ],
+                        ),
 
-                                  ],
-                                  ),
+                        // SECOND ACTIVITY
+                        new Container(alignment: Alignment.bottomLeft,
+                            height: 25.0,
+                            margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                            child: new Text('Secondary Activity', style: Styles.h3,)
+                        ),
+                        new Row(children: <Widget>[
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityActivitySecond == 0) { priorityActivitySecond = null; }
+                                else { priorityActivitySecond = 0; }
+                                acmObj["priority_activity_second"] = priorityActivitySecond;
+//                                acm.setData({"priority_activity_second": priorityActivitySecond}, merge: true);
+                              });
+                            },
+                            selected: priorityActivitySecond == 0,
+                            score: 0,
+                            tooltip: Tip.priority_activity_secondary_0,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityActivitySecond == 1) { priorityActivitySecond = null; }
+                                else { priorityActivitySecond = 1; }
+                                acmObj["priority_activity_second"] = priorityActivitySecond;
+//                                acm.setData({"priority_activity_second": priorityActivitySecond}, merge: true);
+                              });
+                            },
+                            selected: priorityActivitySecond == 1,
+                            score: 1,
+                            tooltip: Tip.priority_activity_secondary_1,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityActivitySecond == 2) { priorityActivitySecond = null; }
+                                else { priorityActivitySecond = 2; }
+                                acmObj["priority_activity_second"] = priorityActivitySecond;
+//                                acm.setData({"priority_activity_second": priorityActivitySecond}, merge: true);
+                              });
+                            },
+                            selected: priorityActivitySecond == 2,
+                            score: 2,
+                            tooltip: Tip.priority_activity_secondary_2,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityActivitySecond == 3) { priorityActivitySecond = null; }
+                                else { priorityActivitySecond = 3; }
+                                acmObj["priority_activity_second"] = priorityActivitySecond;
+//                                acm.setData({"priority_activity_second": priorityActivitySecond}, merge: true);
+                              });
+                            },
+                            selected: priorityActivitySecond == 3,
+                            score: 3,
+                            tooltip: Tip.priority_activity_secondary_3,
+                          ),),
 
-                                  // SECOND ACTIVITY
-                                  new Container(alignment: Alignment.bottomLeft,
-                                      height: 25.0,
-                                      margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
-                                      child: new Text('Secondary Activity', style: Styles.h3,)
-                                  ),
-                                  new Row(children: <Widget>[
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityActivitySecond == 0) { priorityActivitySecond = null; }
-                                          else { priorityActivitySecond = 0; }
-                                          acm.setData({"priority_activity_second": priorityActivitySecond}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityActivitySecond == 0,
-                                      score: 0,
-                                      tooltip: Tip.priority_activity_secondary_0,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityActivitySecond == 1) { priorityActivitySecond = null; }
-                                          else { priorityActivitySecond = 1; }
-                                          acm.setData({"priority_activity_second": priorityActivitySecond}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityActivitySecond == 1,
-                                      score: 1,
-                                      tooltip: Tip.priority_activity_secondary_1,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityActivitySecond == 2) { priorityActivitySecond = null; }
-                                          else { priorityActivitySecond = 2; }
-                                          acm.setData({"priority_activity_second": priorityActivitySecond}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityActivitySecond == 2,
-                                      score: 2,
-                                      tooltip: Tip.priority_activity_secondary_2,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityActivitySecond == 3) { priorityActivitySecond = null; }
-                                          else { priorityActivitySecond = 3; }
-                                          acm.setData({"priority_activity_second": priorityActivitySecond}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityActivitySecond == 3,
-                                      score: 3,
-                                      tooltip: Tip.priority_activity_secondary_3,
-                                    ),),
+                        ],
+                        ),
 
-                                  ],
-                                  ),
+                        new Divider(),
 
-                                  new Divider(),
+                        // LOCATION
+                        new Container(alignment: Alignment.bottomLeft,
+                            height: 25.0,
+                            margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                            child: new Text('Location', style: Styles.h3,)
+                        ),
+                        new Row(children: <Widget>[
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityDisturbanceLocation == 0) { priorityDisturbanceLocation = null; }
+                                else { priorityDisturbanceLocation = 0; }
+                                acmObj["priority_disturbance_location"] = priorityDisturbanceLocation;
+//                                acm.setData({"priority_disturbance_location": priorityDisturbanceLocation}, merge: true);
+                              });
+                            },
+                            selected: priorityDisturbanceLocation == 0,
+                            score: 0,
+                            tooltip: Tip.priority_disturbance_location_0,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityDisturbanceLocation == 1) { priorityDisturbanceLocation = null; }
+                                else { priorityDisturbanceLocation = 1; }
+                                acmObj["priority_disturbance_location"] = priorityDisturbanceLocation;
+//                                acm.setData({"priority_disturbance_location": priorityDisturbanceLocation}, merge: true);
+                              });
+                            },
+                            selected: priorityDisturbanceLocation == 1,
+                            score: 1,
+                            tooltip: Tip.priority_disturbance_location_1,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityDisturbanceLocation == 2) { priorityDisturbanceLocation = null; }
+                                else { priorityDisturbanceLocation = 2; }
+                                acmObj["priority_disturbance_location"] = priorityDisturbanceLocation;
+//                                acm.setData({"priority_disturbance_location": priorityDisturbanceLocation}, merge: true);
+                              });
+                            },
+                            selected: priorityDisturbanceLocation == 2,
+                            score: 2,
+                            tooltip: Tip.priority_disturbance_location_2,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityDisturbanceLocation == 3) { priorityDisturbanceLocation = null; }
+                                else { priorityDisturbanceLocation = 3; }
+                                acmObj["priority_disturbance_location"] = priorityDisturbanceLocation;
+//                                acm.setData({"priority_disturbance_location": priorityDisturbanceLocation}, merge: true);
+                              });
+                            },
+                            selected: priorityDisturbanceLocation == 3,
+                            score: 3,
+                            tooltip: Tip.priority_disturbance_location_3,
+                          ),),
 
-                                  // LOCATION
-                                  new Container(alignment: Alignment.bottomLeft,
-                                      height: 25.0,
-                                      margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
-                                      child: new Text('Location', style: Styles.h3,)
-                                  ),
-                                  new Row(children: <Widget>[
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityDisturbanceLocation == 0) { priorityDisturbanceLocation = null; }
-                                          else { priorityDisturbanceLocation = 0; }
-                                          acm.setData({"priority_disturbance_location": priorityDisturbanceLocation}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityDisturbanceLocation == 0,
-                                      score: 0,
-                                      tooltip: Tip.priority_disturbance_location_0,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityDisturbanceLocation == 1) { priorityDisturbanceLocation = null; }
-                                          else { priorityDisturbanceLocation = 1; }
-                                          acm.setData({"priority_disturbance_location": priorityDisturbanceLocation}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityDisturbanceLocation == 1,
-                                      score: 1,
-                                      tooltip: Tip.priority_disturbance_location_1,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityDisturbanceLocation == 2) { priorityDisturbanceLocation = null; }
-                                          else { priorityDisturbanceLocation = 2; }
-                                          acm.setData({"priority_disturbance_location": priorityDisturbanceLocation}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityDisturbanceLocation == 2,
-                                      score: 2,
-                                      tooltip: Tip.priority_disturbance_location_2,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityDisturbanceLocation == 3) { priorityDisturbanceLocation = null; }
-                                          else { priorityDisturbanceLocation = 3; }
-                                          acm.setData({"priority_disturbance_location": priorityDisturbanceLocation}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityDisturbanceLocation == 3,
-                                      score: 3,
-                                      tooltip: Tip.priority_disturbance_location_3,
-                                    ),),
+                        ],
+                        ),
 
-                                  ],
-                                  ),
+                        // ACCESS
+                        new Container(alignment: Alignment.bottomLeft,
+                            height: 25.0,
+                            margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                            child: new Text('Accessibility', style: Styles.h3,)
+                        ),
+                        new Row(children: <Widget>[
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityDisturbanceAccessibility == 0) { priorityDisturbanceAccessibility = null; }
+                                else { priorityDisturbanceAccessibility = 0; }
+                                acmObj["priority_disturbance_accessibility"] = priorityDisturbanceAccessibility;
+//                                acm.setData({"priority_disturbance_accessibility": priorityDisturbanceAccessibility}, merge: true);
+                              });
+                            },
+                            selected: priorityDisturbanceAccessibility == 0,
+                            score: 0,
+                            tooltip: Tip.priority_disturbance_accessibility_0,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityDisturbanceAccessibility == 1) { priorityDisturbanceAccessibility = null; }
+                                else { priorityDisturbanceAccessibility = 1; }
+                                acmObj["priority_disturbance_accessibility"] = priorityDisturbanceAccessibility;
+//                                acm.setData({"priority_disturbance_accessibility": priorityDisturbanceAccessibility}, merge: true);
+                              });
+                            },
+                            selected: priorityDisturbanceAccessibility == 1,
+                            score: 1,
+                            tooltip: Tip.priority_disturbance_accessibility_1,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityDisturbanceAccessibility == 2) { priorityDisturbanceAccessibility = null; }
+                                else { priorityDisturbanceAccessibility = 2; }
+                                acmObj["priority_disturbance_accessibility"] = priorityDisturbanceAccessibility;
+//                                acm.setData({"priority_disturbance_accessibility": priorityDisturbanceAccessibility}, merge: true);
+                              });
+                            },
+                            selected: priorityDisturbanceAccessibility == 2,
+                            score: 2,
+                            tooltip: Tip.priority_disturbance_accessibility_2,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityDisturbanceAccessibility == 3) { priorityDisturbanceAccessibility = null; }
+                                else { priorityDisturbanceAccessibility = 3; }
+                                acmObj["priority_disturbance_accessibility"] = priorityDisturbanceAccessibility;
+//                                acm.setData({"priority_disturbance_accessibility": priorityDisturbanceAccessibility}, merge: true);
+                              });
+                            },
+                            selected: priorityDisturbanceAccessibility == 3,
+                            score: 3,
+                            tooltip: Tip.priority_disturbance_accessibility_3,
+                          ),),
 
-                                  // ACCESS
-                                  new Container(alignment: Alignment.bottomLeft,
-                                      height: 25.0,
-                                      margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
-                                      child: new Text('Accessibility', style: Styles.h3,)
-                                  ),
-                                  new Row(children: <Widget>[
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityDisturbanceAccessibility == 0) { priorityDisturbanceAccessibility = null; }
-                                          else { priorityDisturbanceAccessibility = 0; }
-                                          acm.setData({"priority_disturbance_accessibility": priorityDisturbanceAccessibility}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityDisturbanceAccessibility == 0,
-                                      score: 0,
-                                      tooltip: Tip.priority_disturbance_accessibility_0,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityDisturbanceAccessibility == 1) { priorityDisturbanceAccessibility = null; }
-                                          else { priorityDisturbanceAccessibility = 1; }
-                                          acm.setData({"priority_disturbance_accessibility": priorityDisturbanceAccessibility}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityDisturbanceAccessibility == 1,
-                                      score: 1,
-                                      tooltip: Tip.priority_disturbance_accessibility_1,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityDisturbanceAccessibility == 2) { priorityDisturbanceAccessibility = null; }
-                                          else { priorityDisturbanceAccessibility = 2; }
-                                          acm.setData({"priority_disturbance_accessibility": priorityDisturbanceAccessibility}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityDisturbanceAccessibility == 2,
-                                      score: 2,
-                                      tooltip: Tip.priority_disturbance_accessibility_2,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityDisturbanceAccessibility == 3) { priorityDisturbanceAccessibility = null; }
-                                          else { priorityDisturbanceAccessibility = 3; }
-                                          acm.setData({"priority_disturbance_accessibility": priorityDisturbanceAccessibility}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityDisturbanceAccessibility == 3,
-                                      score: 3,
-                                      tooltip: Tip.priority_disturbance_accessibility_3,
-                                    ),),
+                        ],
+                        ),
 
-                                  ],
-                                  ),
+                        //EXTENT
+                        new Container(alignment: Alignment.bottomLeft,
+                            height: 25.0,
+                            margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                            child: new Text('Extent', style: Styles.h3,)
+                        ),
+                        new Row(children: <Widget>[
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityDisturbanceExtent == 0) { priorityDisturbanceExtent = null; }
+                                else { priorityDisturbanceExtent = 0; }
+                                acmObj["priority_disturbance_extent"] = priorityDisturbanceExtent;
+//                                acm.setData({"priority_disturbance_extent": priorityDisturbanceExtent}, merge: true);
+                              });
+                            },
+                            selected: priorityDisturbanceExtent == 0,
+                            score: 0,
+                            tooltip: Tip.priority_disturbance_extent_0,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityDisturbanceExtent == 1) { priorityDisturbanceExtent = null; }
+                                else { priorityDisturbanceExtent = 1; }
+                                acmObj["priority_disturbance_extent"] = priorityDisturbanceExtent;
+//                                acm.setData({"priority_disturbance_extent": priorityDisturbanceExtent}, merge: true);
+                              });
+                            },
+                            selected: priorityDisturbanceExtent == 1,
+                            score: 1,
+                            tooltip: Tip.priority_disturbance_extent_1,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityDisturbanceExtent == 2) { priorityDisturbanceExtent = null; }
+                                else { priorityDisturbanceExtent = 2; }
+                                acmObj["priority_disturbance_extent"] = priorityDisturbanceExtent;
+//                                acm.setData({"priority_disturbance_extent": priorityDisturbanceExtent}, merge: true);
+                              });
+                            },
+                            selected: priorityDisturbanceExtent == 2,
+                            score: 2,
+                            tooltip: Tip.priority_disturbance_extent_2,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityDisturbanceExtent == 3) { priorityDisturbanceExtent = null; }
+                                else { priorityDisturbanceExtent = 3; }
+                                acmObj["priority_disturbance_extent"] = priorityDisturbanceExtent;
+//                                acm.setData({"priority_disturbance_extent": priorityDisturbanceExtent}, merge: true);
+                              });
+                            },
+                            selected: priorityDisturbanceExtent == 3,
+                            score: 3,
+                            tooltip: Tip.priority_disturbance_extent_3,
+                          ),),
 
-                                  //EXTENT
-                                  new Container(alignment: Alignment.bottomLeft,
-                                      height: 25.0,
-                                      margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
-                                      child: new Text('Extent', style: Styles.h3,)
-                                  ),
-                                  new Row(children: <Widget>[
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityDisturbanceExtent == 0) { priorityDisturbanceExtent = null; }
-                                          else { priorityDisturbanceExtent = 0; }
-                                          acm.setData({"priority_disturbance_extent": priorityDisturbanceExtent}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityDisturbanceExtent == 0,
-                                      score: 0,
-                                      tooltip: Tip.priority_disturbance_extent_0,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityDisturbanceExtent == 1) { priorityDisturbanceExtent = null; }
-                                          else { priorityDisturbanceExtent = 1; }
-                                          acm.setData({"priority_disturbance_extent": priorityDisturbanceExtent}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityDisturbanceExtent == 1,
-                                      score: 1,
-                                      tooltip: Tip.priority_disturbance_extent_1,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityDisturbanceExtent == 2) { priorityDisturbanceExtent = null; }
-                                          else { priorityDisturbanceExtent = 2; }
-                                          acm.setData({"priority_disturbance_extent": priorityDisturbanceExtent}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityDisturbanceExtent == 2,
-                                      score: 2,
-                                      tooltip: Tip.priority_disturbance_extent_2,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityDisturbanceExtent == 3) { priorityDisturbanceExtent = null; }
-                                          else { priorityDisturbanceExtent = 3; }
-                                          acm.setData({"priority_disturbance_extent": priorityDisturbanceExtent}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityDisturbanceExtent == 3,
-                                      score: 3,
-                                      tooltip: Tip.priority_disturbance_extent_3,
-                                    ),),
+                        ],
+                        ),
 
-                                  ],
-                                  ),
+                        new Divider(),
 
-                                  new Divider(),
+                        //OCCUPANTS
+                        new Container(alignment: Alignment.bottomLeft,
+                            height: 25.0,
+                            margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                            child: new Text('Occupants', style: Styles.h3,)
+                        ),
+                        new Row(children: <Widget>[
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityExposureOccupants == 0) { priorityExposureOccupants = null; }
+                                else { priorityExposureOccupants = 0; }
+                                acmObj["priority_exposure_occupants"] = priorityExposureOccupants;
+//                                acm.setData({"priority_exposure_occupants": priorityExposureOccupants}, merge: true);
+                              });
+                            },
+                            selected: priorityExposureOccupants == 0,
+                            score: 0,
+                            tooltip: Tip.priority_exposure_occupants_0,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityExposureOccupants == 1) { priorityExposureOccupants = null; }
+                                else { priorityExposureOccupants = 1; }
+                                acmObj["priority_exposure_occupants"] = priorityExposureOccupants;
+//                                acm.setData({"priority_exposure_occupants": priorityExposureOccupants}, merge: true);
+                              });
+                            },
+                            selected: priorityExposureOccupants == 1,
+                            score: 1,
+                            tooltip: Tip.priority_exposure_occupants_1,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityExposureOccupants == 2) { priorityExposureOccupants = null; }
+                                else { priorityExposureOccupants = 2; }
+                                acmObj["priority_exposure_occupants"] = priorityExposureOccupants;
+//                                acm.setData({"priority_exposure_occupants": priorityExposureOccupants}, merge: true);
+                              });
+                            },
+                            selected: priorityExposureOccupants == 2,
+                            score: 2,
+                            tooltip: Tip.priority_exposure_occupants_2,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityExposureOccupants == 3) { priorityExposureOccupants = null; }
+                                else { priorityExposureOccupants = 3; }
+                                acmObj["priority_exposure_occupants"] = priorityExposureOccupants;
+//                                acm.setData({"priority_exposure_occupants": priorityExposureOccupants}, merge: true);
+                              });
+                            },
+                            selected: priorityExposureOccupants == 3,
+                            score: 3,
+                            tooltip: Tip.priority_exposure_occupants_3,
+                          ),),
 
-                                  //OCCUPANTS
-                                  new Container(alignment: Alignment.bottomLeft,
-                                      height: 25.0,
-                                      margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
-                                      child: new Text('Occupants', style: Styles.h3,)
-                                  ),
-                                  new Row(children: <Widget>[
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityExposureOccupants == 0) { priorityExposureOccupants = null; }
-                                          else { priorityExposureOccupants = 0; }
-                                          acm.setData({"priority_exposure_occupants": priorityExposureOccupants}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityExposureOccupants == 0,
-                                      score: 0,
-                                      tooltip: Tip.priority_exposure_occupants_0,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityExposureOccupants == 1) { priorityExposureOccupants = null; }
-                                          else { priorityExposureOccupants = 1; }
-                                          acm.setData({"priority_exposure_occupants": priorityExposureOccupants}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityExposureOccupants == 1,
-                                      score: 1,
-                                      tooltip: Tip.priority_exposure_occupants_1,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityExposureOccupants == 2) { priorityExposureOccupants = null; }
-                                          else { priorityExposureOccupants = 2; }
-                                          acm.setData({"priority_exposure_occupants": priorityExposureOccupants}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityExposureOccupants == 2,
-                                      score: 2,
-                                      tooltip: Tip.priority_exposure_occupants_2,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityExposureOccupants == 3) { priorityExposureOccupants = null; }
-                                          else { priorityExposureOccupants = 3; }
-                                          acm.setData({"priority_exposure_occupants": priorityExposureOccupants}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityExposureOccupants == 3,
-                                      score: 3,
-                                      tooltip: Tip.priority_exposure_occupants_3,
-                                    ),),
+                        ],
+                        ),
 
-                                  ],
-                                  ),
+                        //USEFREQ
+                        new Container(alignment: Alignment.bottomLeft,
+                            height: 25.0,
+                            margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                            child: new Text('Use Frequency', style: Styles.h3,)
+                        ),
+                        new Row(children: <Widget>[
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityExposureUseFreq == 0) { priorityExposureUseFreq = null; }
+                                else { priorityExposureUseFreq = 0; }
+                                acmObj["priority_exposure_usefreq"] = priorityExposureUseFreq;
+//                                acm.setData({"priority_exposure_usefreq": priorityExposureUseFreq}, merge: true);
+                              });
+                            },
+                            selected: priorityExposureUseFreq == 0,
+                            score: 0,
+                            tooltip: Tip.priority_exposure_usefreq_0,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityExposureUseFreq == 1) { priorityExposureUseFreq = null; }
+                                else { priorityExposureUseFreq = 1; }
+                                acmObj["priority_exposure_usefreq"] = priorityExposureUseFreq;
+//                                acm.setData({"priority_exposure_usefreq": priorityExposureUseFreq}, merge: true);
+                              });
+                            },
+                            selected: priorityExposureUseFreq == 1,
+                            score: 1,
+                            tooltip: Tip.priority_exposure_usefreq_1,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityExposureUseFreq == 2) { priorityExposureUseFreq = null; }
+                                else { priorityExposureUseFreq = 2; }
+                                acmObj["priority_exposure_usefreq"] = priorityExposureUseFreq;
+//                                acm.setData({"priority_exposure_usefreq": priorityExposureUseFreq}, merge: true);
+                              });
+                            },
+                            selected: priorityExposureUseFreq == 2,
+                            score: 2,
+                            tooltip: Tip.priority_exposure_usefreq_2,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityExposureUseFreq == 3) { priorityExposureUseFreq = null; }
+                                else { priorityExposureUseFreq = 3; }
+                                acmObj["priority_exposure_usefreq"] = priorityExposureUseFreq;
+//                                acm.setData({"priority_exposure_usefreq": priorityExposureUseFreq}, merge: true);
+                              });
+                            },
+                            selected: priorityExposureUseFreq == 3,
+                            score: 3,
+                            tooltip: Tip.priority_exposure_usefreq_3,
+                          ),),
 
-                                  //USEFREQ
-                                  new Container(alignment: Alignment.bottomLeft,
-                                      height: 25.0,
-                                      margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
-                                      child: new Text('Use Frequency', style: Styles.h3,)
-                                  ),
-                                  new Row(children: <Widget>[
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityExposureUseFreq == 0) { priorityExposureUseFreq = null; }
-                                          else { priorityExposureUseFreq = 0; }
-                                          acm.setData({"priority_exposure_usefreq": priorityExposureUseFreq}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityExposureUseFreq == 0,
-                                      score: 0,
-                                      tooltip: Tip.priority_exposure_usefreq_0,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityExposureUseFreq == 1) { priorityExposureUseFreq = null; }
-                                          else { priorityExposureUseFreq = 1; }
-                                          acm.setData({"priority_exposure_usefreq": priorityExposureUseFreq}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityExposureUseFreq == 1,
-                                      score: 1,
-                                      tooltip: Tip.priority_exposure_usefreq_1,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityExposureUseFreq == 2) { priorityExposureUseFreq = null; }
-                                          else { priorityExposureUseFreq = 2; }
-                                          acm.setData({"priority_exposure_usefreq": priorityExposureUseFreq}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityExposureUseFreq == 2,
-                                      score: 2,
-                                      tooltip: Tip.priority_exposure_usefreq_2,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityExposureUseFreq == 3) { priorityExposureUseFreq = null; }
-                                          else { priorityExposureUseFreq = 3; }
-                                          acm.setData({"priority_exposure_usefreq": priorityExposureUseFreq}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityExposureUseFreq == 3,
-                                      score: 3,
-                                      tooltip: Tip.priority_exposure_usefreq_3,
-                                    ),),
+                        ],
+                        ),
 
-                                  ],
-                                  ),
+                        //AVG TIME
+                        new Container(alignment: Alignment.bottomLeft,
+                            height: 25.0,
+                            margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                            child: new Text('Average Time', style: Styles.h3,)
+                        ),
+                        new Row(children: <Widget>[
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityExposureAvgTime == 0) { priorityExposureAvgTime = null; }
+                                else { priorityExposureAvgTime = 0; }
+                                acmObj["priority_exposure_avgtime"] = priorityExposureAvgTime;
+//                                acm.setData({"priority_exposure_avgtime": priorityExposureAvgTime}, merge: true);
+                              });
+                            },
+                            selected: priorityExposureAvgTime == 0,
+                            score: 0,
+                            tooltip: Tip.priority_exposure_avgtime_0,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityExposureAvgTime == 1) { priorityExposureAvgTime = null; }
+                                else { priorityExposureAvgTime = 1; }
+                                acmObj["priority_exposure_avgtime"] = priorityExposureAvgTime;
+//                                acm.setData({"priority_exposure_avgtime": priorityExposureAvgTime}, merge: true);
+                              });
+                            },
+                            selected: priorityExposureAvgTime == 1,
+                            score: 1,
+                            tooltip: Tip.priority_exposure_avgtime_1,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityExposureAvgTime == 2) { priorityExposureAvgTime = null; }
+                                else { priorityExposureAvgTime = 2; }
+                                acmObj["priority_exposure_avgtime"] = priorityExposureAvgTime;
+//                                acm.setData({"priority_exposure_avgtime": priorityExposureAvgTime}, merge: true);
+                              });
+                            },
+                            selected: priorityExposureAvgTime == 2,
+                            score: 2,
+                            tooltip: Tip.priority_exposure_avgtime_2,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityExposureAvgTime == 3) { priorityExposureAvgTime = null; }
+                                else { priorityExposureAvgTime = 3; }
+                                acmObj["priority_exposure_avgtime"] = priorityExposureAvgTime;
+//                                acm.setData({"priority_exposure_avgtime": priorityExposureAvgTime}, merge: true);
+                              });
+                            },
+                            selected: priorityExposureAvgTime == 3,
+                            score: 3,
+                            tooltip: Tip.priority_exposure_avgtime_3,
+                          ),),
 
-                                  //AVG TIME
-                                  new Container(alignment: Alignment.bottomLeft,
-                                      height: 25.0,
-                                      margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
-                                      child: new Text('Average Time', style: Styles.h3,)
-                                  ),
-                                  new Row(children: <Widget>[
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityExposureAvgTime == 0) { priorityExposureAvgTime = null; }
-                                          else { priorityExposureAvgTime = 0; }
-                                          acm.setData({"priority_exposure_avgtime": priorityExposureAvgTime}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityExposureAvgTime == 0,
-                                      score: 0,
-                                      tooltip: Tip.priority_exposure_avgtime_0,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityExposureAvgTime == 1) { priorityExposureAvgTime = null; }
-                                          else { priorityExposureAvgTime = 1; }
-                                          acm.setData({"priority_exposure_avgtime": priorityExposureAvgTime}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityExposureAvgTime == 1,
-                                      score: 1,
-                                      tooltip: Tip.priority_exposure_avgtime_1,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityExposureAvgTime == 2) { priorityExposureAvgTime = null; }
-                                          else { priorityExposureAvgTime = 2; }
-                                          acm.setData({"priority_exposure_avgtime": priorityExposureAvgTime}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityExposureAvgTime == 2,
-                                      score: 2,
-                                      tooltip: Tip.priority_exposure_avgtime_2,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityExposureAvgTime == 3) { priorityExposureAvgTime = null; }
-                                          else { priorityExposureAvgTime = 3; }
-                                          acm.setData({"priority_exposure_avgtime": priorityExposureAvgTime}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityExposureAvgTime == 3,
-                                      score: 3,
-                                      tooltip: Tip.priority_exposure_avgtime_3,
-                                    ),),
+                        ],
+                        ),
 
-                                  ],
-                                  ),
+                        new Divider(),
 
-                                  new Divider(),
+                        //MAINT TYPE
+                        new Container(alignment: Alignment.bottomLeft,
+                            height: 25.0,
+                            margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                            child: new Text('Maintenance Type', style: Styles.h3,)
+                        ),
+                        new Row(children: <Widget>[
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityMaintType == 0) { priorityMaintType = null; }
+                                else { priorityMaintType = 0; }
+                                acmObj["priority_maint_type"] = priorityMaintType;
+//                                acm.setData({"priority_maint_type": priorityMaintType}, merge: true);
+                              });
+                            },
+                            selected: priorityMaintType == 0,
+                            score: 0,
+                            tooltip: Tip.priority_maint_type_0,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityMaintType == 1) { priorityMaintType = null; }
+                                else { priorityMaintType = 1; }
+                                acmObj["priority_maint_type"] = priorityMaintType;
+//                                acm.setData({"priority_maint_type": priorityMaintType}, merge: true);
+                              });
+                            },
+                            selected: priorityMaintType == 1,
+                            score: 1,
+                            tooltip: Tip.priority_maint_type_1,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityMaintType == 2) { priorityMaintType = null; }
+                                else { priorityMaintType = 2; }
+                                acmObj["priority_maint_type"] = priorityMaintType;
+//                                acm.setData({"priority_maint_type": priorityMaintType}, merge: true);
+                              });
+                            },
+                            selected: priorityMaintType == 2,
+                            score: 2,
+                            tooltip: Tip.priority_maint_type_2,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityMaintType == 3) { priorityMaintType = null; }
+                                else { priorityMaintType = 3; }
+                                acmObj["priority_maint_type"] = priorityMaintType;
+//                                acm.setData({"priority_maint_type": priorityMaintType}, merge: true);
+                              });
+                            },
+                            selected: priorityMaintType == 3,
+                            score: 3,
+                            tooltip: Tip.priority_maint_type_3,
+                          ),),
 
-                                  //MAINT TYPE
-                                  new Container(alignment: Alignment.bottomLeft,
-                                      height: 25.0,
-                                      margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
-                                      child: new Text('Maintenance Type', style: Styles.h3,)
-                                  ),
-                                  new Row(children: <Widget>[
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityMaintType == 0) { priorityMaintType = null; }
-                                          else { priorityMaintType = 0; }
-                                          acm.setData({"priority_maint_type": priorityMaintType}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityMaintType == 0,
-                                      score: 0,
-                                      tooltip: Tip.priority_maint_type_0,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityMaintType == 1) { priorityMaintType = null; }
-                                          else { priorityMaintType = 1; }
-                                          acm.setData({"priority_maint_type": priorityMaintType}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityMaintType == 1,
-                                      score: 1,
-                                      tooltip: Tip.priority_maint_type_1,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityMaintType == 2) { priorityMaintType = null; }
-                                          else { priorityMaintType = 2; }
-                                          acm.setData({"priority_maint_type": priorityMaintType}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityMaintType == 2,
-                                      score: 2,
-                                      tooltip: Tip.priority_maint_type_2,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityMaintType == 3) { priorityMaintType = null; }
-                                          else { priorityMaintType = 3; }
-                                          acm.setData({"priority_maint_type": priorityMaintType}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityMaintType == 3,
-                                      score: 3,
-                                      tooltip: Tip.priority_maint_type_3,
-                                    ),),
+                        ],
+                        ),
 
-                                  ],
-                                  ),
+                        // MAINT FREQ
+                        new Container(alignment: Alignment.bottomLeft,
+                            height: 25.0,
+                            margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
+                            child: new Text('Maintenance Frequency', style: Styles.h3,)
+                        ),
+                        new Row(children: <Widget>[
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityMaintFreq == 0) { priorityMaintFreq = null; }
+                                else { priorityMaintFreq = 0; }
+                                acmObj["priority_maint_freq"] = priorityMaintFreq;
+//                                acm.setData({"priority_maint_freq": priorityMaintFreq}, merge: true);
+                              });
+                            },
+                            selected: priorityMaintFreq == 0,
+                            score: 0,
+                            tooltip: Tip.priority_maint_freq_0,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityMaintFreq == 1) { priorityMaintFreq = null; }
+                                else { priorityMaintFreq = 1; }
+                                acmObj["priority_maint_freq"] = priorityMaintFreq;
+//                                acm.setData({"priority_maint_freq": priorityMaintFreq}, merge: true);
+                              });
+                            },
+                            selected: priorityMaintFreq == 1,
+                            score: 1,
+                            tooltip: Tip.priority_maint_freq_1,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityMaintFreq == 2) { priorityMaintFreq = null; }
+                                else { priorityMaintFreq = 2; }
+                                acmObj["priority_maint_freq"] = priorityMaintFreq;
+//                                acm.setData({"priority_maint_freq": priorityMaintFreq}, merge: true);
+                              });
+                            },
+                            selected: priorityMaintFreq == 2,
+                            score: 2,
+                            tooltip: Tip.priority_maint_freq_2,
+                          ),),
+                          new Expanded(child:
+                          new ScoreButton(
+                            onClick: () {
+                              // firestore change score
+                              setState(() {
+                                if (priorityMaintFreq == 3) { priorityMaintFreq = null; }
+                                else { priorityMaintFreq = 3; }
+                                acmObj["priority_maint_freq"] = priorityMaintFreq;
+//                                acm.setData({"priority_maint_freq": priorityMaintFreq}, merge: true);
+                              });
+                            },
+                            selected: priorityMaintFreq == 3,
+                            score: 3,
+                            tooltip: Tip.priority_maint_freq_3,
+                          ),),
 
-                                  // MAINT FREQ
-                                  new Container(alignment: Alignment.bottomLeft,
-                                      height: 25.0,
-                                      margin: EdgeInsets.only(left: 12.0, bottom: 2.0),
-                                      child: new Text('Maintenance Frequency', style: Styles.h3,)
-                                  ),
-                                  new Row(children: <Widget>[
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityMaintFreq == 0) { priorityMaintFreq = null; }
-                                          else { priorityMaintFreq = 0; }
-                                          acm.setData({"priority_maint_freq": priorityMaintFreq}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityMaintFreq == 0,
-                                      score: 0,
-                                      tooltip: Tip.priority_maint_freq_0,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityMaintFreq == 1) { priorityMaintFreq = null; }
-                                          else { priorityMaintFreq = 1; }
-                                          acm.setData({"priority_maint_freq": priorityMaintFreq}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityMaintFreq == 1,
-                                      score: 1,
-                                      tooltip: Tip.priority_maint_freq_1,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityMaintFreq == 2) { priorityMaintFreq = null; }
-                                          else { priorityMaintFreq = 2; }
-                                          acm.setData({"priority_maint_freq": priorityMaintFreq}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityMaintFreq == 2,
-                                      score: 2,
-                                      tooltip: Tip.priority_maint_freq_2,
-                                    ),),
-                                    new Expanded(child:
-                                    new ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          if (priorityMaintFreq == 3) { priorityMaintFreq = null; }
-                                          else { priorityMaintFreq = 3; }
-                                          acm.setData({"priority_maint_freq": priorityMaintFreq}, merge: true);
-                                        });
-                                      },
-                                      selected: priorityMaintFreq == 3,
-                                      score: 3,
-                                      tooltip: Tip.priority_maint_freq_3,
-                                    ),),
+                        ],
+                        ),
+                      ]),
+                    )
+                        : new Container(),
+                    new Divider(),
 
-                                  ],
-                                  ),
-                                ]),
-                              )
-                                  : new Container(),
-                              new Divider(),
-
-                              // Total Risk
-                              new Container(
-                                  width: 120.0,
-                                  alignment: Alignment.center,
-                                  padding: EdgeInsets.symmetric(horizontal: 4.0),
-                                  child: ScoreButton(
-                                    bordercolor: totalRiskSet ? Colors.black26 : Colors.white,
-                                    onClick: () {},
-                                    selected: true,
-                                    score: totalRiskSet ? totalRiskLevel : -1,
-                                    textcolor: Colors.black54,
-                                    text: totalRiskSet ? totalRiskText : 'Incomplete',
-                                    radius: 0.0,
-                                  )
-                              ),
-                            ],)
-                          )
-                  );
-                }
-              }
-          )
+                    // Total Risk
+                    new Container(
+                        width: 120.0,
+                        alignment: Alignment.center,
+                        padding: EdgeInsets.symmetric(horizontal: 4.0),
+                        child: ScoreButton(
+                          bordercolor: totalRiskSet ? Colors.black26 : Colors.white,
+                          onClick: () {},
+                          selected: true,
+                          score: totalRiskSet ? totalRiskLevel : -1,
+                          textcolor: Colors.black54,
+                          text: totalRiskSet ? totalRiskText : 'Incomplete',
+                          radius: 0.0,
+                        )
+                    ),
+                  ],)
+                )
+        ),
       );
   }
 
@@ -1710,31 +1844,26 @@ class _EditACMState extends State<EditACM> {
 //    roomlist = [{"name": "Lounge","path": "lounge"}];
 
     if (widget.acm == null) {
-      Map<String, dynamic> dataMap = new Map();
-      dataMap['jobnumber'] = DataManager
+      acmObj['jobnumber'] = DataManager
           .get()
           .currentJobNumber;
       //      sample.sampleNumber = DataManager.get().getHighestSampleNumber(DataManager.get().currentJob) + 1;
-      dataMap['sample'] = null;
-      dataMap['idkey'] = 'p';
+      acmObj['sample'] = null;
+      acmObj['idkey'] = 'p';
       idKey = 'p';
-      dataMap['description'] = null;
-      dataMap['material'] = null;
-      dataMap['path_local'] = null;
-      dataMap['path_remote'] = null;
-      dataMap['materialrisk_asbestosscore'] = 3;
+      acmObj['description'] = null;
+      acmObj['material'] = null;
+      acmObj['path_local'] = null;
+      acmObj['path_remote'] = null;
+      acmObj['materialrisk_asbestosscore'] = 3;
       materialAsbestosScore = 3;
-      Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').add(dataMap).then((ref) {
-        acm = Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').document(ref.documentID);
-        print(ref.documentID);
-        setState(() {
-          isLoading = false;
-        });
+      setState(() {
+        isLoading = false;
       });
     } else {
       _title = "Edit ACM";
       acm.get().then((doc) {
-        print(doc.data.toString());
+        acmObj = doc.data;
         // Get sample details if available
         if (doc.data['sample'] != 'null') {
 //          sample =  Firestore.instance.collection('samplesasbestosbulk').document(doc.data['sample']);
@@ -1754,9 +1883,9 @@ class _EditACMState extends State<EditACM> {
         }
         _room = new Map<String, String>.from(doc.data['room']);
         print('Loading acm');
-        controllerDescription.text = doc.data['description'];
+        initialDescription = doc.data['description'];
 //        materialText = doc.data['material'];
-        controllerMaterial.text = doc.data['material'];
+        initialMaterial = doc.data['material'];
         controllerNotes.text = doc.data['notes'];
 
         accessibilityScore = doc.data['accessibility'];
@@ -1766,8 +1895,8 @@ class _EditACMState extends State<EditACM> {
         materialDamageScore = doc.data['materialrisk_damagescore'];
         materialSurfaceScore = doc.data['materialrisk_surfacescore'];
         materialAsbestosScore = doc.data['materialrisk_asbestosscore'];
-        controllerDamageDesc.text = doc.data['materialrisk_damagedesc'];
-        controllerSurfaceDesc.text = doc.data['materialrisk_surfacedesc'];
+        initialDamage = doc.data['materialrisk_damagedesc'];
+        initialSurface = doc.data['materialrisk_surfacedesc'];
 
         // Priority Risk Assessment
         priorityActivityMain = doc.data['priority_activity_main'];
@@ -1798,24 +1927,32 @@ class _EditACMState extends State<EditACM> {
 
   void _handleImageUpload(File image) async {
     String room_name;
-    if (_room == null)
-      room_name = '';
-    else if (_room['name'] == null)
-      room_name = '';
-    else room_name = _room['name'];
-    acm.setData({"path_local": image.path},merge: true).then((_) {
-      setState((){});
-    });
-    ImageSync(
-        image,
-        50,
-        "acm" + room_name + "_" + acm.documentID + ".jpg",
-        DataManager.get().currentJobNumber,
-        acm
-    ).then((_) {
-      setState((){
-        localPhoto = false;
+    String item_name;
+    if (_room == null) {
+      room_name = 'room';
+    } else {
+      if (_room['name'] == null)
+        room_name = 'room';
+      else room_name = _room['name'];
+      if (acmObj['description'] == null) {
+        item_name = 'description';
+      } else item_name = acmObj['description'];
+      this.setState(() {
+        acmObj["path_local"] = image.path;
       });
-    });
+      var uid = Random.secure().nextInt(999999);
+      print(uid);
+      ImageSync(
+          image,
+          50,
+          "acm" + room_name + "-" + item_name,
+          "jobs/" + DataManager.get().currentJobNumber,
+          acm
+      ).then((_) {
+        setState((){
+          localPhoto = false;
+        });
+      });
+    }
   }
 }

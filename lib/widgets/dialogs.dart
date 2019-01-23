@@ -78,3 +78,80 @@ class _DuplicateRoomsDialogState extends State<DuplicateRoomsDialog> {
     );
   }
 }
+
+
+void showValidationAlertDialog(context, title, content) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: new Text(title),
+        content: new Text(content),
+        actions: <Widget>[
+          new FlatButton(
+            child: new Text("Close"),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+void showRoomTemplateDialog(context, roomObj, applyTemplate) {
+  var template = new Map<String,dynamic>();
+
+  template = {
+    "name": "Basic",
+    "buildingmaterials": [
+      {
+        "label": "Ceiling",
+        "material": "",
+      },
+      {
+        "label": "Walls",
+        "material": "",
+      },
+      {
+        "label": "Floor",
+        "material": "",
+      },
+    ],
+  };
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: new Text("Apply Room Template"),
+        content: new Text("This will load a basic room template."),
+        actions: <Widget>[
+          new FlatButton(
+            child: new Text("Cancel", style: new TextStyle(color: Colors.black),),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          new FlatButton(
+            child: new Text("Apply",),
+            onPressed: () {
+              print(roomObj.toString());
+              if (roomObj['buildingmaterials'] != null) {
+                template['buildingmaterials'].forEach((item) =>
+                roomObj['buildingmaterials'] =
+                new List<dynamic>.from(roomObj['buildingmaterials'])
+                  ..addAll([item]));
+              } else {
+                roomObj['buildingmaterials'] = new List<dynamic>.from(template['buildingmaterials']);
+              }
+              applyTemplate(roomObj);
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}

@@ -81,7 +81,9 @@ class _DetailsTabState extends State<DetailsTab> {
                       },
                       child: Container(
                         padding: new EdgeInsets.all(8.0),
-                        child: ListView(
+                        child: SingleChildScrollView(
+                          padding: EdgeInsets.all(8.0),
+                          child: Column(
                             children: <Widget>[
                               Container(
                                   alignment: Alignment.topLeft,
@@ -119,8 +121,8 @@ class _DetailsTabState extends State<DetailsTab> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[Container(
                                 alignment: Alignment.center,
-                                height: 156.0,
-                                width: 206.0,
+                                height: 195.0,
+                                width: 257.5,
                                 margin: EdgeInsets.symmetric(vertical: 4.0),
                                 padding: EdgeInsets.fromLTRB(4.0,0.0,4.0,0.0),
                                 decoration: new BoxDecoration(
@@ -151,9 +153,14 @@ class _DetailsTabState extends State<DetailsTab> {
                                     size: 48.0,)
                               ),
                               )]),
+                          new Divider(),
+                          new Container(
+                            child: new Text("Documents", style: Styles.h2 ),
+                          ),
                         ]
                         ),
-                      )
+                      ),
+                    ),
                   );
                 }
               } else if (snapshot.connectionState == ConnectionState.waiting) {
@@ -190,8 +197,8 @@ class _DetailsTabState extends State<DetailsTab> {
     ImageSync(
         image,
         50,
-        "sitephoto.jpg",
-        DataManager.get().currentJobNumber,
+        "sitephoto",
+        "jobs/" + DataManager.get().currentJobNumber,
         details
     ).then((_) {
       setState((){

@@ -286,8 +286,8 @@ class _EditSampleAsbestosBulkState extends State<EditSampleAsbestosBulk> {
     ImageSync(
         image,
         50,
-        "sample" + controllerSampleNumber.text + "_" + sample.documentID + ".jpg",
-        DataManager.get().currentJobNumber,
+        "sample" + controllerSampleNumber.text,
+        "jobs/" + DataManager.get().currentJobNumber,
         sample
     ).then((_) {
       setState((){

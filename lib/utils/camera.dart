@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:camera/camera.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -41,9 +42,11 @@ Future <File> getPicture() async {
       percentage: 60,
     );
 
+    var uid = Random.secure().nextInt(999999);
+
     StorageUploadTask putFile =
       FirebaseStorage.instance.ref().child(
-          "$folder/$fileName").putFile(
+          "$folder/$fileName-$uid.jpg").putFile(
           compImage);
       //                          putFile.future.catchError(onError);
 

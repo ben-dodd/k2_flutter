@@ -146,7 +146,7 @@ class _JobPageState extends State<JobPage> {
           // Initialize TabView
           switch (jobType) {
             case 1: // Asbestos Jobs
-              tabCount = 8;
+              tabCount = 7;
               tabBar = new TabBar(
                 tabs: [
                   Tab(icon: Icon(Icons.assignment)),
@@ -163,7 +163,7 @@ class _JobPageState extends State<JobPage> {
                   // Map
                   Tab(icon: Icon(Icons.check_circle)),
                   // Check
-                  Tab(icon: Icon(Icons.file_download)), // Download documents
+//                  Tab(icon: Icon(Icons.file_download)), // Download documents
                 ],
               );
               tabBarView = new TabBarView(children: [
@@ -182,7 +182,7 @@ class _JobPageState extends State<JobPage> {
                 new NotepadTab(),
                 new MapsTab(),
                 new CheckTab(),
-                new DocumentsTab(),
+//                new DocumentsTab(),
               ]);
               break;
             case 2: // Meth Jobs
@@ -203,7 +203,7 @@ class _JobPageState extends State<JobPage> {
                   // Map
                   Tab(icon: Icon(Icons.check_circle)),
                   // Check
-                  Tab(icon: Icon(Icons.file_download)), // Download documents
+//                  Tab(icon: Icon(Icons.file_download)), // Download documents
                 ],
               );
               tabBarView = new TabBarView(children: [
@@ -214,7 +214,7 @@ class _JobPageState extends State<JobPage> {
                 new NotepadTab(),
                 new MapsTab(),
                 new CheckTab(),
-                new DocumentsTab(),
+//                new DocumentsTab(),
               ]);
               break;
             default: // Default
@@ -231,7 +231,7 @@ class _JobPageState extends State<JobPage> {
                   // Map
                   Tab(icon: Icon(Icons.check_circle)),
                   // Check
-                  Tab(icon: Icon(Icons.file_download)), // Download documents
+//                  Tab(icon: Icon(Icons.file_download)), // Download documents
                 ],
               );
               tabBarView = new TabBarView(children: [
@@ -240,7 +240,7 @@ class _JobPageState extends State<JobPage> {
                 new NotepadTab(),
                 new MapsTab(),
                 new CheckTab(),
-                new DocumentsTab(),
+//                new DocumentsTab(),
               ]);
               break;
           }
