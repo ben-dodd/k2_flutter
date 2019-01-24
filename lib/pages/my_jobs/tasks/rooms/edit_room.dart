@@ -203,7 +203,7 @@ class _EditRoomState extends State<EditRoom> {
                               roomObj["roomObj"] = value.trim();
                             },
                             validator: (String value) {
-                              return value.length > 0 ? 'You must add a room name' : null;
+//                              return value.length > 0 ? 'You must add a room name' : null;
                             },
                             initialValue: roomObj["roomcode"],
                             focusNode: _focusNodes[1],
@@ -369,7 +369,8 @@ class _EditRoomState extends State<EditRoom> {
             focusNode: _focusNodes[(index * 2) + 2],
             autovalidate: true,
             textInputAction: TextInputAction.next,
-            onFieldSubmitted: (v) {
+            onFieldSubmitted: (text) {
+              roomObj['buildingmaterials'][index]["label"] = text;
               FocusScope.of(context).requestFocus(_focusNodes[(index * 2) + 3]);
             },
             validator: (String value) {
@@ -390,12 +391,21 @@ class _EditRoomState extends State<EditRoom> {
             focusNode: _focusNodes[(index * 2) + 3],
             autovalidate: true,
             textInputAction: TextInputAction.next,
-            onFieldSubmitted: (v) {
-              FocusScope.of(context).requestFocus(_focusNodes[(index * 2) + 4]);
-              if (index + 1 == roomObj['buildingmaterials'].length) {
-                roomObj['buildingmaterials'] =
-                new List<dynamic>.from(roomObj['buildingmaterials'])
-                  ..addAll([{"label": "", "material": "",}]);
+            onFieldSubmitted: (text) {
+              roomObj['buildingmaterials'][index]["material"] = text;
+              print (roomObj['buildingmaterials'][index+1].toString());
+              print (roomObj['buildingmaterials'][index+1]["label"].toString());
+              print (roomObj['buildingmaterials'][index+1]["label"].length.toString());
+              if (roomObj['buildingmaterials'][index+1] != null && roomObj['buildingmaterials'][index+1]["label"] != null && roomObj['buildingmaterials'][index+1]["label"].length > 0) {
+                // Label is filled in, just skip to the material field
+                FocusScope.of(context).requestFocus(_focusNodes[((index + 1) * 2) + 3]);
+              } else {
+                FocusScope.of(context).requestFocus(_focusNodes[((index + 1) * 2) + 2]);
+                if (index + 1 == roomObj['buildingmaterials'].length) {
+                  roomObj['buildingmaterials'] =
+                  new List<dynamic>.from(roomObj['buildingmaterials'])
+                    ..addAll([{"label": "", "material": "",}]);
+                }
               }
             },
             validator: (String value) {
