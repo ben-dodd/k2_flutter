@@ -8,9 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:k2e/autocomplete.dart';
 import 'package:k2e/data/datamanager.dart';
+import 'package:k2e/pages/my_jobs/tasks/samples/edit_acm.dart';
+import 'package:k2e/pages/my_jobs/tasks/samples/edit_sample_asbestos_air.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
+import 'package:k2e/widgets/acm_card.dart';
 import 'package:k2e/widgets/custom_auto_complete.dart';
 import 'package:k2e/widgets/dialogs.dart';
 import 'package:k2e/widgets/loading.dart';
@@ -38,29 +41,38 @@ class _EditRoomState extends State<EditRoom> {
   GlobalKey key = new GlobalKey<AutoCompleteTextFieldState<String>>();
 
   final controllerRoomCode = TextEditingController();
+  
+  var _formKey = GlobalKey<FormState>();
+//  GlobalKey formFieldKey = new GlobalKey<AutoCompleteFormFieldState<String>>();
 
   ScrollController _scrollController;
+
+  // Create list of focus nodes
+  final _focusNodes = List<FocusNode>.generate(
+    200,
+    (i) => FocusNode(),
+  );
 
   @override
   void initState() {
     room = widget.room;
-    controllerRoomCode.addListener(_updateRoomCode);
+//    controllerRoomCode.addListener(_updateRoomCode);
     _loadRoom();
     _scrollController = ScrollController();
     super.initState();
   }
 
-  _updateName(name) {
-    this.setState(() {
-      roomObj["name"] = name.trim();
-    });
-  }
-
-  _updateRoomCode() {
-    this.setState(() {
-      roomObj["roomcode"] = controllerRoomCode.text.trim();
-    });
-  }
+//  _updateName(name) {
+//    this.setState(() {
+//      roomObj["name"] = name.trim();
+//    });
+//  }
+//
+//  _updateRoomCode() {
+//    this.setState(() {
+//      roomObj["roomcode"] = controllerRoomCode.text.trim();
+//    });
+//  }
 
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -73,13 +85,16 @@ class _EditRoomState extends State<EditRoom> {
             ),
             actions: <Widget>[
               new IconButton(icon: const Icon(Icons.check), onPressed: () {
-                if (roomObj["name"] == null || roomObj["name"] == "") {
-                  showValidationAlertDialog(context, "Fields Incomplete", "You must give the room a name.");
-                  return;
+                if (_formKey.currentState.validate()) {
+                  _formKey.currentState.save();
+                  Firestore.instance.document(DataManager
+                      .get()
+                      .currentJobPath).collection('rooms')
+                      .document(room)
+                      .setData(
+                      roomObj, merge: true);
+                  Navigator.pop(context);
                 }
-                Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(room).setData(
-                    roomObj, merge: true);
-                Navigator.pop(context);
               })
             ]
         ),
@@ -89,10 +104,13 @@ class _EditRoomState extends State<EditRoom> {
             onTap: () {
               FocusScope.of(context).requestFocus(new FocusNode());
             },
-            child: Container(
+            child: Form(
+              key: _formKey,
               child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
                   controller: _scrollController,
-                  padding: new EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 200.0),
+                  padding: new EdgeInsets.all(8.0),
+//                  padding: new EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 200.0),
                   children: <Widget>[
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,40 +147,66 @@ class _EditRoomState extends State<EditRoom> {
                         )],
                       ),
                       new Container(
-                        child: new AutoCompleteTextField<String>(
+                        child: new TextFormField(
                           decoration: new InputDecoration(
-                              labelText: "Room Name"
+                            labelText: "Room Name",
                           ),
-                          key: key,
-                          scrollController: _scrollController,
-                          initialValue: roomObj["name"] != null ? roomObj["name"] : "",
-                          suggestions: rooms,
-
-                          textChanged: (item) {
-                            _updateName(item);
+                          onSaved: (String value) {
+                            roomObj["name"] = value.trim();
                           },
-                          itemSubmitted: (item) {
-                            _updateName(item.toString());
+                          validator: (String value) {
+                            return value.isEmpty ? 'You must add a room name' : null;
                           },
-                          itemBuilder: (context, item) {
-                            return new Padding(
-                                padding: EdgeInsets.all(8.0), child: new Text(item));
+                          focusNode: _focusNodes[0],
+                          initialValue: roomObj["name"],
+                          textInputAction: TextInputAction.next,
+                          textCapitalization: TextCapitalization.words,
+                          onFieldSubmitted: (v) {
+                            FocusScope.of(context).requestFocus(_focusNodes[1]);
                           },
-                          itemSorter: (a, b) {
-                            return a.compareTo(b);
-                          },
-                          itemFilter: (item, query) {
-                            return item.toLowerCase().contains(query.toLowerCase());
-                          }),
+                        ),
+//                        child: new AutoCompleteFormField(
+//                          decoration: new InputDecoration(
+//                              labelText: "Room Name"
+//                          ),
+//                          key: formFieldKey,
+//                          scrollController: _scrollController,
+//                          textInputAction: TextInputAction.next,
+//                          initialValue: roomObj["name"] != null ? roomObj["name"] : "",
+//                          suggestions: rooms,
+//
+//                          textChanged: (item) {
+//                            _updateName(item);
+//                          },
+//                          itemSubmitted: (item) {
+//                            _updateName(item.toString());
+//                          },
+//                          itemBuilder: (context, item) {
+//                            return new Padding(
+//                                padding: EdgeInsets.all(8.0), child: new Text(item));
+//                          },
+//                          itemSorter: (a, b) {
+//                            return a.compareTo(b);
+//                          },
+//                          itemFilter: (item, query) {
+//                            return item.toLowerCase().contains(query.toLowerCase());
+//                          }),
                       ),
                       new Container(
-                        child: TextField(
+                        child: TextFormField(
                             decoration: const InputDecoration(
                                 labelText: "Room Code",
                                 hintText: "e.g. B1 (use for large surveys with many similar rooms)",
                             ),
                             autocorrect: false,
-                            controller: controllerRoomCode,
+                            onSaved: (String value) {
+                              roomObj["roomObj"] = value.trim();
+                            },
+                            validator: (String value) {
+                              return value.length > 0 ? 'You must add a room name' : null;
+                            },
+                            initialValue: roomObj["roomcode"],
+                            focusNode: _focusNodes[1],
                             textCapitalization: TextCapitalization.characters,
                           ),
                         ),
@@ -195,16 +239,113 @@ class _EditRoomState extends State<EditRoom> {
                         },
                       ),
                     ),
+                    new Divider(),
                     new Container(
-                      alignment: Alignment.topLeft,
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.only(top: 14.0, bottom: 14.0,),
+                      child: new Text("Presumed and Sampled Materials", style: Styles.h2,),
+                    ),
+                    new StreamBuilder(
+                        stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').where("roompath", isEqualTo: widget.room).snapshots(),
+                        builder: (context, snapshot) {
+                          print("Room object : " + widget.room.toString());
+                          if (!snapshot.hasData) return
+                            Container(
+                                padding: EdgeInsets.only(top: 16.0),
+                                alignment: Alignment.center,
+                                color: Colors.white,
+
+                                child: Column(
+                                    mainAxisAlignment: MainAxisAlignment
+                                        .center,
+                                    children: <Widget>[
+                                      new CircularProgressIndicator(),
+                                      Container(
+                                          alignment: Alignment.center,
+                                          height: 64.0,
+                                          child:
+                                          Text("Loading samples...")
+                                      )
+                                    ]));
+                          if (snapshot.data.documents.length == 0) return
+                            Center(
+                                child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      Icon(Icons.not_interested, size: 64.0),
+                                      Container(
+                                          alignment: Alignment.center,
+                                          height: 64.0,
+                                          child:
+                                          Text('This job has no ACM items.')
+                                      )
+                                    ]
+                                )
+                            );
+                          return ListView.builder(
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemCount: snapshot.data.documents.length,
+                              itemBuilder: (context, index) {
+                                print(snapshot.data.documents[index]['jobnumber']);
+                                return AcmCard(
+                                  doc: snapshot.data.documents[index],
+                                  onCardClick: () async {
+                                    if (snapshot.data.documents[index]['sampletype'] == 'air'){
+                                      Navigator.of(context).push(
+                                        new MaterialPageRoute(builder: (context) =>
+                                            EditSampleAsbestosAir(
+                                                sample: snapshot.data.documents[index]
+                                                    .documentID)),
+                                      );
+                                    } else {
+                                      Navigator.of(context).push(
+                                        new MaterialPageRoute(builder: (context) =>
+                                            EditACM(
+                                                acm: snapshot.data.documents[index]
+                                                    .documentID)),
+                                      );
+                                    }
+                                  },
+                                  onCardLongPress: () {
+                                    // Delete
+                                    // Bulk add /clone etc.
+                                  },
+                                );
+                              }
+                          );
+                        }
+                    ),
+                    new Container(padding: EdgeInsets.only(top: 14.0)),
+                    new Divider(),
+                    new Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.only(top: 14.0,),
+                      child: new Text("Building Materials", style: Styles.h2,),
+                    ),
+                    new Container(
+                      alignment: Alignment.center,
                       padding: EdgeInsets.only(top: 14.0,),
                       child: new FlatButton(
                           child: const Text("Load New Room Template"),
                           color: Colors.white,
-                          onPressed: () { showRoomTemplateDialog(context, roomObj, applyTemplate); }
+                          onPressed: () {
+                            showRoomTemplateDialog(context, roomObj, applyTemplate,);
+                          }
                         ),
                     ),
-                    buildBuildingMaterials(),
+                    (roomObj['buildingmaterials'] != null && roomObj['buildingmaterials'].length > 0) ?
+//                    roomObj['buildingmaterials'].map((item) => buildBuildingMaterials(item))
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: roomObj['buildingmaterials'].length,
+                        itemBuilder: (context, index) {
+                        return buildBuildingMaterials(index);
+                      })
+                        :
+                        new Container()
+//                    buildBuildingMaterials(),
                     ],
                 ),
               ),
@@ -212,32 +353,65 @@ class _EditRoomState extends State<EditRoom> {
     );
   }
 
-  buildBuildingMaterials () {
-    if (roomObj['buildingmaterials'] != null && roomObj['buildingmaterials'].length > 0) {
-      return roomObj['buildingmaterials'].forEach((item) =>
-      new Row(
-          children: <Widget>[
-            new Container(
-              alignment: Alignment.topLeft,
-              padding: EdgeInsets.only(top: 14.0,),
-              child: new Text(item["label"], style: Styles.label,),
-            ),
-            TextField(
-              autocorrect: false,
-//              onChanged: (text) {
-//                this.setState(() {
-//                  item["material"] = text;
-//                });
-//              },
-              controller: new TextEditingController(text: item["material"]),
-              textCapitalization: TextCapitalization.none,
-            ),
-          ]
+  buildBuildingMaterials (index) {
+//      print("Building item: " + item.toString());
+    var item = roomObj['buildingmaterials'][index];
+    Widget widget = new Row(
+      children: <Widget>[
+        new Container(
+          width: 100.0,
+          alignment: Alignment.topLeft,
+          padding: EdgeInsets.only(right: 14.0,),
+//          child: new Text(item["label"], style: Styles.label,),
+          child: TextFormField(
+            initialValue: item["label"],
+            autocorrect: false,
+            focusNode: _focusNodes[(index * 2) + 2],
+            autovalidate: true,
+            textInputAction: TextInputAction.next,
+            onFieldSubmitted: (v) {
+              FocusScope.of(context).requestFocus(_focusNodes[(index * 2) + 3]);
+            },
+            validator: (String value) {
+//              return value.contains('@') ? 'Do not use the @ character' : null;
+            },
+            onSaved: (text) {
+              this.setState(() {
+                roomObj['buildingmaterials'][index]["label"] = text;
+              });
+            },
+            textCapitalization: TextCapitalization.sentences,
+          )
+        ),
+        new Flexible(
+          child: TextFormField(
+            initialValue: item["material"],
+            autocorrect: false,
+            focusNode: _focusNodes[(index * 2) + 3],
+            autovalidate: true,
+            textInputAction: TextInputAction.next,
+            onFieldSubmitted: (v) {
+              FocusScope.of(context).requestFocus(_focusNodes[(index * 2) + 4]);
+              if (index + 1 == roomObj['buildingmaterials'].length) {
+                roomObj['buildingmaterials'] =
+                new List<dynamic>.from(roomObj['buildingmaterials'])
+                  ..addAll([{"label": "", "material": "",}]);
+              }
+            },
+            validator: (String value) {
+//              return value.contains('@') ? 'Do not use the @ character' : null;
+            },
+            onSaved: (text) {
+              this.setState(() {
+                roomObj['buildingmaterials'][index]["material"] = text;
+              });
+            },
+            textCapitalization: TextCapitalization.none,
+          ),
         )
-      );
-    } else {
-      return new Container();
-    }
+      ]
+    );
+    return widget;
   }
 
   void applyTemplate(roomObj) {
@@ -281,6 +455,7 @@ class _EditRoomState extends State<EditRoom> {
             }
             setState(() {
               roomObj = doc.data;
+              if (roomObj['roomgroup'] != null) _roomgroup = new Map<String, String>.from(roomObj['roomgroup']);
               if (doc.data["roomcode"] != null) controllerRoomCode.text = doc.data["roomcode"];
               isLoading = false;
             });
@@ -290,6 +465,7 @@ class _EditRoomState extends State<EditRoom> {
   }
 
   void _handleImageUpload(File image) async {
+    String path = widget.room;
     setState(() {
       roomObj["path_local"] = image.path;
     });
@@ -310,10 +486,21 @@ class _EditRoomState extends State<EditRoom> {
         "jobs/" + DataManager.get().currentJobNumber,
         Firestore.instance.document(DataManager.get().currentJobPath)
             .collection('rooms').document(room)
-    ).then((_) {
-      setState((){
-        localPhoto = false;
-      });
+    ).then((url) {
+      if (this.mounted) {
+        setState((){
+          roomObj["path_remote"] = url;
+          localPhoto = false;
+        });
+      } else {
+        // User has left the page, upload url straight to firestore
+        Firestore.instance.document(DataManager
+            .get()
+            .currentJobPath).collection('rooms')
+            .document(path)
+            .setData(
+            {"path_remote": url }, merge: true);
+      }
     });
   }
 }

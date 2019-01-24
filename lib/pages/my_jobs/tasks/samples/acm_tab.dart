@@ -23,7 +23,7 @@ class _AcmTabState extends State<AcmTab> {
         alignment: Alignment.center,
         padding: new EdgeInsets.all(8.0),
         child: StreamBuilder(
-            stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').orderBy("room").snapshots(),
+            stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').snapshots(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) return
                 Container(
