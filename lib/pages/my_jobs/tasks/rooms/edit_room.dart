@@ -233,7 +233,8 @@ class _EditRoomState extends State<EditRoom> {
                         onChanged: (value) {
                           setState(() {
                             _roomgroup = roomgrouplist.firstWhere((e) => e['path'] == value);
-                            roomObj["roomgroup"] = _roomgroup;
+                            roomObj["roomgroupname"] = _roomgroup['name'];
+                            roomObj["roomgrouppath"] = _roomgroup['path'];
 //                              acm.setData({"room": _room}, merge: true);
                           });
                         },
@@ -323,16 +324,34 @@ class _EditRoomState extends State<EditRoom> {
                       padding: EdgeInsets.only(top: 14.0,),
                       child: new Text("Building Materials", style: Styles.h2,),
                     ),
-                    new Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.only(top: 14.0,),
-                      child: new FlatButton(
-                          child: const Text("Load New Room Template"),
-                          color: Colors.white,
-                          onPressed: () {
-                            showRoomTemplateDialog(context, roomObj, applyTemplate,);
-                          }
+                    new Row(
+                      children: <Widget>[
+                        new Container(
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.only(top: 14.0,),
+                          child: new FlatButton(
+                              child: const Text("Load New Room Template"),
+                              color: Colors.white,
+                              onPressed: () {
+                                showRoomTemplateDialog(context, roomObj, applyTemplate,);
+                              }
+                          ),
                         ),
+                        new Container(
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.only(top: 14.0,),
+                          child: new FlatButton(
+                              child: const Text("Clear Empty Rows"),
+                              color: Colors.white,
+                              onPressed: () {
+                                if (roomObj["buildingmaterials"] != null && roomObj["buildingmaterials"].length > 0) {
+                                  this.setState(() {
+                                    roomObj["buildingmaterials"] = roomObj["buildingmaterials"].where((bm) => bm["material"] == null || bm["material"].trim().length > 0).toList();
+                                  });
+                                }
+                              }
+                          ),
+                        ),],
                     ),
                     (roomObj['buildingmaterials'] != null && roomObj['buildingmaterials'].length > 0) ?
 //                    roomObj['buildingmaterials'].map((item) => buildBuildingMaterials(item))
@@ -364,21 +383,25 @@ class _EditRoomState extends State<EditRoom> {
           padding: EdgeInsets.only(right: 14.0,),
 //          child: new Text(item["label"], style: Styles.label,),
           child: TextFormField(
+            style: new TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
             initialValue: item["label"],
             autocorrect: false,
             focusNode: _focusNodes[(index * 2) + 2],
             autovalidate: true,
             textInputAction: TextInputAction.next,
             onFieldSubmitted: (text) {
-              roomObj['buildingmaterials'][index]["label"] = text;
+              print(text.toString());
+              setState(() {
+                roomObj['buildingmaterials'][index]["label"] = text.trim();
+              });
               FocusScope.of(context).requestFocus(_focusNodes[(index * 2) + 3]);
             },
             validator: (String value) {
 //              return value.contains('@') ? 'Do not use the @ character' : null;
             },
             onSaved: (text) {
-              this.setState(() {
-                roomObj['buildingmaterials'][index]["label"] = text;
+              setState(() {
+                roomObj['buildingmaterials'][index]["label"] = text.trim();
               });
             },
             textCapitalization: TextCapitalization.sentences,
@@ -392,28 +415,27 @@ class _EditRoomState extends State<EditRoom> {
             autovalidate: true,
             textInputAction: TextInputAction.next,
             onFieldSubmitted: (text) {
-              roomObj['buildingmaterials'][index]["material"] = text;
-              print (roomObj['buildingmaterials'][index+1].toString());
-              print (roomObj['buildingmaterials'][index+1]["label"].toString());
-              print (roomObj['buildingmaterials'][index+1]["label"].length.toString());
-              if (roomObj['buildingmaterials'][index+1] != null && roomObj['buildingmaterials'][index+1]["label"] != null && roomObj['buildingmaterials'][index+1]["label"].length > 0) {
-                // Label is filled in, just skip to the material field
+              setState(() {
+                roomObj['buildingmaterials'][index]["material"] = text.trim();
+              });
+              if (roomObj['buildingmaterials'][index+1] != null && roomObj['buildingmaterials'][index+1]["label"].trim().length > 0) {
                 FocusScope.of(context).requestFocus(_focusNodes[((index + 1) * 2) + 3]);
               } else {
+                // If label field isn't filled in, go to it on Keyboard Next otherwise go to the next material
                 FocusScope.of(context).requestFocus(_focusNodes[((index + 1) * 2) + 2]);
-                if (index + 1 == roomObj['buildingmaterials'].length) {
-                  roomObj['buildingmaterials'] =
-                  new List<dynamic>.from(roomObj['buildingmaterials'])
-                    ..addAll([{"label": "", "material": "",}]);
-                }
+              }
+              if (roomObj['buildingmaterials'].length < index + 2) {
+                roomObj['buildingmaterials'] =
+                new List<dynamic>.from(roomObj['buildingmaterials'])
+                  ..addAll([{"label": "", "material": "",}]);
               }
             },
             validator: (String value) {
 //              return value.contains('@') ? 'Do not use the @ character' : null;
             },
             onSaved: (text) {
-              this.setState(() {
-                roomObj['buildingmaterials'][index]["material"] = text;
+              setState(() {
+                roomObj['buildingmaterials'][index]["material"] = text.trim();
               });
             },
             textCapitalization: TextCapitalization.none,
@@ -465,7 +487,7 @@ class _EditRoomState extends State<EditRoom> {
             }
             setState(() {
               roomObj = doc.data;
-              if (roomObj['roomgroup'] != null) _roomgroup = new Map<String, String>.from(roomObj['roomgroup']);
+              if (roomObj['roomgrouppath'] != null) _roomgroup = { "path": roomObj['roomgrouppath'], "name": roomObj['roomgroupname'] };
               if (doc.data["roomcode"] != null) controllerRoomCode.text = doc.data["roomcode"];
               isLoading = false;
             });
@@ -483,7 +505,7 @@ class _EditRoomState extends State<EditRoom> {
 //        .collection('rooms').document(room).setData({"path_local": image.path},merge: true).then((_) {
 //      setState((){});
 //    });
-    String roomgroup = roomObj["roomgroup"];
+    String roomgroup = roomObj["roomgroupname"];
     String name = roomObj["name"];
     String roomcode = roomObj["roomcode"];
     if (roomgroup == null) roomgroup = 'RoomGroup';

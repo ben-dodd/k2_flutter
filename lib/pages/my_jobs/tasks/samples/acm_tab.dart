@@ -73,6 +73,7 @@ class _AcmTabState extends State<AcmTab> {
                                           .documentID)),
                               );
                         } else {
+                          print(context.toString());
                           Navigator.of(context).push(
                             new MaterialPageRoute(builder: (context) =>
                                 EditACM(

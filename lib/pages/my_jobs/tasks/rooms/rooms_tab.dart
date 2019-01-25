@@ -14,6 +14,71 @@ class RoomsTab extends StatefulWidget {
 }
 
 class _RoomsTabState extends State<RoomsTab> {
+  List<Map<String,dynamic>> roomList = new List<Map<String,dynamic>>();
+  bool isLoading = true;
+  @override
+  void initState() {
+    Firestore.instance.document(DataManager.get().currentJobPath).collection('roomgroups').snapshots().listen((groupData) {
+      if (groupData.documents.length == 0) {
+        Firestore.instance.document(DataManager
+            .get()
+            .currentJobPath).collection('rooms').snapshots().listen((roomData) {
+          roomList = roomData.documents.map((doc) {
+            var room = doc.data;
+            room['path'] = doc.documentID;
+            return room;
+          });
+          this.setState(() {
+            isLoading = false;
+          });
+        });
+      } else {
+        var count = 0;
+        roomList.clear();
+        print("Group data is now: " + groupData.documents.length.toString());
+        groupData.documents.forEach((doc) {
+          var roomGroup = doc.data;
+          count = count + 1;
+          roomList =
+              roomList.where((group) => group['name'] != roomGroup['name'])
+                  .toList();
+          Firestore.instance.document(DataManager
+              .get()
+              .currentJobPath).collection('rooms').where(
+              'roomgrouppath', isEqualTo: doc.documentID).snapshots().listen((
+              roomData) {
+            roomGroup['children'] = roomData.documents.map((doc2) {
+              var room = doc2.data;
+              room['path'] = doc2.documentID;
+              return room;
+            });
+            print("Add this: " + roomGroup['name'].toString());
+            print("To this: " +
+                roomList.map((list) => list['name']).toList().toString());
+            roomList.add(roomGroup);
+          });
+        });
+
+        if (count == groupData.documents.length) Firestore.instance.document(DataManager
+            .get()
+            .currentJobPath).collection('rooms').where(
+            'roomgrouppath', isEqualTo: "UnGrouped").snapshots().listen((
+            orphanRoomData) {
+          roomList
+            ..addAll(orphanRoomData.documents.map((doc) {
+              var room = doc.data;
+              room['path'] = doc.documentID;
+              print("Adding orphan: " + room['name']);
+              return room;
+            }));
+          this.setState(() {
+            isLoading = false;
+          });
+        });
+      }
+    });
+    super.initState();
+  }
 
   String _loadingText = 'Loading rooms...';
 
@@ -27,116 +92,107 @@ class _RoomsTabState extends State<RoomsTab> {
       body:
       new Container(
         padding: new EdgeInsets.all(8.0),
-        child: StreamBuilder(
-            stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').orderBy("name").snapshots(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) return
-                Container(
-                    alignment: Alignment.center,
-                    color: Colors.white,
+        child: isLoading ?
+          Container(
+              alignment: Alignment.center,
+              color: Colors.white,
 
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment
-                            .center,
-                        children: <Widget>[
-                          new CircularProgressIndicator(),
-                          Container(
-                              alignment: Alignment.center,
-                              height: 64.0,
-                              child:
-                              Text(_loadingText)
-                          )
-                        ]));
-              if (snapshot.data.documents.length == 0) return
-                Center(
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Icon(Icons.not_interested, size: 64.0),
-                          Container(
-                              alignment: Alignment.center,
-                              height: 64.0,
-                              child:
-                              Text('This job has no rooms.')
-                          )
-                        ]
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment
+                      .center,
+                  children: <Widget>[
+                    new CircularProgressIndicator(),
+                    Container(
+                        alignment: Alignment.center,
+                        height: 64.0,
+                        child:
+                        Text(_loadingText)
                     )
-                );
-              return ListView.builder(
-                  itemCount: snapshot.data.documents.length,
+                  ]))
+            :
+        ListView.builder(
+                  itemCount: roomList.length,
                   itemBuilder: (context, index) {
+//                  print("RoomList: " + roomList.toString());
+                  if (roomList.length == 0) return
+                    Center(
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Icon(Icons.not_interested, size: 64.0),
+                              Container(
+                                  alignment: Alignment.center,
+                                  height: 64.0,
+                                  child:
+                                  Text('This job has no rooms.')
+                              )
+                            ]
+                        )
+                    );
+                    var path = roomList[index]['path'];
                     return RoomCard(
-                      doc: snapshot.data.documents[index],
-                      onCardClick: () async {
-                        print(snapshot.data.documents[index].documentID);
-                        Navigator.of(context).push(
-                          new MaterialPageRoute(builder: (context) =>
-                              EditRoom(
-                                  room: snapshot.data.documents[index]
-                                      .documentID)),
-                        );
-                      },
+                      doc: roomList[index],
+                      context: context,
+//                      context: context,
                       onCardLongPress: () {
                         // Delete
                         // Bulk add /clone etc.
-                        showMenu(context: context,
-                            items: [
-                              new PopupMenuItem<String>(
-                                child: new ListTile(
-                                  title: new Text('Duplicate Room'),
-                                  onTap: () {
-                                    // This dialog should be its own stateful widget
-                                    showDialog(context: context,
-                                        builder: (BuildContext context) {
-                                          return DuplicateRoomsDialog(doc: snapshot.data.documents[index]);
-                                        }
-                                    );
-                                  },
-                                  leading: new Icon(Icons.content_copy),
-                              ),),
-                              new PopupMenuItem<String>(
-                                child: new ListTile(
-                                  title: new Text('Delete Room'),
-                                  onTap: () {
-                                    showDialog(context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          title: new Text("Are You Sure?"),
-                                          content: new Text("Deleting this room will remove all photos, ACM and building material notes associated with it."),
-                                          actions: <Widget>[
-                                            new FlatButton(
-                                              child: new Text("Delete"),
-                                              onPressed: () {
-//                                                deleteRoom()
-                                                  Navigator.of(context).pop();
-                                                  Navigator.of(context).pop();
-                                              },
-                                            ),
-                                            new FlatButton(
-                                              child: new Text("Cancel", style: new TextStyle(color: Colors.black),),
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                                Navigator.of(context).pop();
-                                              },
-                                            )
-                                          ]
-                                        );
-                                      }
-                                    );
-                                  },
-                                  leading: new Icon(Icons.delete),
-                                ),),
-                            ],
-                            position: RelativeRect.fromLTRB(20.0, 200.0, 20.0, 0.0),
-                        );
+//                        showMenu(context: context,
+//                            items: [
+//                              new PopupMenuItem<String>(
+//                                child: new ListTile(
+//                                  title: new Text('Duplicate Room'),
+//                                  onTap: () {
+//                                    // This dialog should be its own stateful widget
+//                                    showDialog(context: context,
+//                                        builder: (BuildContext context) {
+//                                          return DuplicateRoomsDialog(doc: snapshot.data.documents[index]);
+//                                        }
+//                                    );
+//                                  },
+//                                  leading: new Icon(Icons.content_copy),
+//                              ),),
+//                              new PopupMenuItem<String>(
+//                                child: new ListTile(
+//                                  title: new Text('Delete Room'),
+//                                  onTap: () {
+//                                    showDialog(context: context,
+//                                      builder: (BuildContext context) {
+//                                        return AlertDialog(
+//                                          title: new Text("Are You Sure?"),
+//                                          content: new Text("Deleting this room will remove all photos, ACM and building material notes associated with it."),
+//                                          actions: <Widget>[
+//                                            new FlatButton(
+//                                              child: new Text("Delete"),
+//                                              onPressed: () {
+////                                                deleteRoom()
+//                                                  Navigator.of(context).pop();
+//                                                  Navigator.of(context).pop();
+//                                              },
+//                                            ),
+//                                            new FlatButton(
+//                                              child: new Text("Cancel", style: new TextStyle(color: Colors.black),),
+//                                              onPressed: () {
+//                                                Navigator.of(context).pop();
+//                                                Navigator.of(context).pop();
+//                                              },
+//                                            )
+//                                          ]
+//                                        );
+//                                      }
+//                                    );
+//                                  },
+//                                  leading: new Icon(Icons.delete),
+//                                ),),
+//                            ],
+//                            position: RelativeRect.fromLTRB(20.0, 200.0, 20.0, 0.0),
+//                        );
                         }
 
                         );
                       },
-                    );
-                  }
-              )
-        ),
+                    ),
+                  ),
     );
   }
 }

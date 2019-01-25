@@ -1,15 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:k2e/pages/my_jobs/tasks/rooms/edit_room.dart';
+import 'package:k2e/styles.dart';
 
 class RoomCard extends StatefulWidget {
 
   RoomCard({
-    this.doc,
-    @required this.onCardClick,
-    @required this.onCardLongPress,
+    @required this.doc,
+    @required this.context,
+    this.onCardClick,
+    this.onCardLongPress,
   });
 
-  final DocumentSnapshot doc;
+  final Map<String,dynamic> doc;
+  final BuildContext context;
   final VoidCallback onCardClick;
   final VoidCallback onCardLongPress;
 
@@ -23,35 +27,41 @@ class _RoomCardState extends State<RoomCard>{
 
   bool hasPhoto;
   bool photoSynced;
-  @override
-  Widget build(BuildContext context) {
+
+  Widget _roomCard(Map<String, dynamic> doc) {
     // todo is there a better way to assert this stuff
-    if (widget.doc['name'] == null) {
+    if (doc['name'] == null) {
       name = 'No name';
     } else {
-      name = widget.doc['name'];
+      name = doc['name'];
     }
 
-    if (widget.doc['path_local'] == null && widget.doc['path_remote'] == null) {
+    if (doc['path_local'] == null && doc['path_remote'] == null) {
       hasPhoto = false;
     } else {
       hasPhoto = true;
-      if (widget.doc['path_remote'] == null) {
+      if (doc['path_remote'] == null) {
         photoSynced = false;
       } else {
         photoSynced = true;
       }
     }
 
-
-    return new ListTile(
-        contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+    if (doc['children'] == null) return new ListTile(
+//        contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
 //      leading: const Icon(Icons.whatshot),
         title: Text(name),
 //        subtitle: Text(notes),
 
         // Tap -> go through to job task
-        onTap: widget.onCardClick,
+        onTap: () async {
+          print(doc.toString());
+          print(widget.context.toString());
+          print(doc['path']);
+          Navigator.of(widget.context).push(
+            new MaterialPageRoute(builder: (context) => EditRoom(room: doc['path'])),
+          );
+        },
         // Long tap -> add options to sync or delete
         onLongPress: widget.onCardLongPress,
         trailing:
@@ -59,5 +69,29 @@ class _RoomCardState extends State<RoomCard>{
             : Icon(Icons.camera_alt, color: Colors.orange)
             : Icon(Icons.camera_alt, color: Colors.red)
     );
+
+    if (doc['children'].length == 0) return new ListTile(
+      title: Text(doc['name'], style: new TextStyle(
+//          fontStyle: FontStyle.italic,
+          fontWeight: FontWeight.bold),
+      )
+    );
+
+    return ExpansionTile(
+      initiallyExpanded: true,
+      key: PageStorageKey<Map<String, dynamic>>(doc),
+      title: Text(doc['name'], style: new TextStyle(
+//          fontStyle: FontStyle.italic,
+          fontWeight: FontWeight.bold
+      ),),
+      children: doc['children'].length > 0 ? doc['children']
+          .map<Widget>(_roomCard)
+          .toList() : null,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _roomCard(widget.doc);
   }
 }
