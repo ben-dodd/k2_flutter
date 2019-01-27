@@ -1,6 +1,4 @@
-import 'dart:async';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -28,12 +26,11 @@ class EditRoom extends StatefulWidget {
 class _EditRoomState extends State<EditRoom> {
   String _title = "Edit Room";
   bool isLoading = true;
+  String initRoomGroup;
   Map<String,dynamic> roomObj = new Map<String,dynamic>();
 
   // images
   String room;
-  Map<String,String> _roomgroup;
-  Map<String,String> _template;
   bool localPhoto = false;
   List<Map<String, String>> roomgrouplist = new List();
 
@@ -85,14 +82,23 @@ class _EditRoomState extends State<EditRoom> {
             ),
             actions: <Widget>[
               new IconButton(icon: const Icon(Icons.check), onPressed: () {
-                if (_formKey.currentState.validate()) {
+                if (_formKey.currentState.validate()){
                   _formKey.currentState.save();
-                  Firestore.instance.document(DataManager
-                      .get()
-                      .currentJobPath).collection('rooms')
-                      .document(room)
-                      .setData(
-                      roomObj, merge: true);
+                  // Update room group map if new room has been added or if room's room group has changed
+//                  print("Widget Room" + widget.room.toString());
+//                  print(roomObj['roomgroup'].toString());
+//                  print(initRoomGroup.toString());
+                  if (roomObj['path'] == null) {
+                    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').add(roomObj).then((doc) {
+                      roomObj['path'] = doc.documentID;
+                      if (roomObj['roomgrouppath'] == null || roomObj['roomgrouppath'] != initRoomGroup) updateRoomGroups(initRoomGroup, roomObj, widget.room);
+                      Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(doc.documentID).setData({"path": doc.documentID}, merge: true);
+                    });
+                  } else {
+                    if (roomObj['roomgrouppath'] == null || roomObj['roomgrouppath'] != initRoomGroup) updateRoomGroups(initRoomGroup, roomObj, widget.room);
+                    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(room).setData(
+                        roomObj, merge: true);
+                  }
                   Navigator.pop(context);
                 }
               })
@@ -218,7 +224,7 @@ class _EditRoomState extends State<EditRoom> {
                     new Container(
                       alignment: Alignment.topLeft,
                       child: DropdownButton<String>(
-                        value: (_roomgroup == null) ? null : _roomgroup['path'],
+                        value: (roomObj['roomgrouppath'] == null) ? null : roomObj['roomgrouppath'],
                         iconSize: 24.0,
                         items: roomgrouplist.map((Map<String,String> roomgroup) {
                           print(roomgroup.toString());
@@ -232,9 +238,12 @@ class _EditRoomState extends State<EditRoom> {
                         hint: Text("-"),
                         onChanged: (value) {
                           setState(() {
-                            _roomgroup = roomgrouplist.firstWhere((e) => e['path'] == value);
-                            roomObj["roomgroupname"] = _roomgroup['name'];
-                            roomObj["roomgrouppath"] = _roomgroup['path'];
+//                            _roomgroup = roomgrouplist.firstWhere((e) => e['path'] == value);
+                            if (value == '') {
+                              roomObj['roomtype'] = 'orphan';
+                            } else roomObj['roomtype'] = null;
+                            roomObj["roomgroupname"] = roomgrouplist.firstWhere((e) => e['path'] == value)['name'];;
+                            roomObj["roomgrouppath"] = value;
 //                              acm.setData({"room": _room}, merge: true);
                           });
                         },
@@ -246,7 +255,7 @@ class _EditRoomState extends State<EditRoom> {
                       padding: EdgeInsets.only(top: 14.0, bottom: 14.0,),
                       child: new Text("Presumed and Sampled Materials", style: Styles.h2,),
                     ),
-                    new StreamBuilder(
+                    widget.room != null ? new StreamBuilder(
                         stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').where("roompath", isEqualTo: widget.room).snapshots(),
                         builder: (context, snapshot) {
                           print("Room object : " + widget.room.toString());
@@ -265,7 +274,7 @@ class _EditRoomState extends State<EditRoom> {
                                           alignment: Alignment.center,
                                           height: 64.0,
                                           child:
-                                          Text("Loading samples...")
+                                          Text("Loading ACM items...")
                                       )
                                     ]));
                           if (snapshot.data.documents.length == 0) return
@@ -289,6 +298,8 @@ class _EditRoomState extends State<EditRoom> {
                               itemCount: snapshot.data.documents.length,
                               itemBuilder: (context, index) {
                                 print(snapshot.data.documents[index]['jobnumber']);
+                                var doc = snapshot.data.documents[index].data;
+                                doc['path'] = snapshot.data.documents[index].documentID;
                                 return AcmCard(
                                   doc: snapshot.data.documents[index],
                                   onCardClick: () async {
@@ -316,6 +327,22 @@ class _EditRoomState extends State<EditRoom> {
                               }
                           );
                         }
+                    )
+                    :
+
+                    new Center(
+                    child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Icon(Icons.not_interested, size: 64.0),
+                      Container(
+                          alignment: Alignment.center,
+                          height: 64.0,
+                          child:
+                          Text('This job has no ACM items.')
+                        )
+                      ]
+                    )
                     ),
                     new Container(padding: EdgeInsets.only(top: 14.0)),
                     new Divider(),
@@ -455,8 +482,8 @@ class _EditRoomState extends State<EditRoom> {
   void _loadRoom() async {
     print('room is ' + room.toString());
     // Load roomgroups from job
-    roomgrouplist = [{"name": '-', "path": 'UnGrouped',}];
-    QuerySnapshot roomSnapshot = await Firestore.instance.document(DataManager.get().currentJobPath).collection('roomgroups').getDocuments();
+    roomgrouplist = [{"name": '-', "path": '',}];
+    QuerySnapshot roomSnapshot = await Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').where('roomtype', isEqualTo: 'group').getDocuments();
     roomSnapshot.documents.forEach((doc) => roomgrouplist.add({"name": doc.data['name'],"path": doc.documentID}));
     print('ROOMGROUPLIST ' + roomgrouplist.toString());
 
@@ -467,6 +494,7 @@ class _EditRoomState extends State<EditRoom> {
       roomObj['path_local'] = null;
       roomObj['path_remote'] = null;
       roomObj['buildingmaterials'] = null;
+      roomObj['roomtype'] = 'orphan';
 
       setState(() {
         isLoading = false;
@@ -487,7 +515,8 @@ class _EditRoomState extends State<EditRoom> {
             }
             setState(() {
               roomObj = doc.data;
-              if (roomObj['roomgrouppath'] != null) _roomgroup = { "path": roomObj['roomgrouppath'], "name": roomObj['roomgroupname'] };
+              initRoomGroup = doc.data['roomgrouppath'];
+//              if (roomObj['roomgrouppath'] != null) _roomgroup = { "path": roomObj['roomgrouppath'], "name": roomObj['roomgroupname'] };
               if (doc.data["roomcode"] != null) controllerRoomCode.text = doc.data["roomcode"];
               isLoading = false;
             });
@@ -498,6 +527,24 @@ class _EditRoomState extends State<EditRoom> {
 
   void _handleImageUpload(File image) async {
     String path = widget.room;
+    String roomgrouppath = roomObj['roomgrouppath'];
+    if (roomgrouppath != null) Firestore.instance.document(DataManager.get().currentJobPath)
+        .collection('rooms').document(roomgrouppath).get().then((doc) {
+      var list = new List.from(doc.data['children']).map((doc) {
+        if (doc['path'] == roomObj['path']) {
+          return {
+            "name": roomObj['name'],
+            "path": roomObj['path'],
+            "path_remote": roomObj['path_remote'],
+            "path_local": image.path,
+          };
+        } else {
+          return doc;
+        }
+      }).toList();
+      Firestore.instance.document(DataManager.get().currentJobPath)
+          .collection('rooms').document(roomgrouppath).setData({"children": list}, merge: true);
+    });
     setState(() {
       roomObj["path_local"] = image.path;
     });
@@ -520,6 +567,23 @@ class _EditRoomState extends State<EditRoom> {
             .collection('rooms').document(room)
     ).then((url) {
       if (this.mounted) {
+        if (roomgrouppath != null) Firestore.instance.document(DataManager.get().currentJobPath)
+            .collection('rooms').document(roomgrouppath).get().then((doc) {
+          var list = new List.from(doc.data['children']).map((doc) {
+            if (doc['path'] == roomObj['path']) {
+              return {
+                "name": roomObj['name'],
+                "path": roomObj['path'],
+                "path_remote": url,
+                "path_local": roomObj['path_local'],
+              };
+            } else {
+              return doc;
+            }
+          }).toList();
+          Firestore.instance.document(DataManager.get().currentJobPath)
+              .collection('rooms').document(roomgrouppath).setData({"children": list}, merge: true);
+        });
         setState((){
           roomObj["path_remote"] = url;
           localPhoto = false;
@@ -532,7 +596,47 @@ class _EditRoomState extends State<EditRoom> {
             .document(path)
             .setData(
             {"path_remote": url }, merge: true);
+        if (roomgrouppath != null) Firestore.instance.document(DataManager.get().currentJobPath)
+            .collection('rooms').document(roomgrouppath).get().then((doc) {
+              var list = new List.from(doc.data['children']).map((doc) {
+                if (doc['path'] == roomObj['path']) {
+                  return {
+                    "name": roomObj['name'],
+                    "path": roomObj['path'],
+                    "path_remote": roomObj['path_remote'],
+                    "path_local": roomObj['path_local'],
+                  };
+                } else {
+                  return doc;
+                }
+              }).toList();
+              Firestore.instance.document(DataManager.get().currentJobPath)
+                  .collection('rooms').document(roomgrouppath).setData({"children": list}, merge: true);
+        });
       }
+    });
+  }
+}
+
+void updateRoomGroups(String initRoomGroup, Map<String, dynamic> roomObj, String room) {
+  print("Update room groups " + initRoomGroup.toString());
+  Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(roomObj['roomgrouppath']).get().then((doc) {
+    var initChildren = new List.from(doc.data['children']);
+    print("Adding to room group: " + initChildren.toString());
+    initChildren..addAll([{
+      "name": roomObj['name'],
+      "path": roomObj['path'],
+      "path_local": roomObj['path_local'],
+      "path_remote": roomObj['path_remote'],
+    }]);
+    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(roomObj['roomgrouppath']).setData({"children": initChildren}, merge: true);
+  });
+  if (initRoomGroup != null) {
+    // Remove from previous room group
+    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(initRoomGroup).get().then((doc) {
+      var initChildren = doc.data['children'].where((child) => child['path'] != roomObj['path']).toList();
+      print("Removing from room group " + initChildren.toString());
+      Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(initRoomGroup).setData({"children": initChildren}, merge: true);
     });
   }
 }

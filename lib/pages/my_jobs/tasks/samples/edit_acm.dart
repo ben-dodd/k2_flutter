@@ -14,7 +14,6 @@ import 'package:k2e/tooltips.dart';
 import 'package:k2e/utils/camera.dart';
 import 'package:k2e/widgets/buttons.dart';
 import 'package:k2e/widgets/custom_auto_complete.dart';
-import 'package:k2e/widgets/dialogs.dart';
 import 'package:k2e/widgets/loading.dart';
 
 class EditACM extends StatefulWidget {
@@ -32,7 +31,6 @@ class _EditACMState extends State<EditACM> {
   DocumentReference sample;
   DocumentReference acm;
   Map<String,String> _room;
-  Map<String,String> _sample;
 
   Map<String,dynamic> acmObj = new Map<String,dynamic>();
 

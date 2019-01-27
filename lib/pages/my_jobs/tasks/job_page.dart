@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_jobs/tasks/check/check_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/details/details_tab.dart';
-import 'package:k2e/pages/my_jobs/tasks/documents/documents_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/map/maps_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/notepad/edit_note.dart';
 import 'package:k2e/pages/my_jobs/tasks/notepad/notepad_tab.dart';

@@ -4,8 +4,6 @@
 
 // Loads new job from remote, including all samples etc.
 
-import 'dart:async';
-
 import 'package:camera/camera.dart';
 import 'package:k2e/model/jobheader.dart';
 import 'package:k2e/utils/timesheet.dart';

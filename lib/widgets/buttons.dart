@@ -8,7 +8,7 @@ class ScoreButton extends StatelessWidget {
   ScoreButton({
     @required this.score,
     @required this.onClick,
-    @required this.showHint,
+    this.showHint,
     this.selected,
     this.text,
     this.tooltip,

@@ -12,7 +12,7 @@ class RoomCard extends StatefulWidget {
     this.onCardLongPress,
   });
 
-  final Map<String,dynamic> doc;
+  final Map<String, dynamic> doc;
   final BuildContext context;
   final VoidCallback onCardClick;
   final VoidCallback onCardLongPress;
@@ -85,7 +85,11 @@ class _RoomCardState extends State<RoomCard>{
           fontWeight: FontWeight.bold
       ),),
       children: doc['children'].length > 0 ? doc['children']
-          .map<Widget>(_roomCard)
+          .map<Widget>((child) {
+            print(child.toString());
+            // Start streams here?
+            return _roomCard(new Map<String,dynamic>.from(child));
+      })
           .toList() : null,
     );
   }

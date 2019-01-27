@@ -94,8 +94,8 @@ class _AcmCardState extends State<AcmCard>{
     padding: EdgeInsets.fromLTRB(8.0,0.0,4.0,0.0),
     decoration: new BoxDecoration(
     color: Colors.white,
-    border: new Border.all(color: Colors.black38, width: 2.0),
-    borderRadius: new BorderRadius.circular(16.0),
+//    border: new Border.all(color: Colors.black38, width: 2.0),
+//    borderRadius: new BorderRadius.circular(16.0),
     ),
     child: new ListTile(
           contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),

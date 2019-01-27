@@ -1,7 +1,6 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/utils/camera.dart';
 import 'package:video_player/video_player.dart';
 
 class CameraGeneric extends StatefulWidget {
@@ -27,7 +26,7 @@ class _CameraGenericState extends State<CameraGeneric> {
 
 
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+//  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {

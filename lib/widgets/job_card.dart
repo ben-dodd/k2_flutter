@@ -8,7 +8,7 @@ class JobCard extends StatefulWidget {
   JobCard({
     this.doc,
     @required this.onCardClick,
-    @required this.onCardLongPress,
+    this.onCardLongPress,
   });
 
 //  final JobHeader jobHeader;

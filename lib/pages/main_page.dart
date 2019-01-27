@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/pages/my_details/my_details_page.dart';
 import 'package:k2e/pages/my_jobs/my_jobs_page.dart';
 import 'package:k2e/pages/my_details/general_details_tab.dart';
 import 'package:k2e/pages/under_construction_page.dart';
