@@ -149,7 +149,7 @@ class _DetailsTabState extends State<DetailsTab> {
                                     fadeInDuration: new Duration(seconds: 1),
                                   )
                                   :  new Icon(
-                                    Icons.camera, color: CompanyColors.accent,
+                                    Icons.camera, color: CompanyColors.accentRippled,
                                     size: 48.0,)
                               ),
                               )]),

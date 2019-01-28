@@ -12,14 +12,14 @@ import 'package:k2e/utils/camera.dart';
 import 'package:k2e/widgets/custom_auto_complete.dart';
 import 'package:k2e/widgets/loading.dart';
 
-class EditSampleAsbestosAir extends StatefulWidget {
-  EditSampleAsbestosAir({Key key, this.sample}) : super(key: key);
+class EditSampleAsbestosBulk extends StatefulWidget {
+  EditSampleAsbestosBulk({Key key, this.sample}) : super(key: key);
   final String sample;
   @override
-  _EditSampleAsbestosAirState createState() => new _EditSampleAsbestosAirState();
+  _EditSampleAsbestosBulkState createState() => new _EditSampleAsbestosBulkState();
 }
 
-class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
+class _EditSampleAsbestosBulkState extends State<EditSampleAsbestosBulk> {
   // TITLE
   String _title = "Edit Sample";
 
@@ -44,9 +44,6 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
   final controllerNotes = TextEditingController();
 
   // IMAGES
-  String path_local;
-  String path_remote;
-
   bool localPhoto = false;
 
 
@@ -104,7 +101,7 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
             ]),
         body:
         isLoading ? loadingPage(loadingText: 'Loading sample info...')
-            : new StreamBuilder(stream: sample.snapshots(),
+        : new StreamBuilder(stream: sample.snapshots(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) return
                 loadingPage(loadingText: 'Loading sample info...');
@@ -150,7 +147,7 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
                                               fadeInDuration: new Duration(seconds: 1),
                                             )
                                                 :  new Icon(
-                                              Icons.camera, color: CompanyColors.accent,
+                                              Icons.camera, color: CompanyColors.accentRippled,
                                               size: 48.0,)
                                         ),
                                       )],
@@ -177,7 +174,7 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
                                     alignment: Alignment.topLeft,
                                     child: TextField(
                                       decoration: const InputDecoration(
-                                          labelText: "Location"),
+                                          labelText: "Description"),
                                       autocorrect: false,
                                       controller: controllerDescription,
                                       keyboardType: TextInputType.text,
@@ -246,10 +243,9 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
       dataMap['samplenumber'] = null;
       dataMap['description'] = null;
       dataMap['material'] = null;
+      dataMap['sampletype'] = 'bulk';
       dataMap['path_local'] = null;
       dataMap['path_remote'] = null;
-      dataMap['sampletype'] = 'air';
-      path_local = null;
       Firestore.instance.collection('samplesasbestos').add(
           dataMap).then((ref) {
         sample = Firestore.instance.collection('samplesasbestos').document(ref.documentID);
@@ -284,20 +280,17 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
     }
   }
   void _handleImageUpload(File image) async {
-    sample.setData({"path_local": image.path}, merge: true).then((_) {
-      setState(() {});
+    sample.setData({"path_local": image.path},merge: true).then((_) {
+      setState((){});
     });
     ImageSync(
         image,
         50,
-        "sample" + controllerSampleNumber.text + "_" + sample.documentID +
-            ".jpg",
-        DataManager
-            .get()
-            .currentJobNumber,
+        "sample" + controllerSampleNumber.text,
+        "jobs/" + DataManager.get().currentJobNumber,
         sample
     ).then((_) {
-      setState(() {
+      setState((){
         localPhoto = false;
       });
     });

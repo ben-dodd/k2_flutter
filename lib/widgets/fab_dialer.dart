@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 
 import 'package:k2e/theme.dart';
 
@@ -141,6 +140,7 @@ class _SpeedDialerState extends State<SpeedDialer>
       vsync: this,
       duration: widget.duration,
     );
+    super.initState();
   }
 
   toggleOpen() {
@@ -176,17 +176,7 @@ class _SpeedDialerState extends State<SpeedDialer>
   }
 
     Widget build(BuildContext context) {
-      Color backgroundColor = CompanyColors.accent;
-      Color foregroundColor = Theme
-          .of(context)
-          .accentColor;
-//      var tempChildren = widget.children ?? [];
-//      var children = tempChildren.map((SpeedDialerButton s) {
-//        if (w is SpeedDialerButton) {
-//          w.onPressed = closingWrap(w.onPressed);
-//        }
-//        return w;
-//      }).toList();
+      Color backgroundColor = CompanyColors.accentRippled;
       return new Container(
         alignment: Alignment.bottomRight,
         margin: new EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
@@ -243,7 +233,7 @@ class _SpeedDialerState extends State<SpeedDialer>
                               heroTag: null,
 //                  elevation: elevation,
                                 mini: true,
-                                backgroundColor: CompanyColors.accent,
+                                backgroundColor: CompanyColors.accentRippled,
 //                  tooltip: text,
                                 child: new Icon(widget.children[index].icon, color: Colors.white),
 //                  heroTag: "$index",

@@ -17,28 +17,25 @@ import 'package:k2e/widgets/dialogs.dart';
 import 'package:k2e/widgets/loading.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
-class EditRoom extends StatefulWidget {
-  EditRoom({Key key, this.room}) : super(key: key);
-  final String room;
+class EditMap extends StatefulWidget {
+  EditMap({Key key, this.map}) : super(key: key);
+  final String map;
   @override
-  _EditRoomState createState() => new _EditRoomState();
+  _EditMapState createState() => new _EditMapState();
 }
 
-class _EditRoomState extends State<EditRoom> {
-  String _title = "Edit Room";
+class _EditMapState extends State<EditMap> {
+  String _title = "Edit Map";
   bool isLoading = true;
-  String initRoomGroup;
-  Map<String,dynamic> roomObj = new Map<String,dynamic>();
+  String initMapGroup;
+  Map<String,dynamic> mapObj = new Map<String,dynamic>();
 
   // images
-  String room;
+  String map;
   bool localPhoto = false;
-  List<Map<String, String>> roomgrouplist = new List();
+  List<Map<String, String>> mapgrouplist = new List();
 
-  List<String> rooms = AutoComplete.rooms.split(';');
-  GlobalKey key = new GlobalKey<AutoCompleteTextFieldState<String>>();
-
-  final controllerRoomCode = TextEditingController();
+  final controllerMapCode = TextEditingController();
   
   var _formKey = GlobalKey<FormState>();
 //  GlobalKey formFieldKey = new GlobalKey<AutoCompleteFormFieldState<String>>();
@@ -53,22 +50,22 @@ class _EditRoomState extends State<EditRoom> {
 
   @override
   void initState() {
-    room = widget.room;
-//    controllerRoomCode.addListener(_updateRoomCode);
-    _loadRoom();
+    map = widget.map;
+//    controllerMapCode.addListener(_updateMapCode);
+    _loadMap();
     _scrollController = ScrollController();
     super.initState();
   }
 
 //  _updateName(name) {
 //    this.setState(() {
-//      roomObj["name"] = name.trim();
+//      mapObj["name"] = name.trim();
 //    });
 //  }
 //
-//  _updateRoomCode() {
+//  _updateMapCode() {
 //    this.setState(() {
-//      roomObj["roomcode"] = controllerRoomCode.text.trim();
+//      mapObj["mapcode"] = controllerMapCode.text.trim();
 //    });
 //  }
 
@@ -85,28 +82,28 @@ class _EditRoomState extends State<EditRoom> {
               new IconButton(icon: const Icon(Icons.check), onPressed: () {
                 if (_formKey.currentState.validate()){
                   _formKey.currentState.save();
-                  // Update room group map if new room has been added or if room's room group has changed
-//                  print("Widget Room" + widget.room.toString());
-//                  print(roomObj['roomgroup'].toString());
-//                  print(initRoomGroup.toString());
-                  if (roomObj['path'] == null) {
-                    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').add(roomObj).then((doc) {
-                      roomObj['path'] = doc.documentID;
-                      if (roomObj['roomgrouppath'] == null || roomObj['roomgrouppath'] != initRoomGroup) {
-                        updateRoomGroups(initRoomGroup, roomObj, widget.room);
+                  // Update map group map if new map has been added or if map's map group has changed
+//                  print("Widget Map" + widget.map.toString());
+//                  print(mapObj['mapgroup'].toString());
+//                  print(initMapGroup.toString());
+                  if (mapObj['path'] == null) {
+                    Firestore.instance.document(DataManager.get().currentJobPath).collection('maps').add(mapObj).then((doc) {
+                      mapObj['path'] = doc.documentID;
+                      if (mapObj['mapgrouppath'] == null || mapObj['mapgrouppath'] != initMapGroup) {
+                        updateMapGroups(initMapGroup, mapObj, widget.map);
                       } else {
-                        updateRoomCard(roomObj['roomgrouppath'], roomObj);
+                        updateMapCard(mapObj['mapgrouppath'], mapObj);
                       }
-                      Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(doc.documentID).setData({"path": doc.documentID}, merge: true);
+                      Firestore.instance.document(DataManager.get().currentJobPath).collection('maps').document(doc.documentID).setData({"path": doc.documentID}, merge: true);
                       });
                   } else {
-                    if (roomObj['roomgrouppath'] == null || roomObj['roomgrouppath'] != initRoomGroup) {
-                      updateRoomGroups(initRoomGroup, roomObj, widget.room);
+                    if (mapObj['mapgrouppath'] == null || mapObj['mapgrouppath'] != initMapGroup) {
+                      updateMapGroups(initMapGroup, mapObj, widget.map);
                     } else {
-                      updateRoomCard(roomObj['roomgrouppath'], roomObj);
+                      updateMapCard(mapObj['mapgrouppath'], mapObj);
                     }
-                    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(room).setData(
-                        roomObj, merge: true);
+                    Firestore.instance.document(DataManager.get().currentJobPath).collection('maps').document(map).setData(
+                        mapObj, merge: true);
                   }
                   Navigator.pop(context);
                 }
@@ -114,7 +111,7 @@ class _EditRoomState extends State<EditRoom> {
             ]
         ),
         body: isLoading ?
-        loadingPage(loadingText: 'Loading room info...')
+        loadingPage(loadingText: 'Loading map info...')
         : GestureDetector(
             onTap: () {
               FocusScope.of(context).requestFocus(new FocusNode());
@@ -147,10 +144,10 @@ class _EditRoomState extends State<EditRoom> {
 //                                    child: (_imageFile != null)
 //                                        ? Image.file(_imageFile)
                             child: localPhoto ?
-                            new Image.file(new File(roomObj['path_local']))
-                                : (roomObj['path_remote'] != null) ?
+                            new Image.file(new File(mapObj['path_local']))
+                                : (mapObj['path_remote'] != null) ?
                             new CachedNetworkImage(
-                              imageUrl: roomObj['path_remote'],
+                              imageUrl: mapObj['path_remote'],
                               placeholder: new CircularProgressIndicator(),
                               errorWidget: new Icon(Icons.error),
                               fadeInDuration: new Duration(seconds: 1),
@@ -164,16 +161,16 @@ class _EditRoomState extends State<EditRoom> {
                       new Container(
                         child: new TextFormField(
                           decoration: new InputDecoration(
-                            labelText: "Room Name",
+                            labelText: "Map Name",
                           ),
                           onSaved: (String value) {
-                            roomObj["name"] = value.trim();
+                            mapObj["name"] = value.trim();
                           },
                           validator: (String value) {
-                            return value.isEmpty ? 'You must add a room name' : null;
+                            return value.isEmpty ? 'You must add a map name' : null;
                           },
                           focusNode: _focusNodes[0],
-                          initialValue: roomObj["name"],
+                          initialValue: mapObj["name"],
                           textInputAction: TextInputAction.next,
                           textCapitalization: TextCapitalization.words,
                           onFieldSubmitted: (v) {
@@ -182,13 +179,13 @@ class _EditRoomState extends State<EditRoom> {
                         ),
 //                        child: new AutoCompleteFormField(
 //                          decoration: new InputDecoration(
-//                              labelText: "Room Name"
+//                              labelText: "Map Name"
 //                          ),
 //                          key: formFieldKey,
 //                          scrollController: _scrollController,
 //                          textInputAction: TextInputAction.next,
-//                          initialValue: roomObj["name"] != null ? roomObj["name"] : "",
-//                          suggestions: rooms,
+//                          initialValue: mapObj["name"] != null ? mapObj["name"] : "",
+//                          suggestions: maps,
 //
 //                          textChanged: (item) {
 //                            _updateName(item);
@@ -210,17 +207,17 @@ class _EditRoomState extends State<EditRoom> {
                       new Container(
                         child: TextFormField(
                             decoration: const InputDecoration(
-                                labelText: "Room Code",
-                                hintText: "e.g. B1 (use for large surveys with many similar rooms)",
+                                labelText: "Map Code",
+                                hintText: "e.g. B1 (use for large surveys with many similar maps)",
                             ),
                             autocorrect: false,
                             onSaved: (String value) {
-                              roomObj["roomcode"] = value.trim();
+                              mapObj["mapcode"] = value.trim();
                             },
                             validator: (String value) {
-//                              return value.length > 0 ? 'You must add a room name' : null;
+//                              return value.length > 0 ? 'You must add a map name' : null;
                             },
-                            initialValue: roomObj["roomcode"],
+                            initialValue: mapObj["mapcode"],
                             focusNode: _focusNodes[1],
                             textCapitalization: TextCapitalization.characters,
                           ),
@@ -228,32 +225,32 @@ class _EditRoomState extends State<EditRoom> {
                     new Container(
                       alignment: Alignment.topLeft,
                       padding: EdgeInsets.only(top: 14.0,),
-                      child: new Text("Room Group/Building/Level", style: Styles.label,),
+                      child: new Text("Map Group/Building/Level", style: Styles.label,),
                     ),
                     new Container(
                       alignment: Alignment.topLeft,
                       child: DropdownButton<String>(
-                        value: (roomObj['roomgrouppath'] == null) ? null : roomObj['roomgrouppath'],
+                        value: (mapObj['mapgrouppath'] == null) ? null : mapObj['mapgrouppath'],
                         iconSize: 24.0,
-                        items: roomgrouplist.map((Map<String,String> roomgroup) {
-                          print(roomgroup.toString());
+                        items: mapgrouplist.map((Map<String,String> mapgroup) {
+                          print(mapgroup.toString());
                           String val = "Untitled";
-                          if (roomgroup['name'] != null) val = roomgroup['name'];
+                          if (mapgroup['name'] != null) val = mapgroup['name'];
                           return new DropdownMenuItem<String>(
-                            value: roomgroup["path"],
+                            value: mapgroup["path"],
                             child: new Text(val),
                           );
                         }).toList(),
                         hint: Text("-"),
                         onChanged: (value) {
                           setState(() {
-//                            _roomgroup = roomgrouplist.firstWhere((e) => e['path'] == value);
+//                            _mapgroup = mapgrouplist.firstWhere((e) => e['path'] == value);
                             if (value == '') {
-                              roomObj['roomtype'] = 'orphan';
-                            } else roomObj['roomtype'] = null;
-                            roomObj["roomgroupname"] = roomgrouplist.firstWhere((e) => e['path'] == value)['name'];;
-                            roomObj["roomgrouppath"] = value;
-//                              acm.setData({"room": _room}, merge: true);
+                              mapObj['maptype'] = 'orphan';
+                            } else mapObj['maptype'] = null;
+                            mapObj["mapgroupname"] = mapgrouplist.firstWhere((e) => e['path'] == value)['name'];;
+                            mapObj["mapgrouppath"] = value;
+//                              acm.setData({"map": _map}, merge: true);
                           });
                         },
                       ),
@@ -264,10 +261,10 @@ class _EditRoomState extends State<EditRoom> {
                       padding: EdgeInsets.only(top: 14.0, bottom: 14.0,),
                       child: new Text("Presumed and Sampled Materials", style: Styles.h2,),
                     ),
-                    widget.room != null ? new StreamBuilder(
-                        stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').where("roompath", isEqualTo: widget.room).snapshots(),
+                    widget.map != null ? new StreamBuilder(
+                        stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').where("mappath", isEqualTo: widget.map).snapshots(),
                         builder: (context, snapshot) {
-                          print("Room object : " + widget.room.toString());
+                          print("Map object : " + widget.map.toString());
                           if (!snapshot.hasData) return
                             Container(
                                 padding: EdgeInsets.only(top: 16.0),
@@ -370,7 +367,7 @@ class _EditRoomState extends State<EditRoom> {
                               child: const Text("Load New Template"),
                               color: Colors.white,
                               onPressed: () {
-                                showRoomTemplateDialog(context, roomObj, applyTemplate,);
+//                                showMapTemplateDialog(context, mapObj, applyTemplate,);
                               },
                               shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
                           ),
@@ -382,9 +379,9 @@ class _EditRoomState extends State<EditRoom> {
                               child: const Text("Clear Empty Rows"),
                               color: Colors.white,
                               onPressed: () {
-                                if (roomObj["buildingmaterials"] != null && roomObj["buildingmaterials"].length > 0) {
+                                if (mapObj["buildingmaterials"] != null && mapObj["buildingmaterials"].length > 0) {
                                   this.setState(() {
-                                    roomObj["buildingmaterials"] = roomObj["buildingmaterials"].where((bm) => bm["material"] == null || bm["material"].trim().length > 0).toList();
+                                    mapObj["buildingmaterials"] = mapObj["buildingmaterials"].where((bm) => bm["material"] == null || bm["material"].trim().length > 0).toList();
                                   });
                                 }
                               },
@@ -392,12 +389,12 @@ class _EditRoomState extends State<EditRoom> {
                           ),
                         ),],
                     ),
-                    (roomObj['buildingmaterials'] != null && roomObj['buildingmaterials'].length > 0) ?
-//                    roomObj['buildingmaterials'].map((item) => buildBuildingMaterials(item))
+                    (mapObj['buildingmaterials'] != null && mapObj['buildingmaterials'].length > 0) ?
+//                    mapObj['buildingmaterials'].map((item) => buildBuildingMaterials(item))
                       ListView.builder(
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
-                        itemCount: roomObj['buildingmaterials'].length,
+                        itemCount: mapObj['buildingmaterials'].length,
                         itemBuilder: (context, index) {
                         return buildBuildingMaterials(index);
                       })
@@ -408,7 +405,7 @@ class _EditRoomState extends State<EditRoom> {
                       padding: EdgeInsets.only(top: 14.0,),
                       child: new OutlineButton(
                           shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
-                          child: Text("Delete Room",
+                          child: Text("Delete Map",
                               style: new TextStyle(color: Theme.of(context).accentColor, fontWeight: FontWeight.bold
                               )
                           ),
@@ -431,8 +428,8 @@ class _EditRoomState extends State<EditRoom> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: new Text('Delete Room'),
-          content: new Text('Are you sure you wish to delete this room (' + roomObj['name'] + ')?\nNote: This will not delete any ACM linked to this room.'),
+          title: new Text('Delete Map'),
+          content: new Text('Are you sure you wish to delete this map (' + mapObj['name'] + ')?\nNote: This will not delete any ACM linked to this map.'),
           actions: <Widget>[
             new FlatButton(
               child: new Text('Cancel', style: new TextStyle(color: Colors.black)),
@@ -444,7 +441,7 @@ class _EditRoomState extends State<EditRoom> {
               child: new Text('Delete'),
               onPressed: () {
                 Navigator.of(context).pop();
-                _deleteRoom();
+                _deleteMap();
               }
             ),
           ],
@@ -453,26 +450,26 @@ class _EditRoomState extends State<EditRoom> {
     );
   }
 
-  void _deleteRoom() {
-    // Remove from room group
-    var initRoomGroup = roomObj['roomgrouppath'];
-    roomObj['roomgrouppath'] = null;
-    updateRoomGroups(initRoomGroup, roomObj, room);
+  void _deleteMap() {
+    // Remove from map group
+    var initMapGroup = mapObj['mapgrouppath'];
+    mapObj['mapgrouppath'] = null;
+    updateMapGroups(initMapGroup, mapObj, map);
 
     // Remove ACM references
-    Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').where('roompath', isEqualTo: roomObj['path']).getDocuments().then((doc) {
+    Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').where('mappath', isEqualTo: mapObj['path']).getDocuments().then((doc) {
       doc.documents.forEach((doc) {
-        Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').document(doc.documentID).setData({'roomname': null, 'roompath': null,}, merge: true);
+        Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').document(doc.documentID).setData({'mapname': null, 'mappath': null,}, merge: true);
       });
     });
 
     // Remove images
-    if (roomObj['storage_ref'] != null) {
-      FirebaseStorage.instance.ref().child(roomObj['storage_ref']).delete();
+    if (mapObj['storage_ref'] != null) {
+      FirebaseStorage.instance.ref().child(mapObj['storage_ref']).delete();
     }
 
-    // Remove room
-    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(roomObj['path']).delete();
+    // Remove map
+    Firestore.instance.document(DataManager.get().currentJobPath).collection('maps').document(mapObj['path']).delete();
 
     // Pop
     Navigator.pop(context);
@@ -480,7 +477,7 @@ class _EditRoomState extends State<EditRoom> {
 
   buildBuildingMaterials (index) {
 //      print("Building item: " + item.toString());
-    var item = roomObj['buildingmaterials'][index];
+    var item = mapObj['buildingmaterials'][index];
     Widget widget = new Row(
       children: <Widget>[
         new Container(
@@ -498,7 +495,7 @@ class _EditRoomState extends State<EditRoom> {
             onFieldSubmitted: (text) {
               print(text.toString());
               setState(() {
-                roomObj['buildingmaterials'][index]["label"] = text.trim();
+                mapObj['buildingmaterials'][index]["label"] = text.trim();
               });
               FocusScope.of(context).requestFocus(_focusNodes[(index * 2) + 3]);
             },
@@ -507,7 +504,7 @@ class _EditRoomState extends State<EditRoom> {
             },
             onSaved: (text) {
               setState(() {
-                roomObj['buildingmaterials'][index]["label"] = text.trim();
+                mapObj['buildingmaterials'][index]["label"] = text.trim();
               });
             },
             textCapitalization: TextCapitalization.sentences,
@@ -522,17 +519,17 @@ class _EditRoomState extends State<EditRoom> {
             textInputAction: TextInputAction.next,
             onFieldSubmitted: (text) {
               setState(() {
-                roomObj['buildingmaterials'][index]["material"] = text.trim();
+                mapObj['buildingmaterials'][index]["material"] = text.trim();
               });
-              if (roomObj['buildingmaterials'][index+1] != null && roomObj['buildingmaterials'][index+1]["label"].trim().length > 0) {
+              if (mapObj['buildingmaterials'][index+1] != null && mapObj['buildingmaterials'][index+1]["label"].trim().length > 0) {
                 FocusScope.of(context).requestFocus(_focusNodes[((index + 1) * 2) + 3]);
               } else {
                 // If label field isn't filled in, go to it on Keyboard Next otherwise go to the next material
                 FocusScope.of(context).requestFocus(_focusNodes[((index + 1) * 2) + 2]);
               }
-              if (roomObj['buildingmaterials'].length < index + 2) {
-                roomObj['buildingmaterials'] =
-                new List<dynamic>.from(roomObj['buildingmaterials'])
+              if (mapObj['buildingmaterials'].length < index + 2) {
+                mapObj['buildingmaterials'] =
+                new List<dynamic>.from(mapObj['buildingmaterials'])
                   ..addAll([{"label": "", "material": "",}]);
               }
             },
@@ -541,7 +538,7 @@ class _EditRoomState extends State<EditRoom> {
             },
             onSaved: (text) {
               setState(() {
-                roomObj['buildingmaterials'][index]["material"] = text.trim();
+                mapObj['buildingmaterials'][index]["material"] = text.trim();
               });
             },
             textCapitalization: TextCapitalization.none,
@@ -552,38 +549,38 @@ class _EditRoomState extends State<EditRoom> {
     return widget;
   }
 
-  void applyTemplate(roomObj) {
+  void applyTemplate(mapObj) {
     this.setState(() {
-      roomObj = roomObj;
+      mapObj = mapObj;
     });
   }
 
-  void _loadRoom() async {
-    print('room is ' + room.toString());
-    // Load roomgroups from job
-    roomgrouplist = [{"name": '-', "path": '',}];
-    QuerySnapshot roomSnapshot = await Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').where('roomtype', isEqualTo: 'group').getDocuments();
-    roomSnapshot.documents.forEach((doc) => roomgrouplist.add({"name": doc.data['name'],"path": doc.documentID}));
-    print('ROOMGROUPLIST ' + roomgrouplist.toString());
+  void _loadMap() async {
+    print('map is ' + map.toString());
+    // Load mapgroups from job
+    mapgrouplist = [{"name": '-', "path": '',}];
+    QuerySnapshot mapSnapshot = await Firestore.instance.document(DataManager.get().currentJobPath).collection('maps').where('maptype', isEqualTo: 'group').getDocuments();
+    mapSnapshot.documents.forEach((doc) => mapgrouplist.add({"name": doc.data['name'],"path": doc.documentID}));
+    print('ROOMGROUPLIST ' + mapgrouplist.toString());
 
-//    print("Loading room");
-    if (room == null) {
-      _title = "Add New Room";
-      roomObj['name'] = null;
-      roomObj['path_local'] = null;
-      roomObj['path_remote'] = null;
-      roomObj['buildingmaterials'] = null;
-      roomObj['roomtype'] = 'orphan';
+//    print("Loading map");
+    if (map == null) {
+      _title = "Add New Map";
+      mapObj['name'] = null;
+      mapObj['path_local'] = null;
+      mapObj['path_remote'] = null;
+      mapObj['buildingmaterials'] = null;
+      mapObj['maptype'] = 'orphan';
 
       setState(() {
         isLoading = false;
       });
 
     } else {
-      print('Edit room is ' + room.toString());
-      _title = "Edit Room";
+      print('Edit map is ' + map.toString());
+      _title = "Edit Map";
       Firestore.instance.document(DataManager.get().currentJobPath)
-          .collection('rooms').document(room).get().then((doc) {
+          .collection('maps').document(map).get().then((doc) {
             // image
             if (doc.data['path_remote'] == null && doc.data['path_local'] != null){
               // only local image available (e.g. when taking photos with no internet)
@@ -593,10 +590,10 @@ class _EditRoomState extends State<EditRoom> {
               localPhoto = false;
             }
             setState(() {
-              roomObj = doc.data;
-              initRoomGroup = doc.data['roomgrouppath'];
-//              if (roomObj['roomgrouppath'] != null) _roomgroup = { "path": roomObj['roomgrouppath'], "name": roomObj['roomgroupname'] };
-              if (doc.data["roomcode"] != null) controllerRoomCode.text = doc.data["roomcode"];
+              mapObj = doc.data;
+              initMapGroup = doc.data['mapgrouppath'];
+//              if (mapObj['mapgrouppath'] != null) _mapgroup = { "path": mapObj['mapgrouppath'], "name": mapObj['mapgroupname'] };
+              if (doc.data["mapcode"] != null) controllerMapCode.text = doc.data["mapcode"];
               isLoading = false;
             });
       });
@@ -605,47 +602,47 @@ class _EditRoomState extends State<EditRoom> {
   }
 
   void _handleImageUpload(File image) async {
-    String path = widget.room;
-    String roomgrouppath = roomObj['roomgrouppath'];
-    String storageRef = roomObj['storage_ref'];
+    String path = widget.map;
+    String mapgrouppath = mapObj['mapgrouppath'];
+    String storageRef = mapObj['storage_ref'];
 
-    updateRoomCard(roomgrouppath, {'path_local': image.path, 'path': roomObj['path']});
+    updateMapCard(mapgrouppath, {'path_local': image.path, 'path': mapObj['path']});
     setState(() {
-      roomObj["path_local"] = image.path;
+      mapObj["path_local"] = image.path;
     });
 //    Firestore.instance.document(DataManager.get().currentJobPath)
-//        .collection('rooms').document(room).setData({"path_local": image.path},merge: true).then((_) {
+//        .collection('maps').document(map).setData({"path_local": image.path},merge: true).then((_) {
 //      setState((){});
 //    });
-    String roomgroup = roomObj["roomgroupname"];
-    String name = roomObj["name"];
-    String roomcode = roomObj["roomcode"];
-    if (roomgroup == null) roomgroup = 'RoomGroup';
+    String mapgroup = mapObj["mapgroupname"];
+    String name = mapObj["name"];
+    String mapcode = mapObj["mapcode"];
+    if (mapgroup == null) mapgroup = 'MapGroup';
     if (name == null) name = "Untitled";
-    if (roomcode == null) roomcode = "RG-U";
+    if (mapcode == null) mapcode = "RG-U";
     ImageSync(
         image,
         50,
-        roomgroup + name + "(" + roomcode + ")",
+        mapgroup + name + "(" + mapcode + ")",
         "jobs/" + DataManager.get().currentJobNumber,
         Firestore.instance.document(DataManager.get().currentJobPath)
-            .collection('rooms').document(room)
+            .collection('maps').document(map)
     ).then((refs) {
       // Delete old photo
       if (storageRef != null) FirebaseStorage.instance.ref().child(storageRef).delete();
 
-      updateRoomCard(roomgrouppath, {'path_remote': refs['downloadURL'], 'storage_ref': refs['storageRef'], 'path': roomObj['path']});
+      updateMapCard(mapgrouppath, {'path_remote': refs['downloadURL'], 'storage_ref': refs['storageRef'], 'path': mapObj['path']});
       if (this.mounted) {
         setState((){
-          roomObj["path_remote"] = refs['downloadURL'];
-          roomObj['storage_ref'] = refs['storageRef'];
+          mapObj["path_remote"] = refs['downloadURL'];
+          mapObj['storage_ref'] = refs['storageRef'];
           localPhoto = false;
         });
       } else {
         // User has left the page, upload url straight to firestore
         Firestore.instance.document(DataManager
             .get()
-            .currentJobPath).collection('rooms')
+            .currentJobPath).collection('maps')
             .document(path)
             .setData(
             {"path_remote": refs['downloadURL'], "storage_ref": refs['storageRef'], }, merge: true);
@@ -654,32 +651,32 @@ class _EditRoomState extends State<EditRoom> {
   }
 }
 
-void updateRoomGroups(String initRoomGroup, Map<String, dynamic> roomObj, String room) {
-  print("Update room groups " + initRoomGroup.toString());
-  if (roomObj['roomgrouppath'] != null) Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(roomObj['roomgrouppath']).get().then((doc) {
+void updateMapGroups(String initMapGroup, Map<String, dynamic> mapObj, String map) {
+  print("Update map groups " + initMapGroup.toString());
+  if (mapObj['mapgrouppath'] != null) Firestore.instance.document(DataManager.get().currentJobPath).collection('maps').document(mapObj['mapgrouppath']).get().then((doc) {
     var initChildren = new List.from(doc.data['children']);
-    print("Adding to room group: " + initChildren.toString());
+    print("Adding to map group: " + initChildren.toString());
     initChildren..addAll([{
-      "name": roomObj['name'],
-      "path": roomObj['path'],
-      "path_local": roomObj['path_local'],
-      "path_remote": roomObj['path_remote'],
+      "name": mapObj['name'],
+      "path": mapObj['path'],
+      "path_local": mapObj['path_local'],
+      "path_remote": mapObj['path_remote'],
     }]);
-    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(roomObj['roomgrouppath']).setData({"children": initChildren}, merge: true);
+    Firestore.instance.document(DataManager.get().currentJobPath).collection('maps').document(mapObj['mapgrouppath']).setData({"children": initChildren}, merge: true);
   });
-  if (initRoomGroup != null) {
-    // Remove from previous room group
-    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(initRoomGroup).get().then((doc) {
-      var initChildren = doc.data['children'].where((child) => child['path'] != roomObj['path']).toList();
-      print("Removing from room group " + initChildren.toString());
-      Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(initRoomGroup).setData({"children": initChildren}, merge: true);
+  if (initMapGroup != null) {
+    // Remove from previous map group
+    Firestore.instance.document(DataManager.get().currentJobPath).collection('maps').document(initMapGroup).get().then((doc) {
+      var initChildren = doc.data['children'].where((child) => child['path'] != mapObj['path']).toList();
+      print("Removing from map group " + initChildren.toString());
+      Firestore.instance.document(DataManager.get().currentJobPath).collection('maps').document(initMapGroup).setData({"children": initChildren}, merge: true);
     });
   }
 }
 
-void updateRoomCard(String roomgrouppath, Map<String, dynamic> updateObj) {
-  if (roomgrouppath != null) Firestore.instance.document(DataManager.get().currentJobPath)
-      .collection('rooms').document(roomgrouppath).get().then((doc) {
+void updateMapCard(String mapgrouppath, Map<String, dynamic> updateObj) {
+  if (mapgrouppath != null) Firestore.instance.document(DataManager.get().currentJobPath)
+      .collection('maps').document(mapgrouppath).get().then((doc) {
     var list = new List.from(doc.data['children']).map((doc) {
       if (doc['path'] == updateObj['path']) {
         return {
@@ -693,6 +690,6 @@ void updateRoomCard(String roomgrouppath, Map<String, dynamic> updateObj) {
       }
     }).toList();
     Firestore.instance.document(DataManager.get().currentJobPath)
-        .collection('rooms').document(roomgrouppath).setData({"children": list}, merge: true);
+        .collection('maps').document(mapgrouppath).setData({"children": list}, merge: true);
   });
 }

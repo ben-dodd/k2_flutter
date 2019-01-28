@@ -1,48 +1,48 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class NoteCard extends StatefulWidget {
+class MapCard extends StatefulWidget {
 
-  NoteCard({
-    this.note,
+  MapCard({
+    this.map,
     @required this.onCardClick,
 //    @required this.onCardLongPress,
   });
 
-  final DocumentSnapshot note;
+  final DocumentSnapshot map;
   final VoidCallback onCardClick;
 //  final VoidCallback onCardLongPress;
 
   @override
-  _NoteCardState createState() => new _NoteCardState();
+  _MapCardState createState() => new _MapCardState();
 
 }
 
-class _NoteCardState extends State<NoteCard>{
+class _MapCardState extends State<MapCard>{
   String title;
-  String note;
+  String map;
 
   bool hasPhoto;
   bool photoSynced;
   @override
   Widget build(BuildContext context) {
     // todo is there a better way to assert this stuff
-    if (widget.note['title'] == null || widget.note['title'] == '') {
+    if (widget.map['title'] == null || widget.map['title'] == '') {
       title = 'Untitled';
     } else {
-      title = widget.note['title'];
+      title = widget.map['title'];
     }
-    if (widget.note['note'] == null) {
-      note = '';
+    if (widget.map['map'] == null) {
+      map = '';
     } else {
-      note = widget.note['note'];
+      map = widget.map['map'];
     }
 
-    if (widget.note['path_local'] == null && widget.note['path_remote'] == null) {
+    if (widget.map['path_local'] == null && widget.map['path_remote'] == null) {
       hasPhoto = false;
     } else {
       hasPhoto = true;
-      if (widget.note['path_remote'] == null) {
+      if (widget.map['path_remote'] == null) {
         photoSynced = false;
       } else {
         photoSynced = true;
@@ -55,6 +55,8 @@ class _NoteCardState extends State<NoteCard>{
     padding: EdgeInsets.fromLTRB(8.0,0.0,4.0,0.0),
     decoration: new BoxDecoration(
     color: Colors.white,
+    border: new Border.all(color: Colors.black38, width: 2.0),
+    borderRadius: new BorderRadius.circular(16.0),
     ),
     child:
     new ListTile(
@@ -62,7 +64,7 @@ class _NoteCardState extends State<NoteCard>{
         contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
 //      leading: const Icon(Icons.whatshot),
         title: Text(title),
-        subtitle: Text(note, overflow: TextOverflow.ellipsis, maxLines: 3,),
+        subtitle: Text(map, overflow: TextOverflow.ellipsis, maxLines: 3,),
 
         // Tap -> go through to job task
         onTap: widget.onCardClick,

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:k2e/autocomplete.dart';
 import 'package:k2e/data/datamanager.dart';
+import 'package:k2e/styles.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
 import 'package:k2e/widgets/custom_auto_complete.dart';
@@ -13,31 +14,238 @@ import 'package:k2e/widgets/dialogs.dart';
 import 'package:k2e/widgets/loading.dart';
 
 class EditRoomGroup extends StatefulWidget {
-  EditRoomGroup({Key key, this.room}) : super(key: key);
-  final String room;
+  EditRoomGroup({Key key, this.roomgroup}) : super(key: key);
+  final String roomgroup;
   @override
   _EditRoomGroupState createState() => new _EditRoomGroupState();
 }
 
 class _EditRoomGroupState extends State<EditRoomGroup> {
-  String _title = "Edit Room";
+  String _title = "Edit Room Group";
   bool isLoading = true;
-  Map<String,dynamic> roomObj = new Map<String,dynamic>();
+  bool addAllOrphans = false;
+  String templateName = '-';
+
+  List templates = [
+    {'name': '-'},
+    {
+      'name': 'Management: 3 Bedroom House',
+      'rooms': [
+        { 'name': 'Kitchen', 'template': 'Kitchen', },
+        { 'name': 'Lounge', 'template': 'Lounge', },
+        { 'name': 'Dining Room', 'template': 'Basic', },
+        { 'name': 'Hallway', 'template': 'Hallway', },
+        { 'name': 'Bathroom', 'template': 'Bathroom/Toilet', },
+        { 'name': 'Toilet', 'template': 'Bathroom/Toilet', },
+        { 'name': 'Laundry', 'template': 'Bathroom/Toilet', },
+        { 'name': 'Bedroom 1', 'template': 'Basic', },
+        { 'name': 'Bedroom 2', 'template': 'Basic', },
+        { 'name': 'Bedroom 3', 'template': 'Basic', },
+        { 'name': 'Exterior', 'template': 'Basic', },
+        { 'name': 'Garage', 'template': 'Basic', },
+        { 'name': 'Shed', 'template': 'Basic', },
+      ],
+    },
+    {
+      'name': 'Demolition: 3 Bedroom House',
+      'rooms': [
+        { 'name': 'Kitchen', 'template': 'Kitchen', },
+        { 'name': 'HWC', 'template': 'Basic', },
+        { 'name': 'Lounge', 'template': 'Lounge', },
+        { 'name': 'Fireplace', 'template': 'Basic', },
+        { 'name': 'Dining Room', 'template': 'Basic', },
+        { 'name': 'Hallway', 'template': 'Hallway', },
+        { 'name': 'Fuse Board', 'template': 'Basic', },
+        { 'name': 'Bathroom', 'template': 'Bathroom/Toilet', },
+        { 'name': 'Toilet', 'template': 'Bathroom/Toilet', },
+        { 'name': 'Laundry', 'template': 'Bathroom/Toilet', },
+        { 'name': 'Bedroom 1', 'template': 'Basic', },
+        { 'name': 'Bedroom 2', 'template': 'Basic', },
+        { 'name': 'Bedroom 3', 'template': 'Basic', },
+        { 'name': 'Exterior', 'template': 'Basic', },
+        { 'name': 'Garage', 'template': 'Basic', },
+        { 'name': 'Shed', 'template': 'Basic', },
+      ],
+    },
+    {'name': 'Locomotive Type DC'},
+    {'name': 'Locomotive Type DCP'},
+    {'name': 'Locomotive Type DFM'},
+    {'name': 'Locomotive Type DFT'},
+    {'name': 'Locomotive Type DH'},
+    {'name': 'Locomotive Type DSC'},
+    {'name': 'Locomotive Type DXB'},
+    {'name': 'Locomotive Type EF'},
+    {'name': 'Electrical Substation'},
+  ];
+
+  List roomTemplates = [
+    {
+      "name": "Basic",
+      "buildingmaterials": [
+        {
+          "label": "Ceiling",
+          "material": "",
+        },
+        {
+          "label": "Walls",
+          "material": "",
+        },
+        {
+          "label": "Floor",
+          "material": "",
+        },
+      ],
+    },
+    {
+      "name": "Hallway",
+      "buildingmaterials": [
+        {
+          "label": "Ceiling",
+          "material": "",
+        },
+        {
+          "label": "Walls",
+          "material": "",
+        },
+        {
+          "label": "Fuse board",
+          "material": "",
+        },
+        {
+          "label": "Hot water cylinder",
+          "material": "",
+        },
+        {
+          "label": "Entry floor",
+          "material": "",
+        },
+        {
+          "label": "Floor",
+          "material": "",
+        },
+      ],
+    },
+    {
+      "name": "Kitchen",
+      "buildingmaterials": [
+        {
+          "label": "Ceiling",
+          "material": "",
+        },
+        {
+          "label": "Walls",
+          "material": "",
+        },
+        {
+          "label": "Rangehood",
+          "material": "",
+        },
+        {
+          "label": "Hot Water Cylinder",
+          "material": "",
+        },
+        {
+          "label": "Bench",
+          "material": "",
+        },
+        {
+          "label": "Splashback",
+          "material": "",
+        },
+        {
+          "label": "Sink",
+          "material": "",
+        },
+        {
+          "label": "Pipework",
+          "material": "",
+        },
+        {
+          "label": "Sink",
+          "material": "",
+        },
+        {
+          "label": "Floor",
+          "material": "",
+        },
+      ],
+    },
+    {
+      "name": "Lounge",
+      "buildingmaterials": [
+        {
+          "label": "Ceiling",
+          "material": "",
+        },
+        {
+          "label": "Walls",
+          "material": "",
+        },
+        {
+          "label": "Fireplace",
+          "material": "",
+        },
+        {
+          "label": "Heat pump",
+          "material": "",
+        },
+        {
+          "label": "Floor",
+          "material": "",
+        },
+      ],
+    },
+    {
+      "name": "Bathroom/Toilet",
+      "buildingmaterials": [
+        {
+          "label": "Ceiling",
+          "material": "",
+        },
+        {
+          "label": "Walls",
+          "material": "",
+        },
+        {
+          "label": "Bath surround",
+          "material": "",
+        },
+        {
+          "label": "Bath",
+          "material": "",
+        },
+        {
+          "label": "Toilet",
+          "material": "",
+        },
+        {
+          "label": "Pipework",
+          "material": "",
+        },
+        {
+          "label": "Floor",
+          "material": "",
+        },
+      ],
+    },
+  ];
+
+  Map<String, dynamic> roomObj = new Map<String, dynamic>();
 
   // images
-  String room;
+  String roomgroup;
   bool localPhoto = false;
 
-  List<String> rooms = AutoComplete.rooms.split(';');
-  GlobalKey key = new GlobalKey<AutoCompleteTextFieldState<String>>();
-
-  ScrollController _scrollController;
+  var _formKey = GlobalKey<FormState>();
+  final _focusNodes = List<FocusNode>.generate(
+    5,
+        (i) => FocusNode(),
+  );
 
   @override
   void initState() {
-    room = widget.room;
+    roomgroup = widget.roomgroup;
     _loadRoom();
-    _scrollController = ScrollController();
     super.initState();
   }
 
@@ -58,88 +266,121 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
           ),
           actions: <Widget>[
             new IconButton(icon: const Icon(Icons.check), onPressed: () {
-              if (roomObj["name"] == null || roomObj["name"] == "") {
-                showValidationAlertDialog(context, "Fields Incomplete", "You must give the room a name.");
-                return;
+              if (_formKey.currentState.validate()) {
+                _formKey.currentState.save();
+                if (roomObj['path'] == null) {
+                  Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').add(roomObj).then((doc) {
+                    roomObj['path'] = doc.documentID;
+                    if (addAllOrphans) addAllOrphansToGroup();
+                    if (templateName != '-' && templates.firstWhere((template) => template['name'] == templateName)['rooms'] != null) createRoomsFromTemplate();
+                  });
+                } else {
+                  Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(roomgroup).setData(
+                      roomObj, merge: true);
+                  if (addAllOrphans) addAllOrphansToGroup();
+                }
+                Navigator.pop(context);
               }
-              Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(room).setData(
-                  roomObj, merge: true);
-              Navigator.pop(context);
             })
           ]
       ),
       body: isLoading ?
-      loadingPage(loadingText: 'Loading room info...')
+      loadingPage(loadingText: 'Loading room group info...')
           : GestureDetector(
         onTap: () {
           FocusScope.of(context).requestFocus(new FocusNode());
         },
-        child: Container(
+        child: Form(
+          key: _formKey,
           child: ListView(
-            controller: _scrollController,
-            padding: new EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 200.0),
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: new EdgeInsets.all(8.0),
+//                  padding: new EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 200.0),
             children: <Widget>[
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  new Container(
-                    alignment: Alignment.center,
-                    height: 312.0,
-                    width: 240.0,
-                    decoration: BoxDecoration(border: new Border.all(color: Colors.black)),
-                    child: GestureDetector(
-                        onTap: () {
-                          ImagePicker.pickImage(source: ImageSource.camera).then((image) {
-//                                          _imageFile = image;
-                            localPhoto = true;
-                            _handleImageUpload(image);
-                          });
-                        },
-//                                    child: (_imageFile != null)
-//                                        ? Image.file(_imageFile)
-                        child: localPhoto ?
-                        new Image.file(new File(roomObj['path_local']))
-                            : (roomObj['path_remote'] != null) ?
-                        new CachedNetworkImage(
-                          imageUrl: roomObj['path_remote'],
-                          placeholder: new CircularProgressIndicator(),
-                          errorWidget: new Icon(Icons.error),
-                          fadeInDuration: new Duration(seconds: 1),
-                        )
-                            :  new Icon(
-                          Icons.camera, color: CompanyColors.accent,
-                          size: 48.0,)
-                    ),
-                  )],
+              new Container(
+                child: new TextFormField(
+                  decoration: new InputDecoration(
+                    labelText: "Room Group Name",
+                  ),
+                  onSaved: (String value) {
+                    roomObj["name"] = value.trim();
+                  },
+                  validator: (String value) {
+                    return value.isEmpty ? 'You must add a name' : null;
+                  },
+                  focusNode: _focusNodes[0],
+                  initialValue: roomObj["name"],
+                  textInputAction: TextInputAction.next,
+                  textCapitalization: TextCapitalization.words,
+                  onFieldSubmitted: (v) {
+                    FocusScope.of(context).requestFocus(_focusNodes[1]);
+                  },
+                ),
               ),
               new Container(
-                child: new AutoCompleteTextField<String>(
-                    decoration: new InputDecoration(
-                        labelText: "Room Name"
-                    ),
-                    key: key,
-                    scrollController: _scrollController,
-                    initialValue: roomObj["name"] != null ? roomObj["name"] : "",
-                    suggestions: rooms,
-
-                    textChanged: (item) {
-                      _updateName(item);
-                    },
-                    itemSubmitted: (item) {
-                      _updateName(item.toString());
-                    },
-                    itemBuilder: (context, item) {
-                      return new Padding(
-                          padding: EdgeInsets.all(8.0), child: new Text(item));
-                    },
-                    itemSorter: (a, b) {
-                      return a.compareTo(b);
-                    },
-                    itemFilter: (item, query) {
-                      return item.toLowerCase().contains(query.toLowerCase());
-                    }),
+                child: TextFormField(
+                  decoration: const InputDecoration(
+                    labelText: "Room Group Prefix",
+                    hintText: "e.g. 1 for Level 1, B for Basement",
+                  ),
+                  autocorrect: false,
+                  onSaved: (String value) {
+                    roomObj["roomcode"] = value.trim();
+                  },
+                  initialValue: roomObj["roomcode"],
+                  focusNode: _focusNodes[1],
+                  textCapitalization: TextCapitalization.characters,
+                ),
               ),
+              // TODO Add in templates
+              // Add in type of survey etc.
+              new Container(
+                child: TextFormField(
+                  decoration: const InputDecoration(
+                    labelText: "Notes",
+                  ),
+                  autocorrect: false,
+                  onSaved: (String value) {
+                    roomObj["notes"] = value.trim();
+                  },
+                  initialValue: roomObj["notes"],
+                  focusNode: _focusNodes[2],
+                  keyboardType: TextInputType.multiline,
+                  textCapitalization: TextCapitalization.sentences,
+                ),
+              ),
+              new Container(
+                alignment: Alignment.topLeft,
+                padding: EdgeInsets.only(top: 14.0,),
+                child: new Text("Add All Ungrouped Rooms", style: Styles.label,),
+              ),
+              new Container(
+                alignment: Alignment.topLeft,
+                child: Checkbox(value: addAllOrphans, onChanged: (value) => setState(() {
+                  addAllOrphans = value;
+                }))
+              ),
+              new Container(
+                alignment: Alignment.topLeft,
+                padding: EdgeInsets.only(top: 14.0,),
+                child: new Text("Create Rooms from Template", style: Styles.label,),
+              ),
+              new DropdownButton<String>(
+                value: templateName,
+                iconSize: 24.0,
+                items: templates.map((item) {
+                  return new DropdownMenuItem<String>(
+                    value: item["name"],
+                    child: new Text(item["name"]),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    print(value);
+                    templateName = value;
+                  });
+                }
+            ),
             ],
           ),
         ),
@@ -148,26 +389,18 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
   }
 
   void _loadRoom() async {
-    print("Loading room");
-    if (room == null) {
-      _title = "Add New Room";
+    if (roomgroup == null) {
+      _title = "Add New Group";
       roomObj['name'] = null;
-      roomObj['path_local'] = null;
-      roomObj['path_remote'] = null;
-
+      roomObj['children'] = new List();
+      roomObj['roomtype'] = 'group';
       isLoading = false;
     } else {
-      _title = "Edit Room";
-      Firestore.instance.document(DataManager.get().currentJobPath)
-          .collection('rooms').document(room).get().then((doc) {
-        // image
-        if (doc.data['path_remote'] == null && doc.data['path_local'] != null){
-          // only local image available (e.g. when taking photos with no internet)
-          localPhoto = true;
-          _handleImageUpload(File(doc.data['path_local']));
-        } else if (doc.data['path_remote'] != null) {
-          localPhoto = false;
-        }
+      _title = "Edit Room Group";
+      Firestore.instance.document(DataManager
+          .get()
+          .currentJobPath)
+          .collection('rooms').document(roomgroup).get().then((doc) {
         setState(() {
           roomObj = doc.data;
           isLoading = false;
@@ -176,31 +409,79 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
     }
   }
 
-  void _handleImageUpload(File image) async {
-    setState(() {
-      roomObj["path_local"] = image.path;
-    });
-//    Firestore.instance.document(DataManager.get().currentJobPath)
-//        .collection('rooms').document(room).setData({"path_local": image.path},merge: true).then((_) {
-//      setState((){});
-//    });
-    String roomgroup = roomObj["roomgroup"];
-    String name = roomObj["name"];
-    String roomcode = roomObj["roomcode"];
-    if (roomgroup == null) roomgroup = 'RoomGroup';
-    if (name == null) name = "Untitled";
-    if (roomcode == null) roomcode = "RG-U";
-    ImageSync(
-        image,
-        50,
-        roomgroup + name + "(" + roomcode + ")",
-        "jobs/" + DataManager.get().currentJobNumber,
-        Firestore.instance.document(DataManager.get().currentJobPath)
-            .collection('rooms').document(room)
-    ).then((_) {
-      setState((){
-        localPhoto = false;
+  void createRoomsFromTemplate() {
+    print ('Creating rooms from template ' + templateName);
+    var template = templates.firstWhere((template) => template['name'] == templateName);
+    print(template.toString());
+    if (template == null || template['rooms'] == null) return;
+    print(template['rooms'].length.toString());
+    var childList = new List(template['rooms'].length);
+    var index = 0;
+    template['rooms'].forEach((room) {
+      var newRoom = {
+        'name': room['name'],
+        'path_local': null,
+        'path_remote': null,
+        'buildingmaterials': roomTemplates.firstWhere((template) => template['name'] == room['template'])['buildingmaterials'],
+        'roomtype': null,
+        'roomgroupname': roomObj['name'],
+        'roomgrouppath': roomObj['path'],
+      };
+      Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').add(newRoom).then((doc) {
+        childList[index] = {
+          'name': room['name'],
+          'path': doc.documentID,
+          'path_local': null,
+          'path_remote': null,
+        };
+        print(childList[index].toString());
+        Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(doc.documentID).setData({'path': doc.documentID}, merge: true);
+        if (index == template['rooms'].length-1) {
+          if (roomObj['children'].length > 0) {
+            // TODO this should be a new LIST!
+            childList = roomObj['children']
+              ..addAll(childList);
+          }
+          print(childList.toString());
+          Firestore.instance.document(DataManager
+              .get()
+              .currentJobPath).collection('rooms')
+              .document(roomObj['path'])
+              .setData({'children': childList}, merge: true);
+        }
+        index = index + 1;
       });
+    });
+  }
+
+  void addAllOrphansToGroup() {
+    print ('Adding orphans to ' + roomObj.toString());
+    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').where('roomtype', isEqualTo: 'orphan').getDocuments().then((documents) {
+      print ('Orphans are ' + documents.documents.toString());
+      var childList = new List(documents.documents.length);
+      var index = 0;
+      documents.documents.forEach((doc) {
+        print ('Orphans are ' + doc.data.toString());
+        // Add room group to room
+        Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(doc.documentID).setData(
+            { 'roomgroupname': roomObj['name'],
+              'roomgrouppath': roomObj['path'],
+              'roomtype': null }, merge: true);
+
+        // Add room to room group
+        childList[index] = {
+          'name': doc.data['name'],
+          'path': doc.documentID,
+          'path_local': doc.data['path_local'],
+          'path_remote': doc.data['path_remote'],
+        };
+        index = index + 1;
+      });
+      if (roomObj['children'].length > 0) {
+        childList = roomObj['children']..addAll(childList);
+      }
+      print(childList.toString());
+      Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(roomObj['path']).setData({'children': childList}, merge: true);
     });
   }
 }

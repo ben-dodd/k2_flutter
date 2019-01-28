@@ -12,14 +12,14 @@ import 'package:k2e/utils/camera.dart';
 import 'package:k2e/widgets/custom_auto_complete.dart';
 import 'package:k2e/widgets/loading.dart';
 
-class EditSampleAsbestosBulk extends StatefulWidget {
-  EditSampleAsbestosBulk({Key key, this.sample}) : super(key: key);
+class EditSampleAsbestosAir extends StatefulWidget {
+  EditSampleAsbestosAir({Key key, this.sample}) : super(key: key);
   final String sample;
   @override
-  _EditSampleAsbestosBulkState createState() => new _EditSampleAsbestosBulkState();
+  _EditSampleAsbestosAirState createState() => new _EditSampleAsbestosAirState();
 }
 
-class _EditSampleAsbestosBulkState extends State<EditSampleAsbestosBulk> {
+class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
   // TITLE
   String _title = "Edit Sample";
 
@@ -44,6 +44,9 @@ class _EditSampleAsbestosBulkState extends State<EditSampleAsbestosBulk> {
   final controllerNotes = TextEditingController();
 
   // IMAGES
+  String path_local;
+  String path_remote;
+
   bool localPhoto = false;
 
 
@@ -101,7 +104,7 @@ class _EditSampleAsbestosBulkState extends State<EditSampleAsbestosBulk> {
             ]),
         body:
         isLoading ? loadingPage(loadingText: 'Loading sample info...')
-        : new StreamBuilder(stream: sample.snapshots(),
+            : new StreamBuilder(stream: sample.snapshots(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) return
                 loadingPage(loadingText: 'Loading sample info...');
@@ -147,7 +150,7 @@ class _EditSampleAsbestosBulkState extends State<EditSampleAsbestosBulk> {
                                               fadeInDuration: new Duration(seconds: 1),
                                             )
                                                 :  new Icon(
-                                              Icons.camera, color: CompanyColors.accent,
+                                              Icons.camera, color: CompanyColors.accentRippled,
                                               size: 48.0,)
                                         ),
                                       )],
@@ -174,7 +177,7 @@ class _EditSampleAsbestosBulkState extends State<EditSampleAsbestosBulk> {
                                     alignment: Alignment.topLeft,
                                     child: TextField(
                                       decoration: const InputDecoration(
-                                          labelText: "Description"),
+                                          labelText: "Location"),
                                       autocorrect: false,
                                       controller: controllerDescription,
                                       keyboardType: TextInputType.text,
@@ -243,9 +246,10 @@ class _EditSampleAsbestosBulkState extends State<EditSampleAsbestosBulk> {
       dataMap['samplenumber'] = null;
       dataMap['description'] = null;
       dataMap['material'] = null;
-      dataMap['sampletype'] = 'bulk';
       dataMap['path_local'] = null;
       dataMap['path_remote'] = null;
+      dataMap['sampletype'] = 'air';
+      path_local = null;
       Firestore.instance.collection('samplesasbestos').add(
           dataMap).then((ref) {
         sample = Firestore.instance.collection('samplesasbestos').document(ref.documentID);
@@ -280,17 +284,20 @@ class _EditSampleAsbestosBulkState extends State<EditSampleAsbestosBulk> {
     }
   }
   void _handleImageUpload(File image) async {
-    sample.setData({"path_local": image.path},merge: true).then((_) {
-      setState((){});
+    sample.setData({"path_local": image.path}, merge: true).then((_) {
+      setState(() {});
     });
     ImageSync(
         image,
         50,
-        "sample" + controllerSampleNumber.text,
-        "jobs/" + DataManager.get().currentJobNumber,
+        "sample" + controllerSampleNumber.text + "_" + sample.documentID +
+            ".jpg",
+        DataManager
+            .get()
+            .currentJobNumber,
         sample
     ).then((_) {
-      setState((){
+      setState(() {
         localPhoto = false;
       });
     });

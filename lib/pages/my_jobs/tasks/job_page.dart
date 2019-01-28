@@ -2,16 +2,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_jobs/tasks/check/check_tab.dart';
+import 'package:k2e/pages/my_jobs/tasks/coc/coc_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/details/details_tab.dart';
+import 'package:k2e/pages/my_jobs/tasks/map/edit_map.dart';
 import 'package:k2e/pages/my_jobs/tasks/map/maps_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/notepad/edit_note.dart';
 import 'package:k2e/pages/my_jobs/tasks/notepad/notepad_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/rooms/edit_room.dart';
+import 'package:k2e/pages/my_jobs/tasks/rooms/edit_room_group.dart';
 import 'package:k2e/pages/my_jobs/tasks/rooms/rooms_tab.dart';
-import 'package:k2e/pages/my_jobs/tasks/samples/acm_tab.dart';
-import 'package:k2e/pages/my_jobs/tasks/samples/edit_acm.dart';
-import 'package:k2e/pages/my_jobs/tasks/samples/edit_sample_asbestos_air.dart';
-import 'package:k2e/pages/my_jobs/tasks/samples/meth_samples_tab.dart';
+import 'package:k2e/pages/my_jobs/tasks/acm/acm_tab.dart';
+import 'package:k2e/pages/my_jobs/tasks/acm/edit_acm.dart';
+import 'package:k2e/pages/my_jobs/tasks/acm/edit_sample_asbestos_air.dart';
+import 'package:k2e/pages/my_jobs/tasks/acm/meth_samples_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/timelog/log_time_tab.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/widgets/fab_dialer.dart';
@@ -21,9 +24,8 @@ import 'package:k2e/widgets/loading.dart';
 // Have full functionality for editing WFM information though
 
 class JobPage extends StatefulWidget {
-  JobPage({Key key, @required this.path, @required this.jobnumber}) : super(key: key);
+  JobPage({Key key, @required this.path}) : super(key: key);
   String path;
-  String jobnumber;
   @override
   _JobPageState createState() => new _JobPageState();
 }
@@ -46,12 +48,12 @@ class _JobPageState extends State<JobPage> {
   }
 
   void _addMap() async {
-//    Navigator.of(context).push(
-//        new MaterialPageRoute(builder: (context) =>
-//            EditMap(
-//                map: null),
-//        )
-//    );
+    Navigator.of(context).push(
+        new MaterialPageRoute(builder: (context) =>
+            EditMap(
+                map: null),
+        )
+    );
   }
 
   void _addRoom() async {
@@ -59,6 +61,15 @@ class _JobPageState extends State<JobPage> {
         new MaterialPageRoute(builder: (context) =>
             EditRoom(
                 room: null),
+        )
+    );
+  }
+
+  void _addRoomGroup() async {
+    Navigator.of(context).push(
+        new MaterialPageRoute(builder: (context) =>
+            EditRoomGroup(
+                roomgroup: null),
         )
     );
   }
@@ -85,35 +96,38 @@ class _JobPageState extends State<JobPage> {
 
   @override
   Widget build(BuildContext context) {
-
-    print ('job page' + DataManager.get().currentJobPath);
-
     List<SpeedDialerButton> asbestosDialer = [
-      new SpeedDialerButton(backgroundColor: CompanyColors.accent,
+      new SpeedDialerButton(backgroundColor: CompanyColors.accentRippled,
         icon: Icons.ac_unit,
         onPressed: () {
           _addAirSample();
         },
         text: "Air Sample",),
-      new SpeedDialerButton(backgroundColor: CompanyColors.accent,
+      new SpeedDialerButton(backgroundColor: CompanyColors.accentRippled,
         icon: Icons.filter,
         onPressed: () {
           _addNote();
         },
         text: "Note or Photo",),
-      new SpeedDialerButton(backgroundColor: CompanyColors.accent,
+      new SpeedDialerButton(backgroundColor: CompanyColors.accentRippled,
         icon: Icons.map,
         onPressed: () {
           _addMap();
         },
         text: "Map",),
-      new SpeedDialerButton(backgroundColor: CompanyColors.accent,
+      new SpeedDialerButton(backgroundColor: CompanyColors.accentRippled,
+        icon: Icons.business,
+        onPressed: () {
+          _addRoomGroup();
+        },
+        text: "Room Group",),
+      new SpeedDialerButton(backgroundColor: CompanyColors.accentRippled,
         icon: Icons.hotel,
         onPressed: () {
           _addRoom();
         },
         text: "Room",),
-      new SpeedDialerButton(backgroundColor: CompanyColors.accent,
+      new SpeedDialerButton(backgroundColor: CompanyColors.accentRippled,
         icon: Icons.whatshot,
         onPressed: () {
           _addACM();
@@ -145,7 +159,7 @@ class _JobPageState extends State<JobPage> {
           // Initialize TabView
           switch (jobType) {
             case 1: // Asbestos Jobs
-              tabCount = 7;
+              tabCount = 8;
               tabBar = new TabBar(
                 tabs: [
                   Tab(icon: Icon(Icons.assignment)),
@@ -156,6 +170,8 @@ class _JobPageState extends State<JobPage> {
                   // Rooms
                   Tab(icon: Icon(Icons.whatshot)),
                   // Asbestos Samples
+                  Tab(icon: Icon(Icons.table_chart)),
+                  // Chain of Custody
                   Tab(icon: Icon(Icons.photo_library)),
                   // Notes and photos
                   Tab(icon: Icon(Icons.map)),
@@ -166,26 +182,18 @@ class _JobPageState extends State<JobPage> {
                 ],
               );
               tabBarView = new TabBarView(children: [
-//                new DetailsTab(path: widget.path),
-//                new LogTimeTab(path: widget.path),
-//                new RoomsTab(path: widget.path),
-//                new AsbestosSamplesTab(path: widget.path),
-//                new NotepadTab(path: widget.path),
-//                new MapsTab(path: widget.path),
-//                new CheckTab(path: widget.path),
-//                new DocumentsTab(path: widget.path),
                 new DetailsTab(),
                 new LogTimeTab(),
                 new RoomsTab(),
                 new AcmTab(),
+                new CocTab(),
                 new NotepadTab(),
                 new MapsTab(),
                 new CheckTab(),
-//                new DocumentsTab(),
               ]);
               break;
             case 2: // Meth Jobs
-              tabCount = 8;
+              tabCount = 7;
               tabBar = new TabBar(
                 tabs: [
                   Tab(icon: Icon(Icons.assignment)),
@@ -217,7 +225,7 @@ class _JobPageState extends State<JobPage> {
               ]);
               break;
             default: // Default
-              tabCount = 6;
+              tabCount = 5;
               tabBar = new TabBar(
                 tabs: [
                   Tab(icon: Icon(Icons.assignment)),

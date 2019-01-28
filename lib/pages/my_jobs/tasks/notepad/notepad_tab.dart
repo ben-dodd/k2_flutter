@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_jobs/tasks/notepad/edit_note.dart';
+import 'package:k2e/styles.dart';
 import 'package:k2e/widgets/note_card.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
@@ -22,9 +23,17 @@ class _NotepadTabState extends State<NotepadTab> {
 
     return new Scaffold(
         body: new Container(
-            alignment: Alignment.center,
             padding: new EdgeInsets.all(8.0),
-            child: StreamBuilder(
+            child: new ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: <Widget>[
+            Container(
+            alignment: Alignment.center,
+              padding: EdgeInsets.all(14.0),
+              child: Text('Notepad',
+                  style: Styles.h1),
+            ),
+            new StreamBuilder(
                 stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('notes').snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) return
@@ -61,9 +70,10 @@ class _NotepadTabState extends State<NotepadTab> {
                         )
                     );
                   return ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
                       itemCount: snapshot.data.documents.length,
                       itemBuilder: (context, index) {
-                        print(snapshot.data.documents[index]['jobnumber']);
                         return NoteCard(
                           note: snapshot.data.documents[index],
                           onCardClick: () async {
@@ -83,7 +93,9 @@ class _NotepadTabState extends State<NotepadTab> {
                   );
                 }
             ),
+          ],
           ),
+        ),
     );
   }
 }

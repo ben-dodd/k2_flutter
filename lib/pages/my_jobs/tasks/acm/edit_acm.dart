@@ -15,6 +15,7 @@ import 'package:k2e/utils/camera.dart';
 import 'package:k2e/widgets/buttons.dart';
 import 'package:k2e/widgets/custom_auto_complete.dart';
 import 'package:k2e/widgets/loading.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class EditACM extends StatefulWidget {
   EditACM({Key key, this.acm}) : super(key: key);
@@ -339,12 +340,15 @@ class _EditACMState extends State<EditACM> {
                 new IconButton(icon: const Icon(Icons.check), onPressed: () {
                   if (_formKey.currentState.validate()) {
                     _formKey.currentState.save();
-                    Firestore.instance.document(DataManager
-                        .get()
-                        .currentJobPath).collection('acm')
-                        .document(widget.acm)
-                        .setData(
-                        acmObj, merge: true);
+                    if (acmObj['path'] == null) {
+                      Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').add(acmObj).then((doc) {
+                        acmObj['path'] = doc.documentID;
+                        Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').document(doc.documentID).setData({"path": doc.documentID}, merge: true);
+                      });
+                    } else {
+                      Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').document(widget.acm).setData(
+                          acmObj, merge: true);
+                    }
                     Navigator.pop(context);
                   }
                 })
@@ -433,7 +437,7 @@ class _EditACMState extends State<EditACM> {
                                     fadeInDuration: new Duration(seconds: 1),
                                   )
                                       :  new Icon(
-                                    Icons.camera, color: CompanyColors.accent,
+                                    Icons.camera, color: CompanyColors.accentRippled,
                                     size: 48.0,)
                               ),
                             )],
@@ -2061,15 +2065,16 @@ class _EditACMState extends State<EditACM> {
                       new Container(
                         alignment: Alignment.center,
                         padding: EdgeInsets.only(top: 14.0,),
-                        child: new FlatButton(
-                            child: Text("Delete ACM",
-                                style: new TextStyle(color: Theme.of(context).accentColor, fontWeight: FontWeight.bold
-                                )
-                            ),
-  //                          color: Colors.white,
-                            onPressed: () {
-  //                            _deleteACM;
-                            }
+                        child: new OutlineButton(
+                          shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
+                          child: Text("Delete ACM",
+                              style: new TextStyle(color: Theme.of(context).accentColor, fontWeight: FontWeight.bold
+                              )
+                          ),
+//                          color: Colors.white,
+                          onPressed: () {
+                            _deleteDialog();
+                          }
                         ),
                       ),
                   ],)
@@ -2078,17 +2083,59 @@ class _EditACMState extends State<EditACM> {
       );
   }
 
+  void _deleteDialog() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: new Text('Delete ACM'),
+            content: new Text('Are you sure you wish to delete this ACM (' + acmObj['description'] + ' ' + acmObj['material'] + ')?'),
+            actions: <Widget>[
+              new FlatButton(
+                child: new Text('Cancel', style: new TextStyle(color: Colors.black)),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              new FlatButton(
+                  child: new Text('Delete'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _deleteACM();
+                  }
+              ),
+            ],
+          );
+        }
+    );
+  }
+
+  void _deleteACM() {
+    // Remove images
+    if (acmObj['storage_ref'] != null)
+      FirebaseStorage.instance.ref().child(acmObj['storage_ref']).delete();
+
+    // Remove ACM
+    Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').document(acmObj['path']).delete();
+
+    // Pop
+    Navigator.pop(context);
+  }
+
   void _loadACM() async {
     // Load rooms from job
     QuerySnapshot roomSnapshot = await Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').getDocuments();
-    roomSnapshot.documents.forEach((doc) => roomlist.add({"name": doc.data['name'],"path": doc.documentID}));
-    print('ROOMLIST ' + roomlist.toString());
+    roomSnapshot.documents.forEach((doc) {
+      if (doc['roomtype'] != 'group')
+        roomlist.add({"name": doc.data['name'], "path": doc.documentID});
+    });
+//    print('ROOMLIST ' + roomlist.toString());
 
     // Load samples from job
     QuerySnapshot sampleSnapshot = await Firestore.instance.collection('samplesasbestos').where('jobNumber',isEqualTo: DataManager.get().currentJobNumber).orderBy("samplenumber").getDocuments();
     sampleSnapshot.documents.forEach((doc) => samplelist.add({"name": doc.data['samplenumber'].toString() + ': ' + doc.data['description'],"path": doc.documentID}));
-    print('ROOMLIST ' + roomlist.toString());
-    print('SAMPLE ' + samplelist.toString());
+//    print('ROOMLIST ' + roomlist.toString());
+//    print('SAMPLE ' + samplelist.toString());
 
 //    roomlist = [{"name": "Lounge","path": "lounge"}];
 
@@ -2177,6 +2224,7 @@ class _EditACMState extends State<EditACM> {
   void _handleImageUpload(File image) async {
     String room_name;
     String item_name;
+    String storageRef = acmObj['storage_ref'];
     String path = widget.acm;
     if (_room == null) {
       room_name = 'room';
@@ -2193,18 +2241,21 @@ class _EditACMState extends State<EditACM> {
     setState(() {
       acmObj["path_local"] = image.path;
     });
-    var uid = Random.secure().nextInt(999999);
-    print(uid);
+
     ImageSync(
         image,
         50,
         "acm" + room_name + "-" + item_name,
         "jobs/" + DataManager.get().currentJobNumber,
         acm
-    ).then((url) {
+    ).then((refs) {
+      // Delete old photo
+      if (storageRef != null) FirebaseStorage.instance.ref().child(storageRef).delete();
+
       if (this.mounted) {
         setState((){
-          acmObj["path_remote"] = url;
+          acmObj['path_remote'] = refs['downloadURL'];
+          acmObj['storage_ref'] = refs['storageRef'];
           localPhoto = false;
         });
       } else {
@@ -2214,7 +2265,7 @@ class _EditACMState extends State<EditACM> {
             .currentJobPath).collection('acm')
             .document(path)
             .setData(
-            {"path_remote": url }, merge: true);
+            {"path_remote": refs['downloadURL'], 'storage_ref': refs['storageRef'], }, merge: true);
       }
     });
   }

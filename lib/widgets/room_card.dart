@@ -1,7 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/pages/my_jobs/tasks/rooms/edit_room.dart';
-import 'package:k2e/styles.dart';
+import 'package:k2e/pages/my_jobs/tasks/rooms/edit_room_group.dart';
 
 class RoomCard extends StatefulWidget {
 
@@ -55,9 +54,6 @@ class _RoomCardState extends State<RoomCard>{
 
         // Tap -> go through to job task
         onTap: () async {
-          print(doc.toString());
-          print(widget.context.toString());
-          print(doc['path']);
           Navigator.of(widget.context).push(
             new MaterialPageRoute(builder: (context) => EditRoom(room: doc['path'])),
           );
@@ -84,6 +80,10 @@ class _RoomCardState extends State<RoomCard>{
 //          fontStyle: FontStyle.italic,
           fontWeight: FontWeight.bold
       ),),
+      trailing: new IconButton(icon: new Icon(Icons.edit), onPressed: () {
+        Navigator.of(widget.context).push(
+          new MaterialPageRoute(builder: (context) => EditRoomGroup(roomgroup: doc['path'])),
+        );}),
       children: doc['children'].length > 0 ? doc['children']
           .map<Widget>((child) {
             print(child.toString());

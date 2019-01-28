@@ -71,35 +71,42 @@ class _MainPageState extends State<MainPage> {
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
-    print(user.email);
-    QuerySnapshot query = await Firestore.instance.collection('users').where('gmail',isEqualTo: user.email).getDocuments();
-
-    if (query.documents.length == 0){
-      // User is not registered
-      print('This email is not registered with K2.');
-      // Todo show pop up snack bar if email not registered
+    print(user.toString());
+    try {
+      Firestore.instance.collection('users').document(user.uid).get().then((userDoc) {
+        print(userDoc.data.toString());
+        if (userDoc.data == null) {
+          setState(() {
+            _isLoading = false;
+            _isSignedIn = false;
+            currentUser = null;
+            _googleSignIn.signOut();
+          });
+        } else {
+          setState(() {
+            DataManager.get().user = user.uid;
+            _isLoading = false;
+            _selectedDrawerIndex = 0;
+            print('user is ' + user.toString());
+            currentUser = user;
+            _isSignedIn = true;
+            Firestore.instance.collection('appsettings').document('constants').get().then((DocumentSnapshot doc) {
+              DataManager.get().constants = Map<String,dynamic>.from(doc.data);
+  //          DataManager.get().buildingmaterials = doc.data["buildingmaterials"].map((bm) => bm["label"].toString()).toList();
+  //          DataManager.get().asbestosmaterials = doc.data["asbestosmaterials"].map((bm) => bm["label"].toString()).toList();
+  //          DataManager.get().buildingitems = doc.data["buildingitems"].map((bm) => bm["label"].toString()).toList();
+  //          print(DataManager.get().buildingmaterials);
+            });
+          });
+        }
+      });
+    } catch (e) {
+      print(e.toString());
       setState(() {
         _isLoading = false;
         _isSignedIn = false;
         currentUser = null;
         _googleSignIn.signOut();
-      });
-    } else {
-      setState(() {
-        DataManager.get().user = query.documents.first.documentID;
-        print ('user is !!! ' + DataManager.get().user);
-        _isLoading = false;
-        _selectedDrawerIndex = 0;
-        print('user is ' + user.displayName);
-        currentUser = user;
-        _isSignedIn = true;
-        Firestore.instance.collection('appsettings').document('constants').get().then((DocumentSnapshot doc) {
-          DataManager.get().constants = Map<String,dynamic>.from(doc.data);
-//          DataManager.get().buildingmaterials = doc.data["buildingmaterials"].map((bm) => bm["label"].toString()).toList();
-//          DataManager.get().asbestosmaterials = doc.data["asbestosmaterials"].map((bm) => bm["label"].toString()).toList();
-//          DataManager.get().buildingitems = doc.data["buildingitems"].map((bm) => bm["label"].toString()).toList();
-//          print(DataManager.get().buildingmaterials);
-        });
       });
     }
   }
@@ -155,7 +162,6 @@ class _MainPageState extends State<MainPage> {
           )
       );
     }
-    print (currentUser.toString() + ' is the current user');
       return new Container(
         child: _isSignedIn?
        new Scaffold(
@@ -217,7 +223,7 @@ class _MainPageState extends State<MainPage> {
                   )]))
 
             : new Center(
-          child: RaisedButton(onPressed: _testSignInWithGoogle, child: Text('Sign In'),)
+          child: OutlineButton(onPressed: _testSignInWithGoogle, child: Text('Sign In'), shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),)
         )
       )
       );

@@ -17,9 +17,6 @@ class DuplicateRoomsDialog extends StatefulWidget {
 class _DuplicateRoomsDialogState extends State<DuplicateRoomsDialog> {
   // Room Duplication Vars
 //  final controllerDuplicateRoomName = TextEditingController();
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _controllerDuplicateRoomName = TextEditingController();
-  String _selectedRoomName;
   GlobalKey<AutoCompleteTextFieldState<String>> key = new GlobalKey();
   List<String> rooms = AutoComplete.rooms.split(';');
   bool _duplicateBuildingMaterials = true;

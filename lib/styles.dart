@@ -3,7 +3,7 @@ import 'package:k2e/theme.dart';
 
 class Styles {
   static TextStyle h1 = new TextStyle(
-    color: CompanyColors.accent,
+    color: CompanyColors.accentRippled,
     fontWeight: FontWeight.bold,
     fontSize: 24.0,
   );

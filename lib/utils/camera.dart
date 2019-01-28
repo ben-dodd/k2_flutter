@@ -28,7 +28,7 @@ Future <File> getPicture() async {
 //  return image;
 }
 
-  Future<String> ImageSync (File image, int compressionFactor, String fileName, String folder, DocumentReference ref) async {
+  Future<Map<String,String>> ImageSync (File image, int compressionFactor, String fileName, String folder, DocumentReference ref) async {
     print('compressing image');
     File compImage;
     UploadTaskSnapshot uploadSnapshot;
@@ -41,10 +41,10 @@ Future <File> getPicture() async {
     );
 
     var uid = Random.secure().nextInt(999999);
+    var ref = "$folder/$fileName-$uid.jpg";
 
     StorageUploadTask putFile =
-      FirebaseStorage.instance.ref().child(
-          "$folder/$fileName-$uid.jpg").putFile(
+      FirebaseStorage.instance.ref().child(ref).putFile(
           compImage);
       //                          putFile.future.catchError(onError);
 
@@ -52,5 +52,8 @@ Future <File> getPicture() async {
       print('Image path: ' + uploadSnapshot.downloadUrl.toString());
 //      ref.setData({"path_remote": uploadSnapshot.downloadUrl.toString()}, merge: true);
       print("image uploaded");
-      return uploadSnapshot.downloadUrl.toString();
-}
+      return {
+        'downloadURL': uploadSnapshot.downloadUrl.toString(),
+        'storageRef': ref.toString(),
+      };
+  }

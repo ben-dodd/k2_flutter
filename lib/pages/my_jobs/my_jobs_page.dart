@@ -25,8 +25,8 @@ class _MyJobsPageState extends State<MyJobsPage> {
     // by the _incrementCounter method above.
 
   List<SpeedDialerButton> modeButtons = [
-    new SpeedDialerButton(backgroundColor: CompanyColors.accent, icon: Icons.add, onPressed: () { _createNewJob(); }, text: "Create New Job"),
-    new SpeedDialerButton(backgroundColor: CompanyColors.accent, icon: Icons.cloud_download, onPressed: () { _addWfmJob(); }, text: "Add Job from WFM"),
+    new SpeedDialerButton(backgroundColor: CompanyColors.accentRippled, icon: Icons.add, onPressed: () { _createNewJob(); }, text: "Create New Job"),
+    new SpeedDialerButton(backgroundColor: CompanyColors.accentRippled, icon: Icons.cloud_download, onPressed: () { _addWfmJob(); }, text: "Add Job from WFM"),
   ];
 
 //    FabDialer _fabDialer = new FabDialer(_fabMiniMenuItemList, CompanyColors.accent, Icon(Icons.add),);
