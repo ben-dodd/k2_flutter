@@ -147,6 +147,7 @@ class _EditNoteState extends State<EditNote> {
                           },
                         ),
                       ),
+                      widget.note != null ?
                       new Container(
                         alignment: Alignment.center,
                         padding: EdgeInsets.only(top: 14.0,),
@@ -161,7 +162,7 @@ class _EditNoteState extends State<EditNote> {
                               _deleteDialog();
                             }
                         ),
-                      ),
+                      ) : new Container(),
                     ],
                 ),
             ),
@@ -202,7 +203,7 @@ class _EditNoteState extends State<EditNote> {
       FirebaseStorage.instance.ref().child(noteObj['storage_ref']).delete();
     print('Deleting: ' + noteObj.toString());
     // Remove note
-    Firestore.instance.document(DataManager.get().currentJobPath).collection('notes').document(noteObj['path']).delete();
+    Firestore.instance.document(DataManager.get().currentJobPath).collection('notes').document(widget.note).delete();
 
     // Pop
     Navigator.pop(context);

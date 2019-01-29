@@ -403,21 +403,24 @@ class _EditRoomState extends State<EditRoom> {
                       })
                         :
                         new Container(),
-                    new Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.only(top: 14.0,),
-                      child: new OutlineButton(
-                          shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
-                          child: Text("Delete Room",
-                              style: new TextStyle(color: Theme.of(context).accentColor, fontWeight: FontWeight.bold
-                              )
-                          ),
-//                          color: Colors.white,
-                          onPressed: () {
-                            _deleteDialog();
-                          }
-                      ),
-                    ),
+                    widget.room != null ?
+                      new Container(
+                        alignment: Alignment.center,
+                        padding: EdgeInsets.only(top: 14.0,),
+                        child: new OutlineButton(
+                            shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
+                            child: Text("Delete Room",
+                                style: new TextStyle(color: Theme.of(context).accentColor, fontWeight: FontWeight.bold
+                                )
+                            ),
+  //                          color: Colors.white,
+                            onPressed: () {
+                              _deleteDialog();
+                            }
+                        ),
+                      )
+                        :
+                        new Container(),
 //                    buildBuildingMaterials(),
                     ],
                 ),
@@ -460,7 +463,7 @@ class _EditRoomState extends State<EditRoom> {
     updateRoomGroups(initRoomGroup, roomObj, room);
 
     // Remove ACM references
-    Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').where('roompath', isEqualTo: roomObj['path']).getDocuments().then((doc) {
+    Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').where('roompath', isEqualTo: widget.room).getDocuments().then((doc) {
       doc.documents.forEach((doc) {
         Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').document(doc.documentID).setData({'roomname': null, 'roompath': null,}, merge: true);
       });
@@ -472,7 +475,7 @@ class _EditRoomState extends State<EditRoom> {
     }
 
     // Remove room
-    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(roomObj['path']).delete();
+    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(widget.room).delete();
 
     // Pop
     Navigator.pop(context);

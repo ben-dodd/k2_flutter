@@ -1,16 +1,7 @@
-import 'dart:io';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:k2e/autocomplete.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/styles.dart';
-import 'package:k2e/theme.dart';
-import 'package:k2e/utils/camera.dart';
-import 'package:k2e/widgets/custom_auto_complete.dart';
-import 'package:k2e/widgets/dialogs.dart';
 import 'package:k2e/widgets/loading.dart';
 
 class EditRoomGroup extends StatefulWidget {
@@ -41,6 +32,9 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
         { 'name': 'Bedroom 1', 'template': 'Basic', },
         { 'name': 'Bedroom 2', 'template': 'Basic', },
         { 'name': 'Bedroom 3', 'template': 'Basic', },
+        { 'name': 'Ceiling Space', 'template': 'Basic', 'acm': [
+          {'description': 'Surfaces', 'material': 'dust', }
+        ]},
         { 'name': 'Exterior', 'template': 'Basic', },
         { 'name': 'Garage', 'template': 'Basic', },
         { 'name': 'Shed', 'template': 'Basic', },
@@ -62,7 +56,12 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
         { 'name': 'Bedroom 1', 'template': 'Basic', },
         { 'name': 'Bedroom 2', 'template': 'Basic', },
         { 'name': 'Bedroom 3', 'template': 'Basic', },
-        { 'name': 'Exterior', 'template': 'Basic', },
+        { 'name': 'Ceiling Space', 'template': 'Basic', 'acm': [
+          {'description': 'Surfaces', 'material': 'dust', }
+        ]},
+        { 'name': 'Exterior', 'template': 'Basic', 'acm': [
+          { 'description': 'Soil', 'material': 'soil', }
+        ]},
         { 'name': 'Garage', 'template': 'Basic', },
         { 'name': 'Shed', 'template': 'Basic', },
       ],
@@ -271,6 +270,7 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
                 if (roomObj['path'] == null) {
                   Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').add(roomObj).then((doc) {
                     roomObj['path'] = doc.documentID;
+                    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(doc.documentID).setData({ 'path': doc.documentID }, merge: true);
                     if (addAllOrphans) addAllOrphansToGroup();
                     if (templateName != '-' && templates.firstWhere((template) => template['name'] == templateName)['rooms'] != null) createRoomsFromTemplate();
                   });
@@ -381,11 +381,71 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
                   });
                 }
             ),
+            widget.roomgroup != null ?
+              new Container(
+                alignment: Alignment.center,
+                padding: EdgeInsets.only(top: 14.0,),
+                child: new OutlineButton(
+                    shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
+                    child: Text("Delete Room Group",
+                        style: new TextStyle(color: Theme.of(context).accentColor, fontWeight: FontWeight.bold
+                        )
+                    ),
+//                          color: Colors.white,
+                    onPressed: () {
+                      _deleteDialog();
+                    }
+                ),
+              )
+              :
+              new Container(),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _deleteDialog() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: new Text('Delete Room'),
+            content: new Text('Are you sure you wish to delete this room group (' + roomObj['name'] + ')?\nNote: All rooms linked to this room will be orphaned.'),
+            actions: <Widget>[
+              new FlatButton(
+                child: new Text('Cancel', style: new TextStyle(color: Colors.black)),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              new FlatButton(
+                  child: new Text('Delete'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _deleteRoomGroup();
+                  }
+              ),
+            ],
+          );
+        }
+    );
+  }
+
+  void _deleteRoomGroup() {
+    // Remove room references
+    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').where('roomgrouppath', isEqualTo: widget.roomgroup).getDocuments().then((doc) {
+      doc.documents.forEach((doc) {
+        Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(doc.documentID).setData({'roomgroupname': null, 'roomgrouppath': null, 'roomtype': 'orphan'}, merge: true);
+      });
+    });
+
+    // Remove room
+    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(widget.roomgroup).delete();
+
+    // Pop
+    Navigator.pop(context);
   }
 
   void _loadRoom() async {
@@ -434,12 +494,26 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
           'path_local': null,
           'path_remote': null,
         };
+        // Add ACM if present
+        if (room['acm'] != null) {
+          room['acm'].forEach((acm) {
+            var newAcm = {
+              'description': acm['description'],
+              'material': acm['material'],
+              'roomname': room['name'],
+              'roompath': doc.documentID,
+              'jobnumber': DataManager.get().currentJobNumber,
+            };
+            Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').add(newAcm);
+          });
+        }
+
         print(childList[index].toString());
         Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(doc.documentID).setData({'path': doc.documentID}, merge: true);
         if (index == template['rooms'].length-1) {
           if (roomObj['children'].length > 0) {
             // TODO this should be a new LIST!
-            childList = roomObj['children']
+            childList = new List.from(roomObj['children'])
               ..addAll(childList);
           }
           print(childList.toString());

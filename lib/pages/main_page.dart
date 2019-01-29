@@ -46,6 +46,7 @@ class _MainPageState extends State<MainPage> {
   FirebaseUser currentUser;
   bool _isLoading = false;
   bool _isSignedIn = false;
+  String _signInError = null;
 
   GlobalKey _signInKey;
 
@@ -77,6 +78,7 @@ class _MainPageState extends State<MainPage> {
         print(userDoc.data.toString());
         if (userDoc.data == null) {
           setState(() {
+            _signInError = 'The account ' + user.email + ' is not registered with K2.';
             _isLoading = false;
             _isSignedIn = false;
             currentUser = null;
@@ -85,6 +87,7 @@ class _MainPageState extends State<MainPage> {
         } else {
           setState(() {
             DataManager.get().user = user.uid;
+            _signInError = null;
             _isLoading = false;
             _selectedDrawerIndex = 0;
             print('user is ' + user.toString());
@@ -223,7 +226,17 @@ class _MainPageState extends State<MainPage> {
                   )]))
 
             : new Center(
-          child: OutlineButton(onPressed: _testSignInWithGoogle, child: Text('Sign In'), shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),)
+          child: new Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget> [
+            OutlineButton(onPressed: _testSignInWithGoogle, child: Text('Sign In'), shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),),
+            _signInError != null ?
+              new Container(
+                  padding: EdgeInsets.only(left: 48.0, right: 48.0),
+                  alignment: Alignment.center,
+                  child: new Text(_signInError)
+              ) : new Container(),
+          ]),
         )
       )
       );

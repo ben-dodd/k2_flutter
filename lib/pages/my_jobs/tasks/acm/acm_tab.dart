@@ -68,6 +68,8 @@ class _AcmTabState extends State<AcmTab> {
                     )
                 );
               return ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
                   itemCount: snapshot.data.documents.length,
                   itemBuilder: (context, index) {
                     print(snapshot.data.documents[index]['jobnumber']);

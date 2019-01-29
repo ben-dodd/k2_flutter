@@ -2062,6 +2062,7 @@ class _EditACMState extends State<EditACM> {
                             radius: 0.0,
                           )
                       ),
+                      widget.acm != null ?
                       new Container(
                         alignment: Alignment.center,
                         padding: EdgeInsets.only(top: 14.0,),
@@ -2076,7 +2077,7 @@ class _EditACMState extends State<EditACM> {
                             _deleteDialog();
                           }
                         ),
-                      ),
+                      ) : new Container(),
                   ],)
                 )
         ),
@@ -2116,7 +2117,7 @@ class _EditACMState extends State<EditACM> {
       FirebaseStorage.instance.ref().child(acmObj['storage_ref']).delete();
 
     // Remove ACM
-    Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').document(acmObj['path']).delete();
+    Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').document(widget.acm).delete();
 
     // Pop
     Navigator.pop(context);
