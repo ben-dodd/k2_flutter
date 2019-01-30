@@ -26,6 +26,7 @@ class DetailsTab extends StatefulWidget {
 class _DetailsTabState extends State<DetailsTab> {
   DocumentReference details;
   Stream detailsStream;
+  Timer _debounce;
   final controllerAddress = TextEditingController();
   final controllerDescription = TextEditingController();
 
@@ -47,11 +48,22 @@ class _DetailsTabState extends State<DetailsTab> {
   _updateAddress() {
     details.setData(
         {"address": controllerAddress.text}, merge: true);
+    if (_debounce?.isActive ?? false) _debounce.cancel();
+    _debounce = Timer(const Duration(milliseconds: 3000), () {
+      print('Sending address update to WFM');
+      // TODO: Send update to WFM debounced
+    });
   }
 
   _updateDescription() {
+    // TODO: Send update to WFM debounced
     details.setData(
         {"description": controllerDescription.text}, merge: true);
+    if (_debounce?.isActive ?? false) _debounce.cancel();
+    _debounce = Timer(const Duration(milliseconds: 3000), () {
+      print('Sending details update to WFM');
+      // TODO: Send update to WFM debounced
+    });
   }
 
   @override
@@ -68,7 +80,6 @@ class _DetailsTabState extends State<DetailsTab> {
                 if (!snapshot.hasData) return
                   loadingPage(loadingText: 'Loading job info...');
                 if (snapshot.hasData) {
-                  print (snapshot.data['address']);
                   if (controllerAddress.text == '') {
                     controllerAddress.text = snapshot.data['address'];
                     controllerDescription.text = snapshot.data['description'];
@@ -90,6 +101,7 @@ class _DetailsTabState extends State<DetailsTab> {
                                   child: Text(snapshot.data['clientname']
                                       , style: Styles.h1)
                               ),
+
                               Container(
                                 alignment: Alignment.topLeft,
                                 child: TextField(
@@ -200,10 +212,15 @@ class _DetailsTabState extends State<DetailsTab> {
         "sitephoto",
         "jobs/" + DataManager.get().currentJobNumber,
         details
-    ).then((_) {
-      setState((){
-        localPhoto = false;
-      });
+    ).then((refs) {
+      // Delete old photo if it doesn't overwrite
+      details.setData({'path_remote': refs['downloadURL'], 'storage_ref': refs['storageRef']}, merge: true);
+
+      if (this.mounted) {
+        setState((){
+          localPhoto = false;
+        });
+      }
     });
   }
 }

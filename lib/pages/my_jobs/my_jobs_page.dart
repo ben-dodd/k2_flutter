@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
@@ -7,6 +9,7 @@ import 'package:k2e/theme.dart';
 import 'package:k2e/widgets/fab_dialer.dart';
 import 'package:k2e/widgets/job_card.dart';
 import 'package:k2e/widgets/loading.dart';
+import 'package:uuid/uuid.dart';
 
 // This page lists all your current jobs
 // From here you can click on the Fab Menu to add more jobs
@@ -68,18 +71,16 @@ class _MyJobsPageState extends State<MyJobsPage> {
                                       setState(() {
                                         //
                                       });
-                                      print(snapshot.data.documents[index].documentID);
                                       Scaffold.of(context)
                                           .showSnackBar(SnackBar(content: Text("Job deleted")));
                                     },
                                     child: JobCard(
                                         doc: snapshot.data.documents[index],
                                         onCardClick: () async {
-                                          DataManager.get().currentJobPath = snapshot.data.documents[index]['path'];
+                                          DataManager.get().currentJobPath = 'jobs/' + snapshot.data.documents[index]['path'];
                                           DataManager.get().currentJobNumber = snapshot.data.documents[index]['jobnumber'];
-                                          print ('my jobs' + DataManager.get().currentJobPath);
                                           Navigator.push(context, MaterialPageRoute(
-                                              builder: (context) => JobPage(path: snapshot.data.documents[index]['path'],)
+                                              builder: (context) => JobPage(path: 'jobs/' + snapshot.data.documents[index]['path'],)
                                           )
                                           );
                                         },
@@ -95,7 +96,22 @@ class _MyJobsPageState extends State<MyJobsPage> {
   }
 
   void _createNewJob() {
-
+    String jobNumber = 'ASXX' + Random().nextInt(9999).toString();
+    var newJob = {
+      'jobnumber': jobNumber,
+      'path': jobNumber + Uuid().v1(),
+      'type': 'Asbestos - Survey',
+      'address': 'Not specified',
+      'clientname': 'Client Not Assigned',
+    };
+    Firestore.instance.collection('jobs').document(newJob['path']).setData(newJob);
+    Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').document(newJob['path']).setData(newJob).then((doc) {
+      setState(() {
+        Scaffold.of(context).showSnackBar(
+            new SnackBar(
+                content: new Text('New blank job added.')));
+      });
+    });
   }
 
   void _addWfmJob() async {

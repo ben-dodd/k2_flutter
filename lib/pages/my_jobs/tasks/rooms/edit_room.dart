@@ -16,6 +16,7 @@ import 'package:k2e/widgets/custom_auto_complete.dart';
 import 'package:k2e/widgets/dialogs.dart';
 import 'package:k2e/widgets/loading.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:uuid/uuid.dart';
 
 class EditRoom extends StatefulWidget {
   EditRoom({Key key, this.room}) : super(key: key);
@@ -89,24 +90,11 @@ class _EditRoomState extends State<EditRoom> {
 //                  print("Widget Room" + widget.room.toString());
 //                  print(roomObj['roomgroup'].toString());
 //                  print(initRoomGroup.toString());
-                  if (roomObj['path'] == null) {
-                    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').add(roomObj).then((doc) {
-                      roomObj['path'] = doc.documentID;
-                      if (roomObj['roomgrouppath'] == null || roomObj['roomgrouppath'] != initRoomGroup) {
-                        updateRoomGroups(initRoomGroup, roomObj, widget.room);
-                      } else {
-                        updateRoomCard(roomObj['roomgrouppath'], roomObj);
-                      }
-                      Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(doc.documentID).setData({"path": doc.documentID}, merge: true);
-                      });
+                  Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(roomObj['path']).setData(roomObj);
+                  if (roomObj['roomgrouppath'] == null || roomObj['roomgrouppath'] != initRoomGroup) {
+                    updateRoomGroups(initRoomGroup, roomObj, widget.room);
                   } else {
-                    if (roomObj['roomgrouppath'] == null || roomObj['roomgrouppath'] != initRoomGroup) {
-                      updateRoomGroups(initRoomGroup, roomObj, widget.room);
-                    } else {
-                      updateRoomCard(roomObj['roomgrouppath'], roomObj);
-                    }
-                    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(room).setData(
-                        roomObj, merge: true);
+                    updateRoomCard(roomObj['roomgrouppath'], roomObj);
                   }
                   Navigator.pop(context);
                 }
@@ -140,8 +128,10 @@ class _EditRoomState extends State<EditRoom> {
                             onTap: () {
                               ImagePicker.pickImage(source: ImageSource.camera).then((image) {
 //                                          _imageFile = image;
-                                localPhoto = true;
-                                _handleImageUpload(image);
+                                if (image != null) {
+                                  localPhoto = true;
+                                  _handleImageUpload(image);
+                                }
                               });
                             },
 //                                    child: (_imageFile != null)
@@ -578,6 +568,9 @@ class _EditRoomState extends State<EditRoom> {
       roomObj['buildingmaterials'] = null;
       roomObj['roomtype'] = 'orphan';
 
+      // New room requires us to create a path so it doesn't need internet to get one from Firestore
+      roomObj['path'] = new Uuid().v1();
+
       setState(() {
         isLoading = false;
       });
@@ -629,7 +622,7 @@ class _EditRoomState extends State<EditRoom> {
     ImageSync(
         image,
         50,
-        roomgroup + name + "(" + roomcode + ")",
+        roomgroup + name + "(" + roomcode + ")-" + roomObj['path'],
         "jobs/" + DataManager.get().currentJobNumber,
         Firestore.instance.document(DataManager.get().currentJobPath)
             .collection('rooms').document(room)

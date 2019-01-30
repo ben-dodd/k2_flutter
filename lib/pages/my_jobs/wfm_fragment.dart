@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
@@ -144,24 +145,20 @@ class _WfmFragmentState extends State<WfmFragment> {
             var query = await Firestore.instance.collection('jobs').where('jobnumber',isEqualTo: jobHeader.jobnumber).getDocuments();
             if (query.documents.length == 0) {
               // Job has not been imported from WFM, add
-              Firestore.instance.runTransaction((Transaction tx) async {
-                var _result = await Firestore.instance.collection('jobs')
-                    .add(jobHeader.toMap());
-                dataMap['path'] = _result.path;
-                await Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').add(dataMap);
-                message = jobHeader.jobnumber + ' added to your jobs.';
+              String jobPath = (jobHeader.jobnumber + '-' + jobHeader.type + '-' + jobHeader.clientname + Random().nextInt(99).toString()).replaceAll(new RegExp(r"\s+|\/+|\\"), "");
+              dataMap['path'] = jobPath;
+              Firestore.instance.collection('jobs').document(jobPath).setData(jobHeader.toMap(), merge: true).then((doc) {
+                Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').document(jobPath).setData(dataMap).then((myDoc) {
+                  message = jobHeader.jobnumber + ' added to your jobs.';
+                });
               });
             } else {
               print ('job was in firestore');
               // Job is already in firestore, get path
-              // TODO change getting job Number to getting path
-              print (query.documents.length);
-              dataMap['path'] = query.documents.elementAt(0).reference.path;
-              print (query.documents.elementAt(0).reference.path);
-              await Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').add(dataMap);
+              dataMap['path'] = query.documents.elementAt(0).reference.documentID;
+              await Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').document(dataMap['path']).setData(dataMap);
               message = jobHeader.jobnumber + ' added to your jobs.';
             }
-//            DataManager.get().jobHeaderRepo.myJobCache.add(jobHeader);
           } else {
             message = jobHeader.jobnumber + ' is already in your jobs.';
           }

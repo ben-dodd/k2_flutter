@@ -9,6 +9,7 @@ import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
 import 'package:k2e/widgets/loading.dart';
+import 'package:uuid/uuid.dart';
 
 class EditNote extends StatefulWidget {
   EditNote({Key key, this.note}) : super(key: key);
@@ -217,6 +218,7 @@ class _EditNoteState extends State<EditNote> {
         'note': null,
         'path_local': null,
         'path_remote': null,
+        'path': new Uuid().v1(),
       };
 
       setState(() {
@@ -256,7 +258,7 @@ class _EditNoteState extends State<EditNote> {
     ImageSync(
         image,
         50,
-        "note",
+        "note_" + noteObj['path'],
         "jobs/" + DataManager.get().currentJobNumber,
         note
     ).then((refs) {

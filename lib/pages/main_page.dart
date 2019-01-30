@@ -24,14 +24,14 @@ class MainPage extends StatefulWidget {
   final drawerItems = [
     new DrawerItem("My Jobs", Icons.assignment),
 //    new DrawerItem("To Do", Icons.format_list_bulleted),
-    new DrawerItem("Lab", Icons.colorize),
+//    new DrawerItem("Lab", Icons.colorize),
 //    new DrawerItem("Notifications", Icons.notifications),
 //    new DrawerItem("Calendar", Icons.date_range),
-    new DrawerItem("My Details", Icons.person),
+//    new DrawerItem("My Details", Icons.person),
 //    new DrawerItem("Training", Icons.people),
 //    new DrawerItem("Equipment", Icons.build),
-    new DrawerItem("Reference", Icons.info_outline), // This page has various reference to methods etc.
-    new DrawerItem("App Settings", Icons.settings),
+//    new DrawerItem("Reference", Icons.info_outline), // This page has various reference to methods etc.
+//    new DrawerItem("App Settings", Icons.settings),
     new DrawerItem("Log Out", Icons.exit_to_app)
   ];
 
@@ -229,10 +229,11 @@ class _MainPageState extends State<MainPage> {
           child: new Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget> [
+            new Container(padding: EdgeInsets.only(bottom: 12.0), child: new Image(image: new AssetImage("assets/images/web_hi_res_512.png"), width: 120.0,),),
             OutlineButton(onPressed: _testSignInWithGoogle, child: Text('Sign In'), shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),),
             _signInError != null ?
               new Container(
-                  padding: EdgeInsets.only(left: 48.0, right: 48.0),
+                  padding: EdgeInsets.only(top: 12.0, left: 48.0, right: 48.0),
                   alignment: Alignment.center,
                   child: new Text(_signInError)
               ) : new Container(),

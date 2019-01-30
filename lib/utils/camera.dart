@@ -40,8 +40,8 @@ Future <File> getPicture() async {
       percentage: 60,
     );
 
-    var uid = Random.secure().nextInt(999999);
-    var ref = "$folder/$fileName-$uid.jpg";
+//    var uid = Random.secure().nextInt(999999);
+    var ref = "$folder/$fileName.jpg";
 
     StorageUploadTask putFile =
       FirebaseStorage.instance.ref().child(ref).putFile(

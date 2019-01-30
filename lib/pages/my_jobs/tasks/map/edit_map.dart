@@ -12,10 +12,9 @@ import 'package:k2e/styles.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
 import 'package:k2e/widgets/acm_card.dart';
-import 'package:k2e/widgets/custom_auto_complete.dart';
-import 'package:k2e/widgets/dialogs.dart';
 import 'package:k2e/widgets/loading.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:uuid/uuid.dart';
 
 class EditMap extends StatefulWidget {
   EditMap({Key key, this.map}) : super(key: key);
@@ -177,32 +176,6 @@ class _EditMapState extends State<EditMap> {
                             FocusScope.of(context).requestFocus(_focusNodes[1]);
                           },
                         ),
-//                        child: new AutoCompleteFormField(
-//                          decoration: new InputDecoration(
-//                              labelText: "Map Name"
-//                          ),
-//                          key: formFieldKey,
-//                          scrollController: _scrollController,
-//                          textInputAction: TextInputAction.next,
-//                          initialValue: mapObj["name"] != null ? mapObj["name"] : "",
-//                          suggestions: maps,
-//
-//                          textChanged: (item) {
-//                            _updateName(item);
-//                          },
-//                          itemSubmitted: (item) {
-//                            _updateName(item.toString());
-//                          },
-//                          itemBuilder: (context, item) {
-//                            return new Padding(
-//                                padding: EdgeInsets.all(8.0), child: new Text(item));
-//                          },
-//                          itemSorter: (a, b) {
-//                            return a.compareTo(b);
-//                          },
-//                          itemFilter: (item, query) {
-//                            return item.toLowerCase().contains(query.toLowerCase());
-//                          }),
                       ),
                       new Container(
                         child: TextFormField(
@@ -571,6 +544,7 @@ class _EditMapState extends State<EditMap> {
       mapObj['path_remote'] = null;
       mapObj['buildingmaterials'] = null;
       mapObj['maptype'] = 'orphan';
+      mapObj['path'] = new Uuid().v1();
 
       setState(() {
         isLoading = false;
@@ -623,7 +597,7 @@ class _EditMapState extends State<EditMap> {
     ImageSync(
         image,
         50,
-        mapgroup + name + "(" + mapcode + ")",
+        "map_" + mapObj['path'],
         "jobs/" + DataManager.get().currentJobNumber,
         Firestore.instance.document(DataManager.get().currentJobPath)
             .collection('maps').document(map)

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/widgets/loading.dart';
+import 'package:uuid/uuid.dart';
 
 class EditRoomGroup extends StatefulWidget {
   EditRoomGroup({Key key, this.roomgroup}) : super(key: key);
@@ -16,218 +17,8 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
   bool isLoading = true;
   bool addAllOrphans = false;
   String templateName = '-';
-
-  List templates = [
-    {'name': '-'},
-    {
-      'name': 'Management: 3 Bedroom House',
-      'rooms': [
-        { 'name': 'Kitchen', 'template': 'Kitchen', },
-        { 'name': 'Lounge', 'template': 'Lounge', },
-        { 'name': 'Dining Room', 'template': 'Basic', },
-        { 'name': 'Hallway', 'template': 'Hallway', },
-        { 'name': 'Bathroom', 'template': 'Bathroom/Toilet', },
-        { 'name': 'Toilet', 'template': 'Bathroom/Toilet', },
-        { 'name': 'Laundry', 'template': 'Bathroom/Toilet', },
-        { 'name': 'Bedroom 1', 'template': 'Basic', },
-        { 'name': 'Bedroom 2', 'template': 'Basic', },
-        { 'name': 'Bedroom 3', 'template': 'Basic', },
-        { 'name': 'Ceiling Space', 'template': 'Basic', 'acm': [
-          {'description': 'Surfaces', 'material': 'dust', }
-        ]},
-        { 'name': 'Exterior', 'template': 'Basic', },
-        { 'name': 'Garage', 'template': 'Basic', },
-        { 'name': 'Shed', 'template': 'Basic', },
-      ],
-    },
-    {
-      'name': 'Demolition: 3 Bedroom House',
-      'rooms': [
-        { 'name': 'Kitchen', 'template': 'Kitchen', },
-        { 'name': 'HWC', 'template': 'Basic', },
-        { 'name': 'Lounge', 'template': 'Lounge', },
-        { 'name': 'Fireplace', 'template': 'Basic', },
-        { 'name': 'Dining Room', 'template': 'Basic', },
-        { 'name': 'Hallway', 'template': 'Hallway', },
-        { 'name': 'Fuse Board', 'template': 'Basic', },
-        { 'name': 'Bathroom', 'template': 'Bathroom/Toilet', },
-        { 'name': 'Toilet', 'template': 'Bathroom/Toilet', },
-        { 'name': 'Laundry', 'template': 'Bathroom/Toilet', },
-        { 'name': 'Bedroom 1', 'template': 'Basic', },
-        { 'name': 'Bedroom 2', 'template': 'Basic', },
-        { 'name': 'Bedroom 3', 'template': 'Basic', },
-        { 'name': 'Ceiling Space', 'template': 'Basic', 'acm': [
-          {'description': 'Surfaces', 'material': 'dust', }
-        ]},
-        { 'name': 'Exterior', 'template': 'Basic', 'acm': [
-          { 'description': 'Soil', 'material': 'soil', }
-        ]},
-        { 'name': 'Garage', 'template': 'Basic', },
-        { 'name': 'Shed', 'template': 'Basic', },
-      ],
-    },
-    {'name': 'Locomotive Type DC'},
-    {'name': 'Locomotive Type DCP'},
-    {'name': 'Locomotive Type DFM'},
-    {'name': 'Locomotive Type DFT'},
-    {'name': 'Locomotive Type DH'},
-    {'name': 'Locomotive Type DSC'},
-    {'name': 'Locomotive Type DXB'},
-    {'name': 'Locomotive Type EF'},
-    {'name': 'Electrical Substation'},
-  ];
-
-  List roomTemplates = [
-    {
-      "name": "Basic",
-      "buildingmaterials": [
-        {
-          "label": "Ceiling",
-          "material": "",
-        },
-        {
-          "label": "Walls",
-          "material": "",
-        },
-        {
-          "label": "Floor",
-          "material": "",
-        },
-      ],
-    },
-    {
-      "name": "Hallway",
-      "buildingmaterials": [
-        {
-          "label": "Ceiling",
-          "material": "",
-        },
-        {
-          "label": "Walls",
-          "material": "",
-        },
-        {
-          "label": "Fuse board",
-          "material": "",
-        },
-        {
-          "label": "Hot water cylinder",
-          "material": "",
-        },
-        {
-          "label": "Entry floor",
-          "material": "",
-        },
-        {
-          "label": "Floor",
-          "material": "",
-        },
-      ],
-    },
-    {
-      "name": "Kitchen",
-      "buildingmaterials": [
-        {
-          "label": "Ceiling",
-          "material": "",
-        },
-        {
-          "label": "Walls",
-          "material": "",
-        },
-        {
-          "label": "Rangehood",
-          "material": "",
-        },
-        {
-          "label": "Hot Water Cylinder",
-          "material": "",
-        },
-        {
-          "label": "Bench",
-          "material": "",
-        },
-        {
-          "label": "Splashback",
-          "material": "",
-        },
-        {
-          "label": "Sink",
-          "material": "",
-        },
-        {
-          "label": "Pipework",
-          "material": "",
-        },
-        {
-          "label": "Sink",
-          "material": "",
-        },
-        {
-          "label": "Floor",
-          "material": "",
-        },
-      ],
-    },
-    {
-      "name": "Lounge",
-      "buildingmaterials": [
-        {
-          "label": "Ceiling",
-          "material": "",
-        },
-        {
-          "label": "Walls",
-          "material": "",
-        },
-        {
-          "label": "Fireplace",
-          "material": "",
-        },
-        {
-          "label": "Heat pump",
-          "material": "",
-        },
-        {
-          "label": "Floor",
-          "material": "",
-        },
-      ],
-    },
-    {
-      "name": "Bathroom/Toilet",
-      "buildingmaterials": [
-        {
-          "label": "Ceiling",
-          "material": "",
-        },
-        {
-          "label": "Walls",
-          "material": "",
-        },
-        {
-          "label": "Bath surround",
-          "material": "",
-        },
-        {
-          "label": "Bath",
-          "material": "",
-        },
-        {
-          "label": "Toilet",
-          "material": "",
-        },
-        {
-          "label": "Pipework",
-          "material": "",
-        },
-        {
-          "label": "Floor",
-          "material": "",
-        },
-      ],
-    },
-  ];
+  List roomGroupTemplates = DataManager.get().roomGroupTemplates;
+  List roomTemplates = DataManager.get().roomTemplates;
 
   Map<String, dynamic> roomObj = new Map<String, dynamic>();
 
@@ -267,18 +58,9 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
             new IconButton(icon: const Icon(Icons.check), onPressed: () {
               if (_formKey.currentState.validate()) {
                 _formKey.currentState.save();
-                if (roomObj['path'] == null) {
-                  Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').add(roomObj).then((doc) {
-                    roomObj['path'] = doc.documentID;
-                    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(doc.documentID).setData({ 'path': doc.documentID }, merge: true);
-                    if (addAllOrphans) addAllOrphansToGroup();
-                    if (templateName != '-' && templates.firstWhere((template) => template['name'] == templateName)['rooms'] != null) createRoomsFromTemplate();
-                  });
-                } else {
-                  Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(roomgroup).setData(
-                      roomObj, merge: true);
-                  if (addAllOrphans) addAllOrphansToGroup();
-                }
+                Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(roomObj['path']).setData(roomObj, merge: true);
+                if (addAllOrphans) addAllOrphansToGroup();
+                if (templateName != '-' && roomGroupTemplates.firstWhere((template) => template['name'] == templateName)['rooms'] != null) createRoomsFromTemplate();
                 Navigator.pop(context);
               }
             })
@@ -332,8 +114,6 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
                   textCapitalization: TextCapitalization.characters,
                 ),
               ),
-              // TODO Add in templates
-              // Add in type of survey etc.
               new Container(
                 child: TextFormField(
                   decoration: const InputDecoration(
@@ -368,7 +148,7 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
               new DropdownButton<String>(
                 value: templateName,
                 iconSize: 24.0,
-                items: templates.map((item) {
+                items: roomGroupTemplates.map((item) {
                   return new DropdownMenuItem<String>(
                     value: item["name"],
                     child: new Text(item["name"]),
@@ -376,7 +156,6 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
                 }).toList(),
                 onChanged: (value) {
                   setState(() {
-                    print(value);
                     templateName = value;
                   });
                 }
@@ -454,6 +233,7 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
       roomObj['name'] = null;
       roomObj['children'] = new List();
       roomObj['roomtype'] = 'group';
+      roomObj['path'] = new Uuid().v1();
       isLoading = false;
     } else {
       _title = "Edit Room Group";
@@ -471,7 +251,7 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
 
   void createRoomsFromTemplate() {
     print ('Creating rooms from template ' + templateName);
-    var template = templates.firstWhere((template) => template['name'] == templateName);
+    var template = roomGroupTemplates.firstWhere((template) => template['name'] == templateName);
     print(template.toString());
     if (template == null || template['rooms'] == null) return;
     print(template['rooms'].length.toString());
@@ -486,45 +266,42 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
         'roomtype': null,
         'roomgroupname': roomObj['name'],
         'roomgrouppath': roomObj['path'],
+        'path': new Uuid().v1(),
       };
-      Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').add(newRoom).then((doc) {
-        childList[index] = {
-          'name': room['name'],
-          'path': doc.documentID,
-          'path_local': null,
-          'path_remote': null,
-        };
-        // Add ACM if present
-        if (room['acm'] != null) {
-          room['acm'].forEach((acm) {
-            var newAcm = {
-              'description': acm['description'],
-              'material': acm['material'],
-              'roomname': room['name'],
-              'roompath': doc.documentID,
-              'jobnumber': DataManager.get().currentJobNumber,
-            };
-            Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').add(newAcm);
-          });
-        }
+      Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(newRoom['path']).setData(newRoom, merge: true);
+      childList[index] = {
+        'name': newRoom['name'],
+        'path': newRoom['path'],
+        'path_local': null,
+        'path_remote': null,
+      };
 
-        print(childList[index].toString());
-        Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(doc.documentID).setData({'path': doc.documentID}, merge: true);
-        if (index == template['rooms'].length-1) {
-          if (roomObj['children'].length > 0) {
-            // TODO this should be a new LIST!
-            childList = new List.from(roomObj['children'])
-              ..addAll(childList);
-          }
-          print(childList.toString());
-          Firestore.instance.document(DataManager
-              .get()
-              .currentJobPath).collection('rooms')
-              .document(roomObj['path'])
-              .setData({'children': childList}, merge: true);
+      // Add ACM if present
+      if (room['acm'] != null) {
+        room['acm'].forEach((acm) {
+        var newAcm = {
+          'description': acm['description'],
+          'material': acm['material'],
+          'roomname': room['name'],
+          'roompath': newRoom['path'],
+          'jobnumber': DataManager.get().currentJobNumber,
+        };
+        Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').add(newAcm);
+        });
+      }
+      if (index == template['rooms'].length-1) {
+        if (roomObj['children'].length > 0) {
+          childList = new List.from(roomObj['children'])
+            ..addAll(childList);
         }
-        index = index + 1;
-      });
+        print(childList.toString());
+        Firestore.instance.document(DataManager
+            .get()
+            .currentJobPath).collection('rooms')
+            .document(roomObj['path'])
+            .setData({'children': childList}, merge: true);
+      }
+      index = index + 1;
     });
   }
 

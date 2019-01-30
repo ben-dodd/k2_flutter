@@ -16,6 +16,7 @@ import 'package:k2e/widgets/buttons.dart';
 import 'package:k2e/widgets/custom_auto_complete.dart';
 import 'package:k2e/widgets/loading.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:uuid/uuid.dart';
 
 class EditACM extends StatefulWidget {
   EditACM({Key key, this.acm}) : super(key: key);
@@ -340,15 +341,8 @@ class _EditACMState extends State<EditACM> {
                 new IconButton(icon: const Icon(Icons.check), onPressed: () {
                   if (_formKey.currentState.validate()) {
                     _formKey.currentState.save();
-                    if (acmObj['path'] == null) {
-                      Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').add(acmObj).then((doc) {
-                        acmObj['path'] = doc.documentID;
-                        Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').document(doc.documentID).setData({"path": doc.documentID}, merge: true);
-                      });
-                    } else {
-                      Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').document(widget.acm).setData(
-                          acmObj, merge: true);
-                    }
+                    Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').document(acmObj['path']).setData(
+                        acmObj, merge: true);
                     Navigator.pop(context);
                   }
                 })
@@ -2154,6 +2148,10 @@ class _EditACMState extends State<EditACM> {
       acmObj['path_remote'] = null;
       acmObj['materialrisk_asbestosscore'] = 3;
       materialAsbestosScore = 3;
+
+      // New room requires us to create a path so it doesn't need internet to get one from Firestore
+      acmObj['path'] = new Uuid().v1();
+
       setState(() {
         isLoading = false;
       });
