@@ -1,16 +1,37 @@
+import 'package:meta/meta.dart';
+
 class ToolTip {
   final String title;
   final String tip;
   final String subtip;
 
   ToolTip ({
+    @required
     this.title,
+    @required
     this.tip,
+    @required
     this.subtip
   });
 }
 
 class Tip {
+  // SAMPLE/PRESUME
+  static final sample = new ToolTip(
+    title: 'Sample',
+    tip: 'The material in this room will be sampled for analysis.',
+    subtip: 'For demolition and refurbishment surveys, ALL materials should be sampled if possible. If the survey is a mix of management/refurbishment, the materials that are likely to be disturbed by planned refurbishment should be sampled. For management surveys, damaged or high risk materials should be sampled, while the sampling of undamaged materials should be discussed with the client prior to sampling.',
+  );
+  static final presume = new ToolTip(
+    title: 'Presume',
+    tip: 'The material must be presumed to contain asbestos.',
+    subtip: 'The "default" situation. Item cannot be presumed to be asbestos-free, or area or item was inaccessible. Examples: Jointing compound, HardieGlaze, Non-fibrous vinyl, Bakelite.',
+  );
+  static final stronglypresume = new ToolTip(
+    title: 'Strongly Presume',
+    tip: 'The material is likely to contain asbestos but will not be sampled.',
+    subtip: 'Material is visually consistent with known ACM materials. Material has the appearance of asbestos. Asbestos was commonly used in material at time of installation. Examples: cement roofing, walls, drainpipes, water tanks, etc. Paper-backed vinyl, Bituminous fuse boards. Textured plaster ceilings (pre-1990). Millboard.'
+  );
   // MATERIAL RISK
 
   // ACCESSIBILITY

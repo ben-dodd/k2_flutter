@@ -14,7 +14,8 @@ class ScoreButton extends StatelessWidget {
     this.tooltip,
     this.bordercolor,
     this.radius,
-    this.textcolor
+    this.textcolor,
+    this.dialogHeight,
   });
 
   final int score;
@@ -25,6 +26,7 @@ class ScoreButton extends StatelessWidget {
   final ToolTip tooltip;
   final Color bordercolor;
   final double radius;
+  final double dialogHeight;
   Color textcolor;
 
   Color scoreColor;
@@ -90,7 +92,7 @@ class ScoreButton extends StatelessWidget {
                         color: Colors.white,
                         borderRadius: new BorderRadius.all(new Radius.circular(200.0))
                       ),
-                      height: 200.0,
+                      height: dialogHeight != null ? dialogHeight : 200.0,
                       child: Column(
                         children: <Widget>[
                           Container(child: Text(tooltip.tip, style: Styles.body), alignment: Alignment.bottomLeft,),

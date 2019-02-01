@@ -53,8 +53,6 @@ class _EditACMState extends State<EditACM> {
   bool showMaterialRisk = true;
   bool showPriorityRisk = false;
 
-  String idKey;
-
   ScrollController _scrollController;
 
   // GENERAL INFO
@@ -306,7 +304,10 @@ class _EditACMState extends State<EditACM> {
     String totalRiskText;
     bool totalRiskSet;
     // Calculate total
-    if (materialRiskSet && !showPriorityRisk) {
+    if (!showMaterialRisk && !showPriorityRisk) {
+      totalRiskSet = false;
+      totalRiskText = 'No Risk Assessment Done';
+    } else if (materialRiskSet && !showPriorityRisk) {
       totalRiskSet = true;
       totalRiskScore = materialRiskScore;
       totalRiskLevel = materialRiskLevel;
@@ -365,51 +366,12 @@ class _EditACMState extends State<EditACM> {
       //                            controller: _scrollController,
       //                            padding: new EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 500.0),
                     children: <Widget>[
-
-                      // SAMPLED/PRESUMED
-                      new Row(
-                        children: <Widget>[
-                        new Expanded(child:
-                        new SelectButton(
-                            onClick: () {
-                              // firestore change score
-                              setState(() {
-                                idKey = 'i';
-                                isSampled = true;
-                                acmObj["idkey"] = 'i';
-  //                              acm.setData({"idkey": 'i'}, merge: true);
-                              });
-                            },
-                            selected: idKey == 'i',
-                            text: 'Sampled',
-                        ),),
-                        new Expanded(child:
-                        new SelectButton(
-                          onClick: () {
-                            // firestore change score
-                            setState(() {
-                              idKey = stronglyPresumed ? 's' : 'p';
-                              isSampled = false;
-                              acmObj["idkey"] = idKey;
-  //                            acm.setData({"idkey": idKey}, merge: true);
-                            });
-                          },
-                          selected: idKey != 'i',
-                          text: presumedText,
-                        ),),
-                      ],
-                      ),
-                      new Divider(),
-
                       // SAMPLE PHOTO
-                      new Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
                         new Container(
                               alignment: Alignment.center,
                               height: 312.0,
                               width: 240.0,
+                              margin: EdgeInsets.only(left: 54.0, right: 54.0, bottom: 24.0),
                               decoration: BoxDecoration(border: new Border.all(color: Colors.black)),
                               child: GestureDetector(
                                   onTap: () {
@@ -434,83 +396,56 @@ class _EditACMState extends State<EditACM> {
                                     Icons.camera, color: CompanyColors.accentRippled,
                                     size: 48.0,)
                               ),
-                            )],
-                          ),
+                        ),
 
-                      // HEADER INFO
-
-                      isSampled ?
-                        // SAMPLE NUMBER
-      //                                  new Row(children: <Widget> [
-                        new Container(
-                            alignment: Alignment.topLeft,
-                            child: TextField(
-                              decoration: const InputDecoration(
-                                  labelText: "Description"),
-                              autocorrect: false,
-                              keyboardType: TextInputType.text,
-                            ),
-      //                                      child: new DropdownButtonHideUnderline(child: ButtonTheme(
-      //                                        alignedDropdown: true,
-      //                                        child: DropdownButton<String>(
-      //                                          value: (_sample == null) ? null : _sample['name'],
-      //                                          iconSize: 24.0,
-      //                                          items: samplelist.map((Map<String,String> sample) {
-      //                                            return new DropdownMenuItem<String>(
-      //                                              value: sample['name'],
-      //                                              child: new Text(sample['name']),
-      //                                            );
-      //                                          }).toList(),
-      //                                          onChanged: (value) {
-      //                                            setState(() {
-      //                                              _sample = samplelist.firstWhere((e) => e['name'] == value);
-      //                                              acm.setData({"sample": _sample['path']}, merge: true);
-      //                                            });
-      //                                          },
-      //                                        ),
-      //                                      )
-      //                                      )
-                        )
-      //                                    new Container(
-      //                                    child: new IconButton(
-      //                                      icon: new Icon(Icons.add),
-      //                                      color: CompanyColors.accent,
-      //                                      iconSize: 16.0,
-      //                                      onPressed: () {
-      //                                      // Go to new Sample page
-      //                                      },
-      //                                    ),),
-      //                                    ]
-      //                                  )
-
-                        :
-                        // PRESUMED/STRONGLY
-                        new Container(
-                            child: new Row(children: <Widget>[
-                              new Switch(
-                                value: stronglyPresumed,
-                                onChanged: (bool strong) {
+                        // SAMPLE TYPE SELECTORS
+                        new Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            new Expanded(child:
+                            new ScoreButton(
+                                onClick: () {
                                   setState(() {
-                                    if (strong) {
-                                      presumedText = 'Strongly presumed';
-                                      stronglyPresumed = true;
-                                    } else {
-                                      presumedText = 'Presumed';
-                                      stronglyPresumed = false;
-                                    }
+                                    isSampled = false;
+                                    acmObj['idkey'] = 'p';
                                   });
                                 },
-                              ),
-                              new Text("Strongly presume"),
-                            ],)
+                                dialogHeight: 300.0,
+                                selected: acmObj['idkey'] == 'p',
+                                score: 1,
+                                text: 'P',
+                                tooltip: Tip.presume
+                            ),),
+                            new Expanded(child:
+                            new ScoreButton(
+                                onClick: () {
+                                  setState(() {
+                                    isSampled = false;
+                                    acmObj['idkey'] = 's';
+                                  });
+                                },
+                                dialogHeight: 300.0,
+                                selected: acmObj['idkey'] == 's',
+                                score: 2,
+                                text: 'S',
+                                tooltip: Tip.stronglypresume
+                            ),),
+                            new Expanded(child:
+                            new ScoreButton(
+                                onClick: () {
+                                  setState(() {
+                                    isSampled = true;
+                                    acmObj['idkey'] = 'i';
+                                  });
+                                },
+                                dialogHeight: 300.0,
+                                selected: acmObj['idkey'] == 'i',
+                                score: 3,
+                                text: 'I',
+                                tooltip: Tip.sample
+                            ),),
+                          ],
                         ),
-                        stronglyPresumed ?
-                          new Container(
-
-                          )
-                        :
-                          new Container(),
-      //                             // DROPDOWN ROOM
 
                         new Container(
                           alignment: Alignment.center,
@@ -573,35 +508,6 @@ class _EditACMState extends State<EditACM> {
                               FocusScope.of(context).requestFocus(_focusNodes[1]);
                             },
                           ),
-  //                        child: AutoCompleteTextField<String>(
-  //                            decoration: new InputDecoration(
-  //                                hintText: "e.g. Ceiling, Walls, Floor (2nd layer)",
-  //                                labelText: "Description/Item"
-  //
-  //    //                                        border: new OutlineInputBorder(
-  //    //                                            gapPadding: 0.0, borderRadius: new BorderRadius.circular(16.0)),
-  //    //                                        suffixIcon: new Icon(Icons.search)
-  //                            ),
-  //                            initialValue: initialDescription,
-  //                            key: keyItems,
-  //                            scrollController: _scrollController,
-  //                            suggestions: items,
-  //                            textChanged: (item) {
-  //                              _updateDescription(item);
-  //                            },
-  //                            itemSubmitted: (item) {
-  //                              _updateDescription(item.toString());
-  //                            },
-  //                            itemBuilder: (context, item) {
-  //                              return new Padding(
-  //                                  padding: EdgeInsets.all(8.0), child: new Text(item));
-  //                            },
-  //                            itemSorter: (a, b) {
-  //                              return a.compareTo(b);
-  //                            },
-  //                            itemFilter: (item, query) {
-  //                              return item.toLowerCase().contains(query.toLowerCase());
-  //                            }),
                         ),
                         new Container(
                           alignment: Alignment.topLeft,
@@ -625,35 +531,6 @@ class _EditACMState extends State<EditACM> {
                               FocusScope.of(context).requestFocus(_focusNodes[2]);
                             },
                           ),
-  //                        child: AutoCompleteTextField<String>(
-  //                            decoration: new InputDecoration(
-  //                                hintText: "e.g. textured plaster, paper-backed vinyl",
-  //                                labelText: "Material"
-  //
-  //    //                                        border: new OutlineInputBorder(
-  //    //                                            gapPadding: 0.0, borderRadius: new BorderRadius.circular(16.0)),
-  //    //                                        suffixIcon: new Icon(Icons.search)
-  //                            ),
-  //                            initialValue: initialMaterial,
-  //                            key: keyMaterial,
-  //                            scrollController: _scrollController,
-  //                            suggestions: materials,
-  //                            textChanged: (item) {
-  //                              _updateMaterial(item);
-  //                            },
-  //                            itemSubmitted: (item) {
-  //                              _updateMaterial(item.toString());
-  //                            },
-  //                            itemBuilder: (context, item) {
-  //                              return new Padding(
-  //                                  padding: EdgeInsets.all(8.0), child: new Text(item));
-  //                            },
-  //                            itemSorter: (a, b) {
-  //                              return a.compareTo(b);
-  //                            },
-  //                            itemFilter: (item, query) {
-  //                              return item.toLowerCase().contains(query.toLowerCase());
-  //                            }),
                         ),
                       new Container(
                         alignment: Alignment.center,
@@ -2141,7 +2018,6 @@ class _EditACMState extends State<EditACM> {
       //      sample.sampleNumber = DataManager.get().getHighestSampleNumber(DataManager.get().currentJob) + 1;
       acmObj['sample'] = null;
       acmObj['idkey'] = 'p';
-      idKey = 'p';
       acmObj['description'] = null;
       acmObj['material'] = null;
       acmObj['path_local'] = null;
@@ -2163,14 +2039,12 @@ class _EditACMState extends State<EditACM> {
         if (doc.data['sample'] != 'null') {
 //          sample =  Firestore.instance.collection('samplesasbestosbulk').document(doc.data['sample']);
         }
-        idKey = doc.data['idkey'];
-        print (idKey);
-        if (idKey == 'i') {
+        if (acmObj['idkey'] == 'i') {
           isSampled = true;
           stronglyPresumed = false;
         } else {
           isSampled = false;
-          if (idKey == 's') {
+          if (acmObj['idkey'] == 's') {
             stronglyPresumed = true;
           } else {
             stronglyPresumed = false;
