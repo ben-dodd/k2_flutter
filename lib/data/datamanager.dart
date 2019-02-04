@@ -22,6 +22,10 @@ class DataManager {
   List<Map<String, String>> currentJobSamples;
   TimeCounter currentTimeCounter;
 
+  // Current State
+  String currentRoom;
+  String currentRoomGroup;
+
   // Autocompletes
   Map<String, dynamic> constants;
   List<String> asbestosmaterials;
@@ -92,6 +96,51 @@ class DataManager {
 
   List roomTemplates =
   [
+    {
+      "name": "Blank Rows",
+      "buildingmaterials": [
+        {
+          "label": "",
+          "material": "",
+        },
+        {
+          "label": "",
+          "material": "",
+        },
+        {
+          "label": "",
+          "material": "",
+        },
+        {
+          "label": "",
+          "material": "",
+        },
+        {
+          "label": "",
+          "material": "",
+        },
+        {
+          "label": "",
+          "material": "",
+        },
+        {
+          "label": "",
+          "material": "",
+        },
+        {
+          "label": "",
+          "material": "",
+        },
+        {
+          "label": "",
+          "material": "",
+        },
+        {
+          "label": "",
+          "material": "",
+        },
+      ]
+    },
     {
       "name": "Basic",
       "buildingmaterials": [

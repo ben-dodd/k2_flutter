@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/autocomplete.dart';
+import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/widgets/custom_auto_complete.dart';
 import 'package:k2e/widgets/customdialog.dart';
 
@@ -121,157 +122,7 @@ class RoomTemplateDialog extends StatefulWidget {
 
 class _RoomTemplateDialogState extends State<RoomTemplateDialog> {
   String selected;
-  var templates = [
-    {
-      "name": "Basic",
-      "buildingmaterials": [
-        {
-          "label": "Ceiling",
-          "material": "",
-        },
-        {
-          "label": "Walls",
-          "material": "",
-        },
-        {
-          "label": "Floor",
-          "material": "",
-        },
-      ],
-    },
-    {
-      "name": "Hallway",
-      "buildingmaterials": [
-        {
-          "label": "Ceiling",
-          "material": "",
-        },
-        {
-          "label": "Walls",
-          "material": "",
-        },
-        {
-          "label": "Fuse board",
-          "material": "",
-        },
-        {
-          "label": "Hot water cylinder",
-          "material": "",
-        },
-        {
-          "label": "Entry floor",
-          "material": "",
-        },
-        {
-          "label": "Floor",
-          "material": "",
-        },
-      ],
-    },
-    {
-      "name": "Kitchen",
-      "buildingmaterials": [
-        {
-          "label": "Ceiling",
-          "material": "",
-        },
-        {
-          "label": "Walls",
-          "material": "",
-        },
-        {
-          "label": "Rangehood",
-          "material": "",
-        },
-        {
-          "label": "Hot Water Cylinder",
-          "material": "",
-        },
-        {
-          "label": "Bench",
-          "material": "",
-        },
-        {
-          "label": "Splashback",
-          "material": "",
-        },
-        {
-          "label": "Sink",
-          "material": "",
-        },
-        {
-          "label": "Pipework",
-          "material": "",
-        },
-        {
-          "label": "Sink",
-          "material": "",
-        },
-        {
-          "label": "Floor",
-          "material": "",
-        },
-      ],
-    },
-    {
-      "name": "Lounge",
-      "buildingmaterials": [
-        {
-          "label": "Ceiling",
-          "material": "",
-        },
-        {
-          "label": "Walls",
-          "material": "",
-        },
-        {
-          "label": "Fireplace",
-          "material": "",
-        },
-        {
-          "label": "Heat pump",
-          "material": "",
-        },
-        {
-          "label": "Floor",
-          "material": "",
-        },
-      ],
-    },
-    {
-      "name": "Bathroom/Toilet",
-      "buildingmaterials": [
-        {
-          "label": "Ceiling",
-          "material": "",
-        },
-        {
-          "label": "Walls",
-          "material": "",
-        },
-        {
-          "label": "Bath surround",
-          "material": "",
-        },
-        {
-          "label": "Bath",
-          "material": "",
-        },
-        {
-          "label": "Toilet",
-          "material": "",
-        },
-        {
-          "label": "Pipework",
-          "material": "",
-        },
-        {
-          "label": "Floor",
-          "material": "",
-        },
-      ],
-    },
-  ];
+  var templates = DataManager.get().roomTemplates;
 
   @override
   void initState() {
@@ -286,7 +137,7 @@ class _RoomTemplateDialogState extends State<RoomTemplateDialog> {
       content: new DropdownButton<String>(
           value: selected,
           iconSize: 24.0,
-          items: templates.map((Map<String, dynamic> item) {
+          items: templates.map((item) {
             return new DropdownMenuItem<String>(
               value: item["name"],
               child: new Text(item["name"]),

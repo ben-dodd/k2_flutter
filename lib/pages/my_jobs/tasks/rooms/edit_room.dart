@@ -61,18 +61,6 @@ class _EditRoomState extends State<EditRoom> {
     super.initState();
   }
 
-//  _updateName(name) {
-//    this.setState(() {
-//      roomObj["name"] = name.trim();
-//    });
-//  }
-//
-//  _updateRoomCode() {
-//    this.setState(() {
-//      roomObj["roomcode"] = controllerRoomCode.text.trim();
-//    });
-//  }
-
   Widget build(BuildContext context) {
     return new Scaffold(
 //        resizeToAvoidBottomPadding: false,
@@ -87,9 +75,6 @@ class _EditRoomState extends State<EditRoom> {
                 if (_formKey.currentState.validate()){
                   _formKey.currentState.save();
                   // Update room group map if new room has been added or if room's room group has changed
-//                  print("Widget Room" + widget.room.toString());
-//                  print(roomObj['roomgroup'].toString());
-//                  print(initRoomGroup.toString());
                   Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(roomObj['path']).setData(roomObj);
                   if (roomObj['roomgrouppath'] == null || roomObj['roomgrouppath'] != initRoomGroup) {
                     updateRoomGroups(initRoomGroup, roomObj, widget.room);
@@ -243,17 +228,15 @@ class _EditRoomState extends State<EditRoom> {
                             } else roomObj['roomtype'] = null;
                             roomObj["roomgroupname"] = roomgrouplist.firstWhere((e) => e['path'] == value)['name'];;
                             roomObj["roomgrouppath"] = value;
+                            DataManager.get().currentRoomGroup = value;
 //                              acm.setData({"room": _room}, merge: true);
                           });
                         },
                       ),
                     ),
-                    new Divider(),
-                    new Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.only(top: 14.0, bottom: 14.0,),
-                      child: new Text("Presumed and Sampled Materials", style: Styles.h2,),
-                    ),
+              ExpansionTile(
+                title: new Text("Presumed and Sampled Materials", style: Styles.h2,),
+                children: <Widget>[
                     widget.room != null ? new StreamBuilder(
                         stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').where("roompath", isEqualTo: widget.room).snapshots(),
                         builder: (context, snapshot) {
@@ -342,14 +325,12 @@ class _EditRoomState extends State<EditRoom> {
                         )
                       ]
                     )
-                    ),
-                    new Container(padding: EdgeInsets.only(top: 14.0)),
-                    new Divider(),
-                    new Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.only(top: 14.0,),
-                      child: new Text("Building Materials", style: Styles.h2,),
-                    ),
+                    ),]),
+//                    new Container(padding: EdgeInsets.only(top: 14.0)),
+//                    new Divider(),
+              ExpansionTile(
+                title: new Text("Building Materials", style: Styles.h2,),
+                children: <Widget>[
                     new Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
@@ -383,7 +364,6 @@ class _EditRoomState extends State<EditRoom> {
                         ),],
                     ),
                     (roomObj['buildingmaterials'] != null && roomObj['buildingmaterials'].length > 0) ?
-//                    roomObj['buildingmaterials'].map((item) => buildBuildingMaterials(item))
                       ListView.builder(
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
@@ -392,7 +372,7 @@ class _EditRoomState extends State<EditRoom> {
                         return buildBuildingMaterials(index);
                       })
                         :
-                        new Container(),
+                      new Container(),
                     widget.room != null ?
                       new Container(
                         alignment: Alignment.center,
@@ -414,8 +394,10 @@ class _EditRoomState extends State<EditRoom> {
 //                    buildBuildingMaterials(),
                     ],
                 ),
-              ),
+            ]
+          ),
         ),
+      ),
     );
   }
 
@@ -552,12 +534,12 @@ class _EditRoomState extends State<EditRoom> {
   }
 
   void _loadRoom() async {
-    print('room is ' + room.toString());
+//    print('room is ' + room.toString());
     // Load roomgroups from job
     roomgrouplist = [{"name": '-', "path": '',}];
     QuerySnapshot roomSnapshot = await Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').where('roomtype', isEqualTo: 'group').getDocuments();
     roomSnapshot.documents.forEach((doc) => roomgrouplist.add({"name": doc.data['name'],"path": doc.documentID}));
-    print('ROOMGROUPLIST ' + roomgrouplist.toString());
+//    print('ROOMGROUPLIST ' + roomgrouplist.toString());
 
 //    print("Loading room");
     if (room == null) {
@@ -567,6 +549,7 @@ class _EditRoomState extends State<EditRoom> {
       roomObj['path_remote'] = null;
       roomObj['buildingmaterials'] = null;
       roomObj['roomtype'] = 'orphan';
+      roomObj['roomgrouppath'] = DataManager.get().currentRoomGroup;
 
       // New room requires us to create a path so it doesn't need internet to get one from Firestore
       roomObj['path'] = new Uuid().v1();
@@ -576,7 +559,7 @@ class _EditRoomState extends State<EditRoom> {
       });
 
     } else {
-      print('Edit room is ' + room.toString());
+//      print('Edit room is ' + room.toString());
       _title = "Edit Room";
       Firestore.instance.document(DataManager.get().currentJobPath)
           .collection('rooms').document(room).get().then((doc) {
@@ -597,7 +580,7 @@ class _EditRoomState extends State<EditRoom> {
             });
       });
     }
-    print(_title.toString());
+//    print(_title.toString());
   }
 
   void _handleImageUpload(File image) async {

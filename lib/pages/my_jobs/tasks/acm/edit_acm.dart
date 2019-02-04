@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:k2e/autocomplete.dart';
 import 'package:k2e/data/datamanager.dart';
+import 'package:k2e/pages/my_jobs/tasks/coc/assign_sample_numbers.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/tooltips.dart';
@@ -128,45 +129,6 @@ class _EditACMState extends State<EditACM> {
 
       super.initState();
   }
-
-  //
-  // TEXT CONTROLLERS, FIRESTORE UPLOAD
-  //
-//
-//  _updateSampleNumber() {
-//    Firestore.instance.collection('samplesasbestosbulk').document(sample).setData(
-//        {"sampleNumber": int.tryParse(controllerSampleNumber.text)}, merge: true);
-//  }
-
-//  _updateDescription(text) {
-//    this.setState(() {
-//      acmObj["description"] = text.trim();
-//    });
-//  }
-//
-//  _updateMaterial(text) {
-//    this.setState(() {
-//      acmObj["material"] = text.trim();
-//    });
-//  }
-//
-//  _updateNotes() {
-//    this.setState(() {
-//      acmObj["notes"] = controllerNotes.text.trim();
-//    });
-//  }
-//
-//  _updateDamageDesc(text) {
-//    this.setState(() {
-//      acmObj["materialrisk_damagedesc"] = text.trim();
-//    });
-//  }
-//
-//  _updateSurfaceDesc(text) {
-//    this.setState(() {
-//      acmObj["materialrisk_surfacedesc"] = text.trim();
-//    });
-//  }
 
   Widget build(BuildContext context) {
     // Calculate material totals
@@ -447,96 +409,151 @@ class _EditACMState extends State<EditACM> {
                           ],
                         ),
 
-                        new Container(
-                          alignment: Alignment.center,
-                          padding: EdgeInsets.only(top: 36.0, bottom: 14.0,),
-                          child: new Text("General Information", style: Styles.h2,),
-                        ),
-                        new Container(
-                          alignment: Alignment.topLeft,
-                          child: new Text("Room Name", style: Styles.label,),
-                        ),
-                        new Container(
-                          alignment: Alignment.topLeft,
-                          child: DropdownButton<String>(
-                            value: (_room == null) ? null : _room['path'],
-                            iconSize: 24.0,
-                            items: roomlist.map((Map<String,String> room) {
-                              print(room.toString());
-                              String val = "Untitled";
-                              if (room['name'] != null && room['roomcode'] != null) {
-                                val = room['name'] + "(" + room['roomcode'] + ")";
-                              } else if (room['name'] != null) {
-                                val = room['name'];
-                              } else if (room['roomcode'] != null) {
-                                val = room['roomcode'];
-                              }
-                              return new DropdownMenuItem<String>(
-                                value: room["path"],
-                                child: new Text(val),
-                              );
-                            }).toList(),
-                            hint: Text("Room"),
-                            onChanged: (value) {
-                              setState(() {
-                                _room = roomlist.firstWhere((e) => e['path'] == value);
-                                acmObj["roompath"] = _room["path"];
-                                acmObj["roomname"] = _room["name"];
-  //                              acm.setData({"room": _room}, merge: true);
-                              });
-                            },
-                          ),
-                        ),
-                        new Container(
-                          alignment: Alignment.topLeft,
-                          child: new TextFormField(
-                            decoration: new InputDecoration(
-                              hintText: "e.g. Ceiling, Walls, Floor (2nd layer)",
-                              labelText: "Description/Item"
+                        // Add sample number if sampled
+                        acmObj['idkey'] == 'i' ?
+                          new Row(children: <Widget>[
+                          new Expanded(child:
+                          new Column(
+                            children: <Widget> [
+                              new Container(
+                                padding: new EdgeInsets.only(top: 14.0),
+                                child: new Text(acmObj['samplenumber'] != null ? 'Sample ' + acmObj['samplenumber'] : 'Sample Number Not Assigned', style: Styles.samplenumber,)
+                              ),
+                              new Container(
+                                alignment: Alignment.center,
+                                padding: EdgeInsets.only(top: 14.0,),
+                                child:
+                                new ToolTipButton(
+                                    text: "Assign Sample Number",
+                                    tooltip: Tip.assignSample,
+                                    onClick: () {
+                                      Navigator.of(context).push(
+                                        new MaterialPageRoute(builder: (context) =>
+                                            AssignSampleNumbers(
+                                                acm: acmObj)),
+                                      );
+                                    }
+                                ),
+                              )
+                            ]
+                          ))],) : new Container(),
+
+                        // Add option to presume as if strongly presumed
+                        acmObj['idkey'] == 's' ?
+                            new Row(children: <Widget>[
+                            new Expanded(child:
+                            new Column(
+                              children: <Widget> [
+                              acmObj['samplenumber'] != null ?
+                              new Container( child: new Text('Sample as ' + acmObj['samplenumber'])) :
+                              new Container(),
+                              new Container(
+                                alignment: Alignment.center,
+                                padding: EdgeInsets.only(top: 14.0,),
+                                child:
+                                new ToolTipButton(
+                                    text: "Presume As Sample",
+                                    tooltip: Tip.presumeAs,
+                                    onClick: () {
+                                      Navigator.of(context).push(
+                                        new MaterialPageRoute(builder: (context) =>
+                                            AssignSampleNumbers(
+                                                acm: acmObj)),
+                                      );
+                                    }
+                                ),
+                              )
+                            ]
+                          ))],) : new Container(),
+                        ExpansionTile(
+                          title: new Text("General Information", style: Styles.h2,),
+                          children: <Widget>[
+                            new Container(
+                              alignment: Alignment.topLeft,
+                              child: new Text("Room Name", style: Styles.label,),
                             ),
-                            onSaved: (String value) {
-                              acmObj["description"] = value.trim();
-                            },
-                            validator: (String value) {
-                              return value.isEmpty ? 'The description cannot be empty.' : null;
-                            },
-                            focusNode: _focusNodes[0],
-                            initialValue: acmObj["description"],
-                            textInputAction: TextInputAction.next,
-                            textCapitalization: TextCapitalization.sentences,
-                            onFieldSubmitted: (v) {
-                              FocusScope.of(context).requestFocus(_focusNodes[1]);
-                            },
-                          ),
-                        ),
-                        new Container(
-                          alignment: Alignment.topLeft,
-                          child: new TextFormField(
-                            decoration: new InputDecoration(
-                              hintText: "e.g. textured plaster, paper-backed vinyl",
-                              labelText: "Material"
+                            new Container(
+                              alignment: Alignment.topLeft,
+                              child: DropdownButton<String>(
+                                value: (_room == null) ? null : _room['path'],
+                                iconSize: 24.0,
+                                items: roomlist.map((Map<String,String> room) {
+                                  String val = "Untitled";
+                                  if (room['name'] != null && room['roomcode'] != null) {
+                                    val = room['name'] + "(" + room['roomcode'] + ")";
+                                  } else if (room['name'] != null) {
+                                    val = room['name'];
+                                  } else if (room['roomcode'] != null) {
+                                    val = room['roomcode'];
+                                  }
+                                  return new DropdownMenuItem<String>(
+                                    value: room["path"],
+                                    child: new Text(val),
+                                  );
+                                }).toList(),
+                                hint: Text("Room"),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _room = roomlist.firstWhere((e) => e['path'] == value);
+                                    acmObj["roompath"] = _room["path"];
+                                    acmObj["roomname"] = _room["name"];
+                                    DataManager.get().currentRoom = _room['path'];
+                                    //                              acm.setData({"room": _room}, merge: true);
+                                  });
+                                },
+                              ),
                             ),
-                            onSaved: (String value) {
-                              acmObj["material"] = value.trim();
-                            },
-                            validator: (String value) {
-                              return value.isEmpty ? 'The material cannot be empty.' : null;
-                            },
-                            focusNode: _focusNodes[1],
-                            initialValue: acmObj["material"],
-                            textInputAction: TextInputAction.next,
-                            textCapitalization: TextCapitalization.none,
-                            autocorrect: false,
-                            onFieldSubmitted: (v) {
-                              FocusScope.of(context).requestFocus(_focusNodes[2]);
-                            },
-                          ),
+                            new Container(
+                              alignment: Alignment.topLeft,
+                              child: new TextFormField(
+                                decoration: new InputDecoration(
+                                    hintText: "e.g. Ceiling, Walls, Floor (2nd layer)",
+                                    labelText: "Description/Item"
+                                ),
+                                onSaved: (String value) {
+                                  acmObj["description"] = value.trim();
+                                },
+                                validator: (String value) {
+                                  return value.isEmpty ? 'The description cannot be empty.' : null;
+                                },
+                                focusNode: _focusNodes[0],
+                                initialValue: acmObj["description"],
+                                textInputAction: TextInputAction.next,
+                                textCapitalization: TextCapitalization.sentences,
+                                onFieldSubmitted: (v) {
+                                  FocusScope.of(context).requestFocus(_focusNodes[1]);
+                                },
+                              ),
+                            ),
+                            new Container(
+                              alignment: Alignment.topLeft,
+                              child: new TextFormField(
+                                decoration: new InputDecoration(
+                                    hintText: "e.g. textured plaster, paper-backed vinyl",
+                                    labelText: "Material"
+                                ),
+                                onSaved: (String value) {
+                                  acmObj["material"] = value.trim();
+                                },
+                                validator: (String value) {
+                                  return value.isEmpty ? 'The material cannot be empty.' : null;
+                                },
+                                focusNode: _focusNodes[1],
+                                initialValue: acmObj["material"],
+                                textInputAction: TextInputAction.next,
+                                textCapitalization: TextCapitalization.none,
+                                autocorrect: false,
+                                onFieldSubmitted: (v) {
+                                  FocusScope.of(context).requestFocus(_focusNodes[2]);
+                                },
+                              ),
+                            ),
+
+                          ],
                         ),
-                      new Container(
-                        alignment: Alignment.center,
-                        padding: EdgeInsets.only(top: 36.0, bottom: 14.0,),
-                        child: new Text("Extent", style: Styles.h2,),
-                      ),
+                    ExpansionTile(
+                      title: new Text("Extent", style: Styles.h2,),
+                      children: <Widget>[
                       new Container(
                         child: new TextFormField(
                           decoration: new InputDecoration(
@@ -609,12 +626,11 @@ class _EditACMState extends State<EditACM> {
                           ),
 
                         ]
-                      ),
-                      new Container(
-                        alignment: Alignment.center,
-                        padding: EdgeInsets.only(top: 36.0, bottom: 14.0,),
-                        child: new Text("Condition", style: Styles.h2,),
-                      ),
+                      ),]),
+
+                      ExpansionTile(
+                        title: new Text("Condition", style: Styles.h2,),
+                        children: <Widget>[
 
                       new Container(
                         child: new TextFormField(
@@ -660,12 +676,11 @@ class _EditACMState extends State<EditACM> {
 //                                  FocusScope.of(context).requestFocus(_focusNodes[3]);
                           },
                         ),
-                      ),
-                      new Container(
-                        alignment: Alignment.center,
-                        padding: EdgeInsets.only(top: 36.0, bottom: 14.0,),
-                        child: new Text("Notes", style: Styles.h2,),
-                      ),
+                      ),]),
+
+                    ExpansionTile(
+                      title: new Text("Notes", style: Styles.h2,),
+                      children: <Widget>[
                       !isSampled ? new Container(
                         child: new TextFormField(
                           decoration: new InputDecoration(
@@ -717,13 +732,10 @@ class _EditACMState extends State<EditACM> {
   //                        keyboardType: TextInputType.multiline,
   //                        maxLines: null,
   //                      ),
-                      ),
-                      new Container(
-                        alignment: Alignment.center,
-                        padding: EdgeInsets.only(top: 36.0, bottom: 14.0,),
-                        child: new Text("Risk Assessments", style: Styles.h2,),
-                      ),
-
+                      ),]),
+                ExpansionTile(
+                  title: new Text("Risk Assessments", style: Styles.h2,),
+                  children: <Widget>[
                       // Accessibility Section
                       new Container(alignment: Alignment.bottomLeft,
                           height: 25.0,
@@ -1932,7 +1944,7 @@ class _EditACMState extends State<EditACM> {
                             text: totalRiskSet ? totalRiskText : 'Incomplete',
                             radius: 0.0,
                           )
-                      ),
+                      ),]),
                       widget.acm != null ?
                       new Container(
                         alignment: Alignment.center,
@@ -2012,6 +2024,13 @@ class _EditACMState extends State<EditACM> {
 //    roomlist = [{"name": "Lounge","path": "lounge"}];
 
     if (widget.acm == null) {
+      String room = DataManager.get().currentRoom;
+      if (room == null || !roomlist.map((room) => room['path']).contains(room)) {
+        room = '';
+      } else {
+        _room = {"path": room, "name": ''};
+      }
+
       acmObj['jobnumber'] = DataManager
           .get()
           .currentJobNumber;
@@ -2022,6 +2041,7 @@ class _EditACMState extends State<EditACM> {
       acmObj['material'] = null;
       acmObj['path_local'] = null;
       acmObj['path_remote'] = null;
+      acmObj['roompath'] = room;
       acmObj['materialrisk_asbestosscore'] = 3;
       materialAsbestosScore = 3;
 

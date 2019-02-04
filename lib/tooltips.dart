@@ -32,6 +32,20 @@ class Tip {
     tip: 'The material is likely to contain asbestos but will not be sampled.',
     subtip: 'Material is visually consistent with known ACM materials. Material has the appearance of asbestos. Asbestos was commonly used in material at time of installation. Examples: cement roofing, walls, drainpipes, water tanks, etc. Paper-backed vinyl, Bituminous fuse boards. Textured plaster ceilings (pre-1990). Millboard.'
   );
+
+  // ASSIGN SAMPLE
+  static final assignSample = new ToolTip(
+    title: 'Assign Sample Number',
+    tip: '',
+    subtip: '',
+  );
+
+  static final presumeAs = new ToolTip(
+    title: 'Strongly Presume as Sampled Material',
+    tip: 'If a material is visually consistent with a sampled material you may presume they have the same asbestos result.',
+    subtip: 'This is not appropriate with non-homogenous materials (e.g. textured plaster, jointing compound, soil, etc.)',
+  );
+
   // MATERIAL RISK
 
   // ACCESSIBILITY

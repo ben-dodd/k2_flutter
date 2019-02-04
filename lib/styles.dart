@@ -23,6 +23,12 @@ class Styles {
     fontSize: 16.0,
   );
 
+  static TextStyle samplenumber = new TextStyle(
+    fontWeight: FontWeight.bold,
+    color: CompanyColors.accent,
+    fontSize: 16.0,
+  );
+
   static TextStyle loading = new TextStyle(
     fontSize: 16.0, color: Colors.black
   );
