@@ -32,7 +32,7 @@ class _CocTabState extends State<CocTab> {
               style: Styles.h1),
         ),
         new StreamBuilder(
-            stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').snapshots(),
+            stream: Firestore.instance.collection('cocs').where('jobNumber', isEqualTo: DataManager.get().currentJobNumber).snapshots(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) return
                 Container(
@@ -61,14 +61,15 @@ class _CocTabState extends State<CocTab> {
                           Container(
                               alignment: Alignment.center,
                               height: 64.0,
-                              child:
-                              Text('This job has no asbestos samples.')
+                              child: Text('This job has no asbestos samples.')
                           )
                         ]
                     )
                 );
               return ListView.builder(
                   itemCount: snapshot.data.documents.length,
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
                   itemBuilder: (context, index) {
                     print(snapshot.data.documents[index]['jobnumber']);
                     return AcmCard(
