@@ -32,6 +32,11 @@ class CompanyColors {
   static const Color score3 = Color(0xFFE33714);
   static const Color score3no = Color(0xFFFBE6E2);
 
+  // result colours
+  static const Color resultHigh = Color(0xFFE33714);
+  static const Color resultMid = Color(0xFFFFD930);
+  static const Color resultLow = Color(0xFFB2E6A1);
+
   // icons
   static Icon asbestosIcon = new Icon(
       Icons.whatshot, color: iconYellow

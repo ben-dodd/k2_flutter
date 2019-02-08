@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,11 +12,13 @@ import 'package:k2e/styles.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/tooltips.dart';
 import 'package:k2e/utils/camera.dart';
+import 'package:k2e/utils/sample_painter.dart';
 import 'package:k2e/widgets/buttons.dart';
 import 'package:k2e/widgets/custom_auto_complete.dart';
 import 'package:k2e/widgets/loading.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
+import 'package:k2e/utils/firebase_conversion_functions.dart';
 
 class EditACM extends StatefulWidget {
   EditACM({Key key, this.acm}) : super(key: key);
@@ -34,6 +35,9 @@ class _EditACMState extends State<EditACM> {
   DocumentReference sample;
   DocumentReference acm;
   Map<String,String> _room;
+  List<List<Offset>> arrowPaths = new List<List<Offset>>();
+  List<List<Offset>> shadePaths = new List<List<Offset>>();
+  List<Offset> offsetPoints; //List of points in one Tap or ery point or path is kept here
 
   Map<String,dynamic> acmObj = new Map<String,dynamic>();
 
@@ -53,6 +57,8 @@ class _EditACMState extends State<EditACM> {
   List<Map<String, String>> samplelist = new List();
   bool showMaterialRisk = true;
   bool showPriorityRisk = false;
+  bool arrowOn = false;
+  bool shadeOn = false;
 
   ScrollController _scrollController;
 
@@ -304,6 +310,12 @@ class _EditACMState extends State<EditACM> {
                 new IconButton(icon: const Icon(Icons.check), onPressed: () {
                   if (_formKey.currentState.validate()) {
                     _formKey.currentState.save();
+                    if (arrowPaths.length > 0) {
+                      // Convert List of Lists of Offsets into a format Firebase can store
+                      // Firebase can't do Lists of Lists
+                      acmObj['arrowPaths'] = convertListListOffsetToFirestore(arrowPaths);
+                    }
+
                     Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').document(acmObj['path']).setData(
                         acmObj, merge: true);
                     Navigator.pop(context);
@@ -330,34 +342,87 @@ class _EditACMState extends State<EditACM> {
                     children: <Widget>[
                       // SAMPLE PHOTO
                         new Container(
-                              alignment: Alignment.center,
-                              height: 312.0,
-                              width: 240.0,
-                              margin: EdgeInsets.only(left: 54.0, right: 54.0, bottom: 24.0),
-                              decoration: BoxDecoration(border: new Border.all(color: Colors.black)),
-                              child: GestureDetector(
-                                  onTap: () {
-                                    ImagePicker.pickImage(source: ImageSource.camera).then((image) {
-      //                                          _imageFile = image;
-                                      localPhoto = true;
-                                      _handleImageUpload(image);
-                                    });
-                                  },
-      //                                    child: (_imageFile != null)
-      //                                        ? Image.file(_imageFile)
-                                  child: localPhoto ?
-                                  new Image.file(new File(acmObj['path_local']))
-                                      : (acmObj['path_remote'] != null) ?
-                                  new CachedNetworkImage(
-                                    imageUrl: acmObj['path_remote'],
-                                    placeholder: new CircularProgressIndicator(),
-                                    errorWidget: new Icon(Icons.error),
-                                    fadeInDuration: new Duration(seconds: 1),
-                                  )
-                                      :  new Icon(
-                                    Icons.camera, color: CompanyColors.accentRippled,
-                                    size: 48.0,)
-                              ),
+                          alignment: Alignment.center,
+                          height: 312.0,
+                          width: 240.0,
+                          margin: EdgeInsets.only(left: 54.0, right: 54.0,),
+                          decoration: BoxDecoration(border: new Border.all(color: Colors.black)),
+                          child: SamplePainter(
+                            arrowOn: arrowOn,
+                            shadeOn: shadeOn,
+                            arrowPaths: arrowPaths,
+                            shadePaths: shadePaths,
+                            pathColour: CompanyColors.resultMid,
+                            photo: localPhoto ?
+                              new Image.file(new File(acmObj['path_local']))
+                                  : (acmObj['path_remote'] != null) ?
+                              new CachedNetworkImage(
+                                imageUrl: acmObj['path_remote'],
+                                placeholder: new CircularProgressIndicator(),
+                                errorWidget: new Column(children: <Widget>[Icon(Icons.error), Text('Image Not Found')]),
+                                fadeInDuration: new Duration(seconds: 1),
+                              )
+                              :  new Container(child: Text('NO PHOTO')),
+                            updatePaths: (List<Offset> points) {
+                              setState(() {
+                                offsetPoints = points;
+                                arrowPaths.add(offsetPoints);
+                              });
+                              print('Update Paths: ' + arrowPaths.toString());
+                              print('Update Paths ' + offsetPoints.toString());
+                            },
+                            updatePoints: (List<Offset> points) {
+                              setState(() {
+                                offsetPoints = points;
+                              });
+                              print('Update Points: ' + arrowPaths.toString());
+                              print('Update Points ' + offsetPoints.toString());
+                            },
+                          ),
+                        ),
+                        new Container(
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.only(bottom: 14.0,),
+                          child: new Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget> [
+                            IconButton(
+                              icon: new Icon(Icons.camera, color: CompanyColors.accentRippled, size: 32.0,),
+                              onPressed: () {_handleCamera();},
+                              padding: EdgeInsets.all(14.0),
+                              tooltip: Tip.camera,
+                            ),
+                            IconButton(
+                              icon: new Icon(Icons.image, color: CompanyColors.accentRippled, size: 32.0,),
+                              onPressed: () {_handleGallery();},
+                              padding: EdgeInsets.all(14.0),
+                              tooltip: Tip.gallery,
+                            ),
+                            IconButton(
+                              icon: new Icon(Icons.arrow_forward, color: arrowOn ? CompanyColors.accentRippled : Colors.grey, size: 32.0,),
+                              onPressed: () {acmObj['path_local'] != null ? setState((){ arrowOn = !arrowOn; shadeOn = false; }) : null;},
+                              padding: EdgeInsets.all(14.0),
+                              tooltip: Tip.arrow,
+                            ),
+                            IconButton(
+                              icon: new Icon(Icons.brush, color: shadeOn ? CompanyColors.accentRippled : Colors.grey, size: 32.0,),
+                              onPressed: () {acmObj['path_local'] != null ? setState((){ shadeOn = !shadeOn; arrowOn = false; }) : null;},
+                              padding: EdgeInsets.all(14.0),
+                              tooltip: Tip.shade,
+                            ),
+                            IconButton(
+                              icon: new Icon(Icons.format_color_reset, color: acmObj['path_local'] != null ? CompanyColors.accentRippled : Colors.grey, size: 32.0,),
+                              onPressed: () {acmObj['path_local'] != null ? setState((){
+                                arrowPaths = new List<List<Offset>>();
+                                acmObj['arrowPaths'] = new List<List<Offset>>();
+                                acmObj['shadePaths'] = new List<List<Offset>>();
+                                print('Paths: ' + acmObj['arrowPaths'].toString());
+                              }) : null;},
+                              padding: EdgeInsets.all(14.0),
+                              tooltip: Tip.reset,
+                            ),
+
+                          ])
                         ),
 
                         // SAMPLE TYPE SELECTORS
@@ -467,6 +532,7 @@ class _EditACMState extends State<EditACM> {
                           ))],) : new Container(),
                         ExpansionTile(
                           title: new Text("General Information", style: Styles.h2,),
+                          initiallyExpanded: true,
                           children: <Widget>[
                             new Container(
                               alignment: Alignment.topLeft,
@@ -1109,63 +1175,6 @@ class _EditACMState extends State<EditACM> {
 
                             ],
                             ),
-//                            new Container(
-//                              alignment: Alignment.topLeft,
-//                              child: AutoCompleteTextField<String>(
-//                                  decoration: new InputDecoration(
-//                                      hintText: "e.g. Chipped edges, exposed fibres",
-//                                      labelText: "Damage Description"
-//                                  ),
-//                                  initialValue: initialDamage,
-//                                  key: keyDamage,
-//                                  scrollController: _scrollController,
-//                                  suggestions: damage,
-//                                  textChanged: (item) {
-//                                    _updateDamageDesc(item);
-//                                  },
-//                                  itemSubmitted: (item) {
-//                                    _updateDamageDesc(item.toString());
-//                                  },
-//                                  itemBuilder: (context, item) {
-//                                    return new Padding(
-//                                        padding: EdgeInsets.all(8.0), child: new Text(item));
-//                                  },
-//                                  itemSorter: (a, b) {
-//                                    return a.compareTo(b);
-//                                  },
-//                                  itemFilter: (item, query) {
-//                                    return item.toLowerCase().contains(query.toLowerCase());
-//                                  }),
-//                            ),
-//                            new Container(
-//                              alignment: Alignment.topLeft,
-//                              child: AutoCompleteTextField<String>(
-//                                  decoration: new InputDecoration(
-//                                      hintText: "e.g. Painted on the outside face",
-//                                      labelText: "Surface Treatment"
-//                                  ),
-//                                  initialValue: initialSurface,
-//                                  key: keySurface,
-//                                  scrollController: _scrollController,
-//                                  suggestions: surface,
-//                                  textChanged: (item) {
-//                                    _updateSurfaceDesc(item);
-//                                  },
-//                                  itemSubmitted: (item) {
-//                                    _updateSurfaceDesc(item.toString());
-//                                  },
-//                                  itemBuilder: (context, item) {
-//                                    return new Padding(
-//                                        padding: EdgeInsets.all(8.0), child: new Text(item));
-//                                  },
-//                                  itemSorter: (a, b) {
-//                                    return a.compareTo(b);
-//                                  },
-//                                  itemFilter: (item, query) {
-//                                    return item.toLowerCase().contains(query.toLowerCase());
-//                                  }),
-//                            ),
-                            // Damage
                           ],
                           )
                       )
@@ -2047,6 +2056,8 @@ class _EditACMState extends State<EditACM> {
 
       // New room requires us to create a path so it doesn't need internet to get one from Firestore
       acmObj['path'] = new Uuid().v1();
+//      acmObj['arrowPaths'] = arrowPaths;
+//      acmObj['shadePaths'] = new List<List<Offset>>();
 
       setState(() {
         isLoading = false;
@@ -2059,6 +2070,11 @@ class _EditACMState extends State<EditACM> {
         if (doc.data['sample'] != 'null') {
 //          sample =  Firestore.instance.collection('samplesasbestosbulk').document(doc.data['sample']);
         }
+
+        if (acmObj['arrowPaths'] != null) arrowPaths = convertFirestoreToListListOffset(acmObj['arrowPaths']);
+          else arrowPaths = new List<List<Offset>>();
+        if (acmObj['shadePaths'] != null) shadePaths = convertFirestoreToListListOffset(acmObj['shadePaths']);
+          else shadePaths = new List<List<Offset>>();
         if (acmObj['idkey'] == 'i') {
           isSampled = true;
           stronglyPresumed = false;
@@ -2133,6 +2149,8 @@ class _EditACMState extends State<EditACM> {
     }
     setState(() {
       acmObj["path_local"] = image.path;
+      acmObj["path_remote"] = '';
+      acmObj["storage_ref"] = '';
     });
 
     ImageSync(
@@ -2159,6 +2177,26 @@ class _EditACMState extends State<EditACM> {
             .document(path)
             .setData(
             {"path_remote": refs['downloadURL'], 'storage_ref': refs['storageRef'], }, merge: true);
+      }
+    });
+  }
+
+  void _handleGallery() async {
+    var result = await ImagePicker.pickImage(source: ImageSource.gallery);
+    setState(() {
+      if (result != null) {
+        localPhoto = true;
+        _handleImageUpload(result);
+      }
+    });
+  }
+
+  void _handleCamera() async {
+    var result = await ImagePicker.pickImage(source: ImageSource.camera);
+    setState(() {
+      if (result != null) {
+        localPhoto = true;
+        _handleImageUpload(result);
       }
     });
   }

@@ -121,7 +121,7 @@ class _LogTimeTabState extends State<LogTimeTab> {
           time_start: new DateTime.now(),
           job_ids: new List<String>.filled(1, DataManager.get().currentJobNumber),
           wfm_user_ids: new List<String>.filled(1,'403502'),
-          note: 'Driving on the road!',
+          note: '',
         );
       }
     } else {
@@ -131,7 +131,7 @@ class _LogTimeTabState extends State<LogTimeTab> {
           time_start: new DateTime.now(),
           job_ids: new List<String>.filled(1, DataManager.get().currentJobNumber),
           wfm_user_ids: new List<String>.filled(1,'403502'),
-          note: 'Driving on the road!',
+          note: '',
       );
     }
   }

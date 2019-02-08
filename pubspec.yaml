@@ -14,6 +14,7 @@ dependencies:
   scoped_model: ^0.3.0
   camera: ^0.2.3
   geolocator: '^2.1.1'
+  vector_math: ^2.0.8
   video_player: ^0.6.5
   image_picker: ^0.4.10
   cached_network_image: ^0.4.2
