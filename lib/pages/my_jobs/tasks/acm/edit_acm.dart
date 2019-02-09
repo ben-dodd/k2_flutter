@@ -14,11 +14,12 @@ import 'package:k2e/tooltips.dart';
 import 'package:k2e/utils/camera.dart';
 import 'package:k2e/utils/sample_painter.dart';
 import 'package:k2e/widgets/buttons.dart';
-import 'package:k2e/widgets/custom_auto_complete.dart';
+import 'package:k2e/widgets/custom_typeahead.dart';
 import 'package:k2e/widgets/loading.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
 import 'package:k2e/utils/firebase_conversion_functions.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class EditACM extends StatefulWidget {
   EditACM({Key key, this.acm}) : super(key: key);
@@ -34,6 +35,7 @@ class _EditACMState extends State<EditACM> {
   // DOCUMENT IDS
   DocumentReference sample;
   DocumentReference acm;
+  final Map<String,dynamic> constants = DataManager.get().constants;
   Map<String,String> _room;
   List<List<Offset>> arrowPaths = new List<List<Offset>>();
   List<List<Offset>> shadePaths = new List<List<Offset>>();
@@ -101,14 +103,18 @@ class _EditACMState extends State<EditACM> {
   int priorityRiskLevel;
 
   // MATERIAL AUTOCOMPLETE
-  List<String> materials = AutoComplete.materials.split(';');
-  GlobalKey<AutoCompleteTextFieldState<String>> keyMaterial = new GlobalKey();
-  List<String> items = AutoComplete.items.split(';');
-  GlobalKey<AutoCompleteTextFieldState<String>> keyItems = new GlobalKey();
-  List<String> damage = ['A few scratches and surface marks', 'No visible damage','High delamination of material','Chipped edges',];
-  GlobalKey<AutoCompleteTextFieldState<String>> keyDamage = new GlobalKey();
-  List<String> surface = ['Painted','Pitch-bonded material','Resin-bonded material','Unpainted','Unsealed','Laminated'];
-  GlobalKey<AutoCompleteTextFieldState<String>> keySurface = new GlobalKey();
+  List<String> materials;
+  final TextEditingController _materialController = TextEditingController();
+  List<String> items;
+  final TextEditingController _itemController = TextEditingController();
+  List<String> damage;
+  final TextEditingController _damageController = TextEditingController();
+  List<String> surface;
+  final TextEditingController _surfaceController = TextEditingController();
+  List<String> extent;
+  final TextEditingController _extentController = TextEditingController();
+  List<String> whynotsampled;
+  final TextEditingController _whynotController = TextEditingController();
 
 //  String initialDescription;
 //  String initialMaterial;
@@ -116,13 +122,7 @@ class _EditACMState extends State<EditACM> {
 //  String initialSurface;
 
   @override
-  void initState() {
-    // init text controllers
-//    controllerSampleNumber.addListener(_updateSampleNumber);
-//    controllerNotes.addListener(_updateNotes);
-    _scrollController = ScrollController();
-
-    // set paths
+  void initState() {    // set paths
     if (widget.acm != null) {
       acm = Firestore.instance.document(DataManager
           .get()
@@ -132,8 +132,15 @@ class _EditACMState extends State<EditACM> {
       _title = "Add New ACM";
     }
       _loadACM();
+    print(constants['asbestosmaterials'].toString());
+    materials = constants['asbestosmaterials'].map((item) => item['label']).toList();
+    items = constants['buildingitems'].map((item) => item['label']).toList();
+    damage = constants['damagesuggestions'].map((item) => item['label']).toList();
+    surface = constants['surfacesuggestions'].map((item) => item['label']).toList();
+    extent = constants['extentsuggestions'].map((item) => item['label']).toList();
+    whynotsampled = constants['whynotsampledsuggestions'].map((item) => item['label']).toList();
 
-      super.initState();
+    super.initState();
   }
 
   Widget build(BuildContext context) {
@@ -368,15 +375,11 @@ class _EditACMState extends State<EditACM> {
                                 offsetPoints = points;
                                 arrowPaths.add(offsetPoints);
                               });
-                              print('Update Paths: ' + arrowPaths.toString());
-                              print('Update Paths ' + offsetPoints.toString());
                             },
                             updatePoints: (List<Offset> points) {
                               setState(() {
                                 offsetPoints = points;
                               });
-                              print('Update Points: ' + arrowPaths.toString());
-                              print('Update Points ' + offsetPoints.toString());
                             },
                           ),
                         ),
@@ -406,18 +409,14 @@ class _EditACMState extends State<EditACM> {
                             ),
                             IconButton(
                               icon: new Icon(Icons.brush, color: shadeOn ? CompanyColors.accentRippled : Colors.grey, size: 32.0,),
-                              onPressed: () {acmObj['path_local'] != null ? setState((){ shadeOn = !shadeOn; arrowOn = false; }) : null;},
+//                              onPressed: () {acmObj['path_local'] != null ? setState((){ shadeOn = !shadeOn; arrowOn = false; }) : null;},
+                              onPressed: () {null;},
                               padding: EdgeInsets.all(14.0),
                               tooltip: Tip.shade,
                             ),
                             IconButton(
                               icon: new Icon(Icons.format_color_reset, color: acmObj['path_local'] != null ? CompanyColors.accentRippled : Colors.grey, size: 32.0,),
-                              onPressed: () {acmObj['path_local'] != null ? setState((){
-                                arrowPaths = new List<List<Offset>>();
-                                acmObj['arrowPaths'] = new List<List<Offset>>();
-                                acmObj['shadePaths'] = new List<List<Offset>>();
-                                print('Paths: ' + acmObj['arrowPaths'].toString());
-                              }) : null;},
+                              onPressed: () {acmObj['path_local'] != null ? _clearArrows() : null;},
                               padding: EdgeInsets.all(14.0),
                               tooltip: Tip.reset,
                             ),
@@ -426,8 +425,14 @@ class _EditACMState extends State<EditACM> {
                         ),
 
                         // SAMPLE TYPE SELECTORS
+                        new Container(
+//                          width: 240.0,
+                          padding: EdgeInsets.only(bottom: 14.0),
+                          margin: EdgeInsets.only(left: 54.0, right: 54.0),
+//                          constraints: BoxConstraints(maxWidth: 240.0),
+                          child:
                         new Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
                             new Expanded(child:
                             new ScoreButton(
@@ -473,9 +478,14 @@ class _EditACMState extends State<EditACM> {
                             ),),
                           ],
                         ),
+                        ),
 
                         // Add sample number if sampled
+
                         acmObj['idkey'] == 'i' ?
+                        new Container(
+                            margin: EdgeInsets.only(left: 54.0, right: 54.0),
+                            child:
                           new Row(children: <Widget>[
                           new Expanded(child:
                           new Column(
@@ -501,10 +511,13 @@ class _EditACMState extends State<EditACM> {
                                 ),
                               )
                             ]
-                          ))],) : new Container(),
+                          ))],)) : new Container(),
 
                         // Add option to presume as if strongly presumed
                         acmObj['idkey'] == 's' ?
+                        new Container(
+                            margin: EdgeInsets.only(left: 54.0, right: 54.0),
+                            child:
                             new Row(children: <Widget>[
                             new Expanded(child:
                             new Column(
@@ -529,7 +542,8 @@ class _EditACMState extends State<EditACM> {
                                 ),
                               )
                             ]
-                          ))],) : new Container(),
+                          ))],)) : new Container(),
+                        new Container(padding: EdgeInsets.only(top: 14.0), child: new Container()),
                         ExpansionTile(
                           title: new Text("General Information", style: Styles.h2,),
                           initiallyExpanded: true,
@@ -569,79 +583,56 @@ class _EditACMState extends State<EditACM> {
                                 },
                               ),
                             ),
-                            new Container(
-                              alignment: Alignment.topLeft,
-                              child: new TextFormField(
-                                decoration: new InputDecoration(
-                                    hintText: "e.g. Ceiling, Walls, Floor (2nd layer)",
-                                    labelText: "Description/Item"
-                                ),
-                                onSaved: (String value) {
-                                  acmObj["description"] = value.trim();
-                                },
-                                validator: (String value) {
-                                  return value.isEmpty ? 'The description cannot be empty.' : null;
-                                },
-                                focusNode: _focusNodes[0],
-                                initialValue: acmObj["description"],
-                                textInputAction: TextInputAction.next,
-                                textCapitalization: TextCapitalization.sentences,
-                                onFieldSubmitted: (v) {
+                            CustomTypeAhead(
+                              controller: _itemController,
+                              capitalization: TextCapitalization.sentences,
+                              textInputAction: TextInputAction.next,
+                              label: 'Description/Item',
+                              suggestions: items,
+                              onSaved: (value) => acmObj['description'] = value,
+                              validator: (value) {
+                                if (value.isEmpty) {
+                                  return 'The description cannot be empty';
+                                }
+                              },
+                              onSubmitted: (v) {
                                   FocusScope.of(context).requestFocus(_focusNodes[1]);
                                 },
-                              ),
                             ),
-                            new Container(
-                              alignment: Alignment.topLeft,
-                              child: new TextFormField(
-                                decoration: new InputDecoration(
-                                    hintText: "e.g. textured plaster, paper-backed vinyl",
-                                    labelText: "Material"
-                                ),
-                                onSaved: (String value) {
-                                  acmObj["material"] = value.trim();
-                                },
-                                validator: (String value) {
-                                  return value.isEmpty ? 'The material cannot be empty.' : null;
-                                },
-                                focusNode: _focusNodes[1],
-                                initialValue: acmObj["material"],
-                                textInputAction: TextInputAction.next,
-                                textCapitalization: TextCapitalization.none,
-                                autocorrect: false,
-                                onFieldSubmitted: (v) {
-                                  FocusScope.of(context).requestFocus(_focusNodes[2]);
-                                },
-                              ),
+                            CustomTypeAhead(
+                              controller: _materialController,
+                              capitalization: TextCapitalization.none,
+                              textInputAction: TextInputAction.next,
+                              label: 'Material',
+                              suggestions: materials,
+                              onSaved: (value) => acmObj['material'] = value,
+                              validator: (value) {
+                                if (value.isEmpty) {
+                                  return 'The material cannot be empty';
+                                }
+                              },
+                              onSubmitted: (v) {
+                                FocusScope.of(context).requestFocus(_focusNodes[2]);
+                              },
                             ),
-
                           ],
                         ),
                     ExpansionTile(
+                      initiallyExpanded: true,
                       title: new Text("Extent", style: Styles.h2,),
                       children: <Widget>[
-                      new Container(
-                        child: new TextFormField(
-                          decoration: new InputDecoration(
-                              hintText: "e.g. All plasterboard joins",
-                              labelText: "Extent Description"
-                          ),
-                          onSaved: (String value) {
-                            acmObj["extentdesc"] = value.trim();
-                          },
-                          validator: (String value) {
-//                            return value.isEmpty ? 'The extent cannot be empty.' : null;
-                          },
-                          focusNode: _focusNodes[2],
-                          initialValue: acmObj["extentdesc"],
+                        CustomTypeAhead(
+                          controller: _extentController,
+                          capitalization: TextCapitalization.sentences,
                           textInputAction: TextInputAction.next,
-                          textCapitalization: TextCapitalization.sentences,
-                          autocorrect: true,
-                          onFieldSubmitted: (v) {
+                          label: 'Extent Description',
+                          suggestions: extent,
+                          onSaved: (value) => acmObj['extentdesc'] = value,
+                          validator: (value) {},
+                          onSubmitted: (v) {
                             FocusScope.of(context).requestFocus(_focusNodes[3]);
                           },
                         ),
-                      ),
                       new Row(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: <Widget>[
@@ -675,7 +666,7 @@ class _EditACMState extends State<EditACM> {
                             child: DropdownButton<String>(
                             value: (acmObj["extentunits"] == null) ? "m\u00B2" : acmObj["extentunits"],
                             iconSize: 24.0,
-                            items: ["m\u00B2","m","lm","items","m","m\u00B3"].map((unit) {
+                            items: ["m\u00B2","m","lm","m\u00B3","items",].map((unit) {
                               return new DropdownMenuItem<String>(
                                 value: unit,
                                 child: new Text(unit),
@@ -695,80 +686,53 @@ class _EditACMState extends State<EditACM> {
                       ),]),
 
                       ExpansionTile(
+                        initiallyExpanded: true,
                         title: new Text("Condition", style: Styles.h2,),
                         children: <Widget>[
-
-                      new Container(
-                        child: new TextFormField(
-                          decoration: new InputDecoration(
-                              hintText: "e.g. Chipped edges, exposed fibres",
-                              labelText: "Damage Description"
+                          CustomTypeAhead(
+                            controller: _damageController,
+                            capitalization: TextCapitalization.sentences,
+                            textInputAction: TextInputAction.next,
+                            label: 'Damage Description',
+                            suggestions: damage,
+                            onSaved: (value) => acmObj['materialrisk_damagedesc'] = value.trim(),
+                            validator: (value) {},
+                            onSubmitted: (v) {
+                              FocusScope.of(context).requestFocus(_focusNodes[7]);
+                            },
                           ),
-                          onSaved: (String value) {
-                            acmObj["materialrisk_damagedesc"] = value.trim();
-                          },
-                          validator: (String value) {
-//                            return value.isEmpty ? 'The extent cannot be empty.' : null;
-                          },
-                          focusNode: _focusNodes[6],
-                          initialValue: acmObj["materialrisk_damagedesc"],
-                          textInputAction: TextInputAction.next,
-                          textCapitalization: TextCapitalization.sentences,
-                          autocorrect: true,
-                          onFieldSubmitted: (v) {
-                            FocusScope.of(context).requestFocus(_focusNodes[7]);
-                          },
-                        ),
+                          CustomTypeAhead(
+                            controller: _surfaceController,
+                            capitalization: TextCapitalization.sentences,
+                            textInputAction: TextInputAction.done,
+                            label: 'Surface Treatment',
+                            suggestions: surface,
+                            onSaved: (value) => acmObj['materialrisk_surfacedesc'] = value,
+                            validator: (value) { },
+                            onSubmitted: (v) {
+                              if (isSampled)
+                              FocusScope.of(context).requestFocus(_focusNodes[5]);
+                              else FocusScope.of(context).requestFocus(_focusNodes[4]);
+                            },
+                          ),
+                        ]
                       ),
 
-                      new Container(
-                        child: new TextFormField(
-                          decoration: new InputDecoration(
-                              hintText: "e.g. Painted on the outside face",
-                              labelText: "Surface Treatment"
-                          ),
-                          onSaved: (String value) {
-                            acmObj["materialrisk_surfacedesc"] = value.trim();
-                          },
-                          validator: (String value) {
-//                            return value.isEmpty ? 'The extent cannot be empty.' : null;
-                          },
-                          focusNode: _focusNodes[7],
-                          initialValue: acmObj["materialrisk_surfacedesc"],
-                          textInputAction: TextInputAction.done,
-                          textCapitalization: TextCapitalization.sentences,
-                          autocorrect: true,
-                          onFieldSubmitted: (v) {
-//                                  FocusScope.of(context).requestFocus(_focusNodes[3]);
-                          },
-                        ),
-                      ),]),
-
                     ExpansionTile(
+                      initiallyExpanded: true,
                       title: new Text("Notes", style: Styles.h2,),
                       children: <Widget>[
-                      !isSampled ? new Container(
-                        child: new TextFormField(
-                          decoration: new InputDecoration(
-                              hintText: "e.g. The power was not confirmed to be in a zero-energy state",
-                              labelText: "Reason for Not Sampling"
-                          ),
-                          onSaved: (String value) {
-                            acmObj["reasonfornotsampling"] = value.trim();
-                          },
-                          validator: (String value) {
-//                            return value.isEmpty ? 'The extent cannot be empty.' : null;
-                          },
-                          focusNode: _focusNodes[4],
-                          initialValue: acmObj["reasonfornotsampling"],
+                      !isSampled ?
+                        CustomTypeAhead(
+                        controller: _whynotController,
+                          capitalization: TextCapitalization.sentences,
                           textInputAction: TextInputAction.next,
-                          textCapitalization: TextCapitalization.sentences,
-                          autocorrect: true,
-                          onFieldSubmitted: (v) {
-                            FocusScope.of(context).requestFocus(_focusNodes[5]);
-                          },
-                        ),
-                      ) : new Container(),
+                          label: 'Reason for Not Sampling',
+                          suggestions: whynotsampled,
+                          onSaved: (value) => acmObj['reasonfornotsampling'] = value,
+                          validator: (value) { },
+                          onSubmitted: (v) { },
+                        ) : new Container(),
                       new Container(
                         alignment: Alignment.topLeft,
                         child: new TextFormField(
@@ -780,13 +744,12 @@ class _EditACMState extends State<EditACM> {
                           },
                           focusNode: _focusNodes[5],
                           initialValue: acmObj["notes"],
-                          textInputAction: TextInputAction.next,
+                          textInputAction: TextInputAction.done,
                           textCapitalization: TextCapitalization.sentences,
                           keyboardType: TextInputType.multiline,
                           autocorrect: true,
                           maxLines: null,
                           onFieldSubmitted: (v) {
-                            FocusScope.of(context).requestFocus(_focusNodes[6]);
                           },
                         )
   //                      child: TextField(
@@ -800,6 +763,7 @@ class _EditACMState extends State<EditACM> {
   //                      ),
                       ),]),
                 ExpansionTile(
+                  initiallyExpanded: true,
                   title: new Text("Risk Assessments", style: Styles.h2,),
                   children: <Widget>[
                       // Accessibility Section
@@ -2086,41 +2050,44 @@ class _EditACMState extends State<EditACM> {
             stronglyPresumed = false;
           }
         }
-        _room = {"path": doc.data['roompath'], "name": doc.data['roomname']};
-        print('Loading acm');
-//        initialDescription = doc.data['description'];
-//        materialText = doc.data['material'];
-//        initialMaterial = doc.data['material'];
-        controllerNotes.text = doc.data['notes'];
+        _room = {"path": acmObj['roompath'], "name": acmObj['roomname']};
 
-        accessibilityScore = doc.data['accessibility'];
+        // Load autosuggests
+        this._itemController.text = acmObj['description'];
+        this._materialController.text = acmObj['material'];
+        this._damageController.text = acmObj['materialrisk_damagedesc'];
+        this._surfaceController.text = acmObj['materialrisk_surfacedesc'];
+        this._extentController.text = acmObj['extentdesc'];
+        this._whynotController.text = acmObj['whynotsampled'];
+
+        controllerNotes.text = acmObj['notes'];
+
+        accessibilityScore = acmObj['accessibility'];
 
         // Material Risk assessment
-        materialProductScore = doc.data['materialrisk_productscore'];
-        materialDamageScore = doc.data['materialrisk_damagescore'];
-        materialSurfaceScore = doc.data['materialrisk_surfacescore'];
-        materialAsbestosScore = doc.data['materialrisk_asbestosscore'];
-//        initialDamage = doc.data['materialrisk_damagedesc'];
-//        initialSurface = doc.data['materialrisk_surfacedesc'];
+        materialProductScore = acmObj['materialrisk_productscore'];
+        materialDamageScore = acmObj['materialrisk_damagescore'];
+        materialSurfaceScore = acmObj['materialrisk_surfacescore'];
+        materialAsbestosScore = acmObj['materialrisk_asbestosscore'];
 
         // Priority Risk Assessment
-        priorityActivityMain = doc.data['priority_activity_main'];
-        priorityActivitySecond = doc.data['priority_activity_second'];
-        priorityDisturbanceLocation = doc.data['priority_disturbance_location'];
-        priorityDisturbanceAccessibility = doc.data['priority_disturbance_accessibility'];
-        priorityDisturbanceExtent = doc.data['priority_disturbance_extent'];
-        priorityExposureOccupants = doc.data['priority_exposure_occupants'];
-        priorityExposureUseFreq = doc.data['priority_exposure_usefreq'];
-        priorityExposureAvgTime = doc.data['priority_exposure_avgtime'];
-        priorityMaintType = doc.data['priority_maint_type'];
-        priorityMaintFreq = doc.data['priority_maint_freq'];
+        priorityActivityMain = acmObj['priority_activity_main'];
+        priorityActivitySecond = acmObj['priority_activity_second'];
+        priorityDisturbanceLocation = acmObj['priority_disturbance_location'];
+        priorityDisturbanceAccessibility = acmObj['priority_disturbance_accessibility'];
+        priorityDisturbanceExtent = acmObj['priority_disturbance_extent'];
+        priorityExposureOccupants = acmObj['priority_exposure_occupants'];
+        priorityExposureUseFreq = acmObj['priority_exposure_usefreq'];
+        priorityExposureAvgTime = acmObj['priority_exposure_avgtime'];
+        priorityMaintType = acmObj['priority_maint_type'];
+        priorityMaintFreq = acmObj['priority_maint_freq'];
 
         // image
-        if (doc.data['path_remote'] == null && doc.data['path_local'] != null){
+        if (acmObj['path_remote'] == null && acmObj['path_local'] != null){
           // only local image available (e.g. when taking photos with no internet)
-          _handleImageUpload(File(doc.data['path_local']));
+          _handleImageUpload(File(acmObj['path_local']));
           localPhoto = true;
-        } else if (doc.data['path_remote'] != null) {
+        } else if (acmObj['path_remote'] != null) {
           localPhoto = false;
         }
         setState(() {
@@ -2135,6 +2102,7 @@ class _EditACMState extends State<EditACM> {
     String item_name;
     String storageRef = acmObj['storage_ref'];
     String path = widget.acm;
+    print(image.path.toString());
     if (_room == null) {
       room_name = 'room';
     } else {
@@ -2152,6 +2120,8 @@ class _EditACMState extends State<EditACM> {
       acmObj["path_remote"] = '';
       acmObj["storage_ref"] = '';
     });
+
+    print("acm" + room_name + "-" + item_name);
 
     ImageSync(
         image,
@@ -2182,22 +2152,26 @@ class _EditACMState extends State<EditACM> {
   }
 
   void _handleGallery() async {
-    var result = await ImagePicker.pickImage(source: ImageSource.gallery);
-    setState(() {
-      if (result != null) {
-        localPhoto = true;
-        _handleImageUpload(result);
-      }
+    ImagePicker.pickImage(source: ImageSource.gallery).then((image) {
+      _clearArrows();
+      localPhoto = true;
+      _handleImageUpload(image);
     });
   }
 
-  void _handleCamera() async {
-    var result = await ImagePicker.pickImage(source: ImageSource.camera);
-    setState(() {
-      if (result != null) {
-        localPhoto = true;
-        _handleImageUpload(result);
-      }
+  void _handleCamera() {
+    ImagePicker.pickImage(source: ImageSource.camera).then((image) {
+      _clearArrows();
+      localPhoto = true;
+      _handleImageUpload(image);
+    });
+  }
+
+  void _clearArrows() {
+    setState((){
+      arrowPaths = new List<List<Offset>>();
+      acmObj['arrowPaths'] = new List<List<Offset>>();
+      acmObj['shadePaths'] = new List<List<Offset>>();
     });
   }
 }

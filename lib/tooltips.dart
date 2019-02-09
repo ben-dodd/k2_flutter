@@ -404,7 +404,7 @@ class Tip {
   static final camera = 'Take photo with camera';
   static final gallery = 'Select photo from gallery';
   static final arrow = 'Draw arrow on photo';
-  static final shade = 'Shade area on photo';
+  static final shade = 'Shade area on photo (in development)';
   static final reset = 'Remove arrows and shading';
 
 }

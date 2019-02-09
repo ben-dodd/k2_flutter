@@ -8,6 +8,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:k2e/utils/logs.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
+import 'package:uuid/uuid.dart';
 
 
 Future<List<CameraDescription>> getCameras() async {
@@ -41,7 +42,9 @@ Future <File> getPicture() async {
     );
 
 //    var uid = Random.secure().nextInt(999999);
-    var ref = "$folder/$fileName.jpg";
+    print(fileName.toString());
+    var uid = new Uuid().v1().toString();
+    var ref = "$folder/$fileName-$uid.jpg";
 
     StorageUploadTask putFile =
       FirebaseStorage.instance.ref().child(ref).putFile(

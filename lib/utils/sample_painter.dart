@@ -74,30 +74,32 @@ class _SamplePainterState extends State<SamplePainter> {
   // User tap one point
   void _tapUp(TapUpDetails details) {
     print('tapUp');
-    setState(() {
-      var object = this.contexto.findRenderObject();
-      var translation = object?.getTransformTo(null)?.getTranslation();
-      // translation.y have the offset from the top of the screen to the "canvas".
+    if (widget.arrowOn) {
+      setState(() {
+        var object = this.contexto.findRenderObject();
+        var translation = object?.getTransformTo(null)?.getTranslation();
+        // translation.y have the offset from the top of the screen to the "canvas".
 
-      if (arrowInProgress) {
-        points[1] = new Offset(details.globalPosition.dx - translation.x,
-            details.globalPosition.dy - translation.y);
-        arrowInProgress = false;
-      } else {
-        points = [
-          new Offset(details.globalPosition.dx - translation.x,
-              details.globalPosition.dy
-                  - translation.y
-          ),
-          new Offset(details.globalPosition.dx - translation.x,
-              details.globalPosition.dy
-                  - translation.y
-          )
+        if (arrowInProgress) {
+          points[1] = new Offset(details.globalPosition.dx - translation.x,
+              details.globalPosition.dy - translation.y);
+          arrowInProgress = false;
+        } else {
+          points = [
+            new Offset(details.globalPosition.dx - translation.x,
+                details.globalPosition.dy
+                    - translation.y
+            ),
+            new Offset(details.globalPosition.dx - translation.x,
+                details.globalPosition.dy
+                    - translation.y
+            )
           ];
           arrowInProgress = true;
-      }
-      widget.updatePoints(points);
-    });
+        }
+        widget.updatePoints(points);
+      });
+    }
   }
 
   // Not used
@@ -108,37 +110,42 @@ class _SamplePainterState extends State<SamplePainter> {
   // User touch and drag over the screen
   void _panStart(DragStartDetails details) {
     print('panStart');
-    setState(() {
-      var object = this.contexto.findRenderObject();
-      var translation = object?.getTransformTo(null)?.getTranslation();
-      points = [
-        new Offset(details.globalPosition.dx - translation.x,
-            details.globalPosition.dy
-                - translation.y
-        ),
-        new Offset(details.globalPosition.dx - translation.x,
-            details.globalPosition.dy
-                - translation.y
-        )
-      ];
-      widget.updatePaths(points);
-      // Add here to refresh the screen. If paths.add is only in panEnd
-      // only update the screen when finger is up
-    });
+    if (widget.arrowOn) {
+      setState(() {
+        var object = this.contexto.findRenderObject();
+        var translation = object?.getTransformTo(null)?.getTranslation();
+        points = [
+          new Offset(details.globalPosition.dx - translation.x,
+              details.globalPosition.dy
+                  - translation.y
+          ),
+          new Offset(details.globalPosition.dx - translation.x,
+              details.globalPosition.dy
+                  - translation.y
+          )
+        ];
+        widget.updatePaths(points);
+        // Add here to refresh the screen. If paths.add is only in panEnd
+        // only update the screen when finger is up
+      });
+    }
   }
 
   // User drag over screen
   void _panUpdate(DragUpdateDetails details) {
     // print('panUpdate'); //Lot of prints :-/
-    setState(() {
-      var object = this.contexto.findRenderObject();
-      var translation = object?.getTransformTo(null)?.getTranslation();
-      points[1] = (new Offset(details.globalPosition.dx - translation.x,
-          details.globalPosition.dy
-              - translation.y
-      ));
-      widget.updatePoints(points);
-    });
+
+    if (widget.arrowOn) {
+      setState(() {
+        var object = this.contexto.findRenderObject();
+        var translation = object?.getTransformTo(null)?.getTranslation();
+        points[1] = (new Offset(details.globalPosition.dx - translation.x,
+            details.globalPosition.dy
+                - translation.y
+        ));
+        widget.updatePoints(points);
+      });
+    }
   }
 
   // Not use because in panStart and tapUp initialize a new path of points
@@ -170,7 +177,8 @@ class _SamplePainterState extends State<SamplePainter> {
       child: Container(
         height: _h,
         width: _w,
-        child: new Container(alignment: Alignment.center, child: Stack(children: <Widget> [
+        child: new Container(alignment: Alignment.center, child: Stack(
+        children: <Widget> [
           widget.photo,
           new CustomPaint(
             foregroundPainter: new MyPainter(
@@ -237,12 +245,19 @@ class MyPainter extends CustomPainter {
               ..strokeWidth = this.width,
           );
           path.moveTo(dest.dx, dest.dy + 10.0);
-          double angle = degrees(atan2(origin.dy - dest.dy, dest.dx - origin.dx));
+          double angle = atan2(origin.dy - dest.dy, origin.dx - dest.dx);
+          Offset p1 = new Offset(dest.dx - 10.0, dest.dy);
+          Offset p2 = new Offset(dest.dx + 20.0, dest.dy + 10.0);
+          Offset p3 = new Offset(dest.dx + 20.0, dest.dy - 10.0);
 //          Vector3 axis = new Vector3(origin.dx, origin.dy, 0.0);
 //          Quaternion q = new Quaternion.axisAngle(axis, angle);
-          if (angle < 0) angle = angle + 360.0;
+//          if (angle < 0) angle = angle + 360.0;
           print (angle.toString());
-          path.addPolygon([Offset(dest.dx, dest.dy + 10.0),Offset(dest.dx + 10.0, dest.dy - 20.0),Offset(dest.dx - 10.0, dest.dy - 20.0)], true);
+          path.addPolygon(
+              [rotate_point(dest, p1, angle),
+              rotate_point(dest, p2, angle),
+              rotate_point(dest, p3, angle)],
+              true);
           canvas.drawPath(
             path,
             Paint()
@@ -287,4 +302,9 @@ class MyPainter extends CustomPainter {
   bool shouldRepaint(CustomPainter oldDelegate) {
     return true;
   }
+}
+
+Offset rotate_point(Offset o, Offset p, double angle){
+  return Offset(cos(angle) * (p.dx - o.dx) - sin(angle) * (p.dy - o.dy) + o.dx,
+      sin(angle) * (p.dx - o.dx) + cos(angle) * (p.dy - o.dy) + o.dy);
 }
