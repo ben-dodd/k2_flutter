@@ -5,11 +5,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:k2e/autocomplete.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
-import 'package:k2e/widgets/custom_auto_complete.dart';
 import 'package:k2e/widgets/loading.dart';
 
 class EditSampleAsbestosBulk extends StatefulWidget {
@@ -45,11 +43,6 @@ class _EditSampleAsbestosBulkState extends State<EditSampleAsbestosBulk> {
 
   // IMAGES
   bool localPhoto = false;
-
-
-  // MATERIAL AUTOCOMPLETE
-  List<String> materials = AutoComplete.materials.split(';');
-  GlobalKey<AutoCompleteTextFieldState<String>> key = new GlobalKey();
 
   @override
   void initState() {
@@ -88,8 +81,6 @@ class _EditSampleAsbestosBulkState extends State<EditSampleAsbestosBulk> {
 
 
   Widget build(BuildContext context) {
-    materials.sort();
-
     return new Scaffold(
 //        resizeToAvoidBottomPadding: false,
         appBar:

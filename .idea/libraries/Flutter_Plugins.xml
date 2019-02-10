@@ -1,21 +1,18 @@
 <component name="libraryTable">
   <library name="Flutter Plugins" type="FlutterPluginsLibraryType">
     <CLASSES>
-      <root url="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/shared_preferences-0.4.3" />
-      <root url="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/image_picker-0.4.12+1" />
-      <root url="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/path_provider-0.4.1" />
-      <root url="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/cloud_firestore-0.8.2+3" />
-      <root url="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core-0.2.5+1" />
-      <root url="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/google_sign_in-3.2.4" />
-      <root url="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_storage-1.0.2" />
-      <root url="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/camera-0.2.9+1" />
-      <root url="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/sqflite-0.11.2+4" />
-      <root url="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_auth-0.5.20" />
-      <root url="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/video_player-0.6.5" />
-      <root url="file://C:/src/flutter/.pub-cache/git/flutter_native_image-691a48cb495aab3b7c4c3caf41f3431ed26abc9c" />
-      <root url="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/permission_handler-2.1.2" />
-      <root url="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/geolocator-2.1.1" />
-      <root url="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/google_api_availability-1.0.4" />
+      <root url="file:///Applications/flutter/.pub-cache/hosted/pub.dartlang.org/image_picker-0.4.12+1" />
+      <root url="file:///Applications/flutter/.pub-cache/hosted/pub.dartlang.org/google_sign_in-3.2.4" />
+      <root url="file:///Applications/flutter/.pub-cache/hosted/pub.dartlang.org/video_player-0.6.5" />
+      <root url="file:///Applications/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_storage-1.0.2" />
+      <root url="file:///Applications/flutter/.pub-cache/hosted/pub.dartlang.org/sqflite-0.11.2+4" />
+      <root url="file:///Applications/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core-0.2.5+1" />
+      <root url="file:///Applications/flutter/.pub-cache/hosted/pub.dartlang.org/camera-0.2.9+1" />
+      <root url="file:///Applications/flutter/.pub-cache/git/flutter_native_image-691a48cb495aab3b7c4c3caf41f3431ed26abc9c" />
+      <root url="file:///Applications/flutter/.pub-cache/hosted/pub.dartlang.org/cloud_firestore-0.8.2+3" />
+      <root url="file:///Applications/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_auth-0.5.20" />
+      <root url="file:///Applications/flutter/.pub-cache/hosted/pub.dartlang.org/path_provider-0.4.1" />
+      <root url="file:///Applications/flutter/.pub-cache/hosted/pub.dartlang.org/shared_preferences-0.4.3" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:k2e/autocomplete.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_jobs/tasks/coc/assign_sample_numbers.dart';
 import 'package:k2e/styles.dart';
@@ -19,7 +18,6 @@ import 'package:k2e/widgets/loading.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
 import 'package:k2e/utils/firebase_conversion_functions.dart';
-import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class EditACM extends StatefulWidget {
   EditACM({Key key, this.acm}) : super(key: key);
@@ -35,7 +33,7 @@ class _EditACMState extends State<EditACM> {
   // DOCUMENT IDS
   DocumentReference sample;
   DocumentReference acm;
-  final Map<String,dynamic> constants = DataManager.get().constants;
+  final Map constants = DataManager.get().constants;
   Map<String,String> _room;
   List<List<Offset>> arrowPaths = new List<List<Offset>>();
   List<List<Offset>> shadePaths = new List<List<Offset>>();
@@ -103,17 +101,17 @@ class _EditACMState extends State<EditACM> {
   int priorityRiskLevel;
 
   // MATERIAL AUTOCOMPLETE
-  List<String> materials;
+  List materials;
   final TextEditingController _materialController = TextEditingController();
-  List<String> items;
+  List items;
   final TextEditingController _itemController = TextEditingController();
-  List<String> damage;
+  List damage;
   final TextEditingController _damageController = TextEditingController();
-  List<String> surface;
+  List surface;
   final TextEditingController _surfaceController = TextEditingController();
-  List<String> extent;
+  List extent;
   final TextEditingController _extentController = TextEditingController();
-  List<String> whynotsampled;
+  List whynotsampled;
   final TextEditingController _whynotController = TextEditingController();
 
 //  String initialDescription;
@@ -132,13 +130,12 @@ class _EditACMState extends State<EditACM> {
       _title = "Add New ACM";
     }
       _loadACM();
-    print(constants['asbestosmaterials'].toString());
-    materials = constants['asbestosmaterials'].map((item) => item['label']).toList();
-    items = constants['buildingitems'].map((item) => item['label']).toList();
-    damage = constants['damagesuggestions'].map((item) => item['label']).toList();
-    surface = constants['surfacesuggestions'].map((item) => item['label']).toList();
-    extent = constants['extentsuggestions'].map((item) => item['label']).toList();
-    whynotsampled = constants['whynotsampledsuggestions'].map((item) => item['label']).toList();
+    materials = constants['asbestosmaterials'];
+    items = constants['buildingitems'];
+    damage = constants['damagesuggestions'];
+    surface = constants['surfacesuggestions'];
+    extent = constants['extentsuggestions'];
+    whynotsampled = constants['whynotsampledsuggestions'];
 
     super.initState();
   }
@@ -306,7 +303,7 @@ class _EditACMState extends State<EditACM> {
     } else totalRiskSet = false;
 
       return new Scaffold(
-//        resizeToAvoidBottomPadding: false,
+        resizeToAvoidBottomPadding: false,
           appBar:
           new AppBar(title: Text(_title),
               leading: new IconButton(
@@ -585,15 +582,21 @@ class _EditACMState extends State<EditACM> {
                             ),
                             CustomTypeAhead(
                               controller: _itemController,
+//                              initialValue: acmObj['description'],
                               capitalization: TextCapitalization.sentences,
                               textInputAction: TextInputAction.next,
                               label: 'Description/Item',
                               suggestions: items,
-                              onSaved: (value) => acmObj['description'] = value,
+                              onSaved: (value) => acmObj['description'] = value.trim(),
                               validator: (value) {
                                 if (value.isEmpty) {
                                   return 'The description cannot be empty';
                                 }
+                              },
+                              focusNode: _focusNodes[0],
+                              onSuggestionSelected: (suggestion) {
+                                _itemController.text = suggestion['label'];
+                                FocusScope.of(context).requestFocus(_focusNodes[1]);
                               },
                               onSubmitted: (v) {
                                   FocusScope.of(context).requestFocus(_focusNodes[1]);
@@ -601,37 +604,37 @@ class _EditACMState extends State<EditACM> {
                             ),
                             CustomTypeAhead(
                               controller: _materialController,
+//                              initialValue: acmObj['material'],
                               capitalization: TextCapitalization.none,
                               textInputAction: TextInputAction.next,
                               label: 'Material',
                               suggestions: materials,
-                              onSaved: (value) => acmObj['material'] = value,
+                              onSaved: (value) => acmObj['material'] = value.trim(),
                               validator: (value) {
                                 if (value.isEmpty) {
                                   return 'The material cannot be empty';
                                 }
                               },
-                              onSubmitted: (v) {
-                                FocusScope.of(context).requestFocus(_focusNodes[2]);
-                              },
+                              focusNode: _focusNodes[1],
+                              nextFocus: _focusNodes[2],
                             ),
                           ],
                         ),
                     ExpansionTile(
-                      initiallyExpanded: true,
                       title: new Text("Extent", style: Styles.h2,),
+                      initiallyExpanded: true,
                       children: <Widget>[
                         CustomTypeAhead(
                           controller: _extentController,
+//                          initialValue: acmObj['extentdesc'],
                           capitalization: TextCapitalization.sentences,
                           textInputAction: TextInputAction.next,
                           label: 'Extent Description',
                           suggestions: extent,
-                          onSaved: (value) => acmObj['extentdesc'] = value,
+                          onSaved: (value) => acmObj['extentdesc'] = value.trim(),
                           validator: (value) {},
-                          onSubmitted: (v) {
-                            FocusScope.of(context).requestFocus(_focusNodes[3]);
-                          },
+                          focusNode: _focusNodes[2],
+                          nextFocus: _focusNodes[3],
                         ),
                       new Row(
                         crossAxisAlignment: CrossAxisAlignment.end,
@@ -654,9 +657,7 @@ class _EditACMState extends State<EditACM> {
                               keyboardType: TextInputType.number,
                               autocorrect: false,
                               onFieldSubmitted: (v) {
-                                if (isSampled)
-                                  FocusScope.of(context).requestFocus(_focusNodes[5]);
-                                else FocusScope.of(context).requestFocus(_focusNodes[4]);
+                                FocusScope.of(context).requestFocus(_focusNodes[4]);
                               },
                             ),
                           ),
@@ -686,52 +687,52 @@ class _EditACMState extends State<EditACM> {
                       ),]),
 
                       ExpansionTile(
-                        initiallyExpanded: true,
                         title: new Text("Condition", style: Styles.h2,),
+                        initiallyExpanded: true,
                         children: <Widget>[
                           CustomTypeAhead(
                             controller: _damageController,
+//                            initialValue: acmObj['materialrisk_damagedesc'],
                             capitalization: TextCapitalization.sentences,
                             textInputAction: TextInputAction.next,
                             label: 'Damage Description',
                             suggestions: damage,
                             onSaved: (value) => acmObj['materialrisk_damagedesc'] = value.trim(),
                             validator: (value) {},
-                            onSubmitted: (v) {
-                              FocusScope.of(context).requestFocus(_focusNodes[7]);
-                            },
+                            focusNode: _focusNodes[4],
+                            nextFocus: _focusNodes[5],
                           ),
                           CustomTypeAhead(
                             controller: _surfaceController,
+//                            initialValue: acmObj['materialrisk_surfacedesc'],
                             capitalization: TextCapitalization.sentences,
                             textInputAction: TextInputAction.done,
                             label: 'Surface Treatment',
                             suggestions: surface,
-                            onSaved: (value) => acmObj['materialrisk_surfacedesc'] = value,
+                            onSaved: (value) => acmObj['materialrisk_surfacedesc'] = value.trim(),
                             validator: (value) { },
-                            onSubmitted: (v) {
-                              if (isSampled)
-                              FocusScope.of(context).requestFocus(_focusNodes[5]);
-                              else FocusScope.of(context).requestFocus(_focusNodes[4]);
-                            },
+                            focusNode: _focusNodes[5],
+                            nextFocus: isSampled ? _focusNodes[7] : _focusNodes[6],
                           ),
                         ]
                       ),
 
                     ExpansionTile(
-                      initiallyExpanded: true,
                       title: new Text("Notes", style: Styles.h2,),
+                      initiallyExpanded: true,
                       children: <Widget>[
                       !isSampled ?
                         CustomTypeAhead(
-                        controller: _whynotController,
+                          controller: _whynotController,
+//                          initialValue: acmObj['reasonfornotsampling'],
                           capitalization: TextCapitalization.sentences,
                           textInputAction: TextInputAction.next,
                           label: 'Reason for Not Sampling',
                           suggestions: whynotsampled,
                           onSaved: (value) => acmObj['reasonfornotsampling'] = value,
                           validator: (value) { },
-                          onSubmitted: (v) { },
+                          focusNode: _focusNodes[6],
+                          nextFocus: _focusNodes[7],
                         ) : new Container(),
                       new Container(
                         alignment: Alignment.topLeft,
@@ -742,29 +743,18 @@ class _EditACMState extends State<EditACM> {
                           onSaved: (String value) {
                             acmObj["notes"] = value.trim();
                           },
-                          focusNode: _focusNodes[5],
+                          focusNode: _focusNodes[7],
                           initialValue: acmObj["notes"],
                           textInputAction: TextInputAction.done,
                           textCapitalization: TextCapitalization.sentences,
                           keyboardType: TextInputType.multiline,
                           autocorrect: true,
                           maxLines: null,
-                          onFieldSubmitted: (v) {
-                          },
                         )
-  //                      child: TextField(
-  //                        decoration: const InputDecoration(
-  //                            labelText: "Notes"),
-  //                        autocorrect: false,
-  //                        controller: controllerNotes,
-  //                        textCapitalization: TextCapitalization.sentences,
-  //                        keyboardType: TextInputType.multiline,
-  //                        maxLines: null,
-  //                      ),
                       ),]),
                 ExpansionTile(
-                  initiallyExpanded: true,
                   title: new Text("Risk Assessments", style: Styles.h2,),
+                  initiallyExpanded: true,
                   children: <Widget>[
                       // Accessibility Section
                       new Container(alignment: Alignment.bottomLeft,
@@ -2058,7 +2048,7 @@ class _EditACMState extends State<EditACM> {
         this._damageController.text = acmObj['materialrisk_damagedesc'];
         this._surfaceController.text = acmObj['materialrisk_surfacedesc'];
         this._extentController.text = acmObj['extentdesc'];
-        this._whynotController.text = acmObj['whynotsampled'];
+        this._whynotController.text = acmObj['reasonfornotsampling'];
 
         controllerNotes.text = acmObj['notes'];
 

@@ -106,62 +106,6 @@ class _RoomsTabState extends State<RoomsTab> {
                   return RoomCard(
                     doc: doc,
                     context: context,
-    //                      context: context,
-                    onCardLongPress: () {
-                      // Delete
-                      // Bulk add /clone etc.
-    //                        showMenu(context: context,
-    //                            items: [
-    //                              new PopupMenuItem<String>(
-    //                                child: new ListTile(
-    //                                  title: new Text('Duplicate Room'),
-    //                                  onTap: () {
-    //                                    // This dialog should be its own stateful widget
-    //                                    showDialog(context: context,
-    //                                        builder: (BuildContext context) {
-    //                                          return DuplicateRoomsDialog(doc: snapshot.data.documents[index]);
-    //                                        }
-    //                                    );
-    //                                  },
-    //                                  leading: new Icon(Icons.content_copy),
-    //                              ),),
-    //                              new PopupMenuItem<String>(
-    //                                child: new ListTile(
-    //                                  title: new Text('Delete Room'),
-    //                                  onTap: () {
-    //                                    showDialog(context: context,
-    //                                      builder: (BuildContext context) {
-    //                                        return AlertDialog(
-    //                                          title: new Text("Are You Sure?"),
-    //                                          content: new Text("Deleting this room will remove all photos, ACM and building material notes associated with it."),
-    //                                          actions: <Widget>[
-    //                                            new FlatButton(
-    //                                              child: new Text("Delete"),
-    //                                              onPressed: () {
-    ////                                                deleteRoom()
-    //                                                  Navigator.of(context).pop();
-    //                                                  Navigator.of(context).pop();
-    //                                              },
-    //                                            ),
-    //                                            new FlatButton(
-    //                                              child: new Text("Cancel", style: new TextStyle(color: Colors.black),),
-    //                                              onPressed: () {
-    //                                                Navigator.of(context).pop();
-    //                                                Navigator.of(context).pop();
-    //                                              },
-    //                                            )
-    //                                          ]
-    //                                        );
-    //                                      }
-    //                                    );
-    //                                  },
-    //                                  leading: new Icon(Icons.delete),
-    //                                ),),
-    //                            ],
-    //                            position: RelativeRect.fromLTRB(20.0, 200.0, 20.0, 0.0),
-    //                        );
-                      }
-
                       );
                     },
                   );

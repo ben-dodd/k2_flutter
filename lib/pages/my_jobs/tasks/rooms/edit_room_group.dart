@@ -114,6 +114,19 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
                   textCapitalization: TextCapitalization.characters,
                 ),
               ),
+              new Row(children: <Widget> [
+                new Container(
+                    alignment: Alignment.topLeft,
+                    child: Checkbox(value: roomObj['presume'] != null ? roomObj['presume'] : false,
+                        onChanged: (value) => setState(() {
+                          roomObj['presume'] = roomObj['presume'] != null ? !roomObj['presume'] : true;
+                        }))
+                ),
+                new Container(
+                  alignment: Alignment.topLeft,
+                  child: new Text("Presume Entire Room Group (Inaccessible)", style: Styles.label,),
+                ),
+              ]),
               new Container(
                 child: TextFormField(
                   decoration: const InputDecoration(
@@ -129,17 +142,18 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
                   textCapitalization: TextCapitalization.sentences,
                 ),
               ),
-              new Container(
-                alignment: Alignment.topLeft,
-                padding: EdgeInsets.only(top: 14.0,),
-                child: new Text("Add All Ungrouped Rooms", style: Styles.label,),
-              ),
-              new Container(
-                alignment: Alignment.topLeft,
-                child: Checkbox(value: addAllOrphans, onChanged: (value) => setState(() {
-                  addAllOrphans = value;
-                }))
-              ),
+              new Row(children: <Widget>[
+                new Container(
+                    alignment: Alignment.topLeft,
+                    child: Checkbox(value: addAllOrphans, onChanged: (value) => setState(() {
+                      addAllOrphans = value;
+                    }))
+                ),
+                new Container(
+                  alignment: Alignment.topLeft,
+                  child: new Text("Add All Ungrouped Rooms", style: Styles.label,),
+                ),
+              ]),
               new Container(
                 alignment: Alignment.topLeft,
                 padding: EdgeInsets.only(top: 14.0,),

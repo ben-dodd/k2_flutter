@@ -32,7 +32,7 @@ class _AcmTabState extends State<AcmTab> {
               style: Styles.h1),
         ),
         new StreamBuilder(
-            stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').snapshots(),
+            stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').orderBy('roompath').snapshots(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) return
                 Container(

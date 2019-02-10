@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:k2e/autocomplete.dart';
 import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/widgets/custom_auto_complete.dart';
 import 'package:k2e/widgets/customdialog.dart';
 
 class DuplicateRoomsDialog extends StatefulWidget {
@@ -16,10 +14,6 @@ class DuplicateRoomsDialog extends StatefulWidget {
 }
 
 class _DuplicateRoomsDialogState extends State<DuplicateRoomsDialog> {
-  // Room Duplication Vars
-//  final controllerDuplicateRoomName = TextEditingController();
-  GlobalKey<AutoCompleteTextFieldState<String>> key = new GlobalKey();
-  List<String> rooms = AutoComplete.rooms.split(';');
   bool _duplicateBuildingMaterials = true;
   bool _duplicatePresumedMaterials = false;
 
@@ -121,7 +115,7 @@ class RoomTemplateDialog extends StatefulWidget {
 }
 
 class _RoomTemplateDialogState extends State<RoomTemplateDialog> {
-  String selected;
+  String selected = 'Blank Rows';
   var templates = DataManager.get().roomTemplates;
 
   @override

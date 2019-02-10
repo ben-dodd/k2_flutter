@@ -27,7 +27,7 @@ class DataManager {
   String currentRoomGroup;
 
   // Autocompletes
-  Map<String, dynamic> constants;
+  Map constants;
   List<String> asbestosmaterials;
   List<String> buildingitems;
   List<String> buildingmaterials;

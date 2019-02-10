@@ -4,7 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:k2e/autocomplete.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_jobs/tasks/acm/edit_acm.dart';
 import 'package:k2e/pages/my_jobs/tasks/acm/edit_sample_asbestos_air.dart';

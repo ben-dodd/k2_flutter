@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:k2e/autocomplete.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
@@ -49,11 +48,6 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
 
   bool localPhoto = false;
 
-
-  // MATERIAL AUTOCOMPLETE
-  List<String> materials = AutoComplete.materials.split(';');
-  GlobalKey<AutoCompleteTextFieldState<String>> key = new GlobalKey();
-
   @override
   void initState() {
     // init text controllers
@@ -91,8 +85,6 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
 
 
   Widget build(BuildContext context) {
-    materials.sort();
-
     return new Scaffold(
 //        resizeToAvoidBottomPadding: false,
         appBar:

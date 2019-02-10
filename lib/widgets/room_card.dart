@@ -1,6 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_jobs/tasks/rooms/edit_room.dart';
 import 'package:k2e/pages/my_jobs/tasks/rooms/edit_room_group.dart';
+import 'package:k2e/utils/draggable/dragable_flutter_list.dart';
+import 'package:uuid/uuid.dart';
 
 class RoomCard extends StatefulWidget {
 
@@ -8,13 +12,13 @@ class RoomCard extends StatefulWidget {
     @required this.doc,
     @required this.context,
     this.onCardClick,
-    this.onCardLongPress,
+//    this.onCardLongPress,
   });
 
   final Map<String, dynamic> doc;
   final BuildContext context;
   final VoidCallback onCardClick;
-  final VoidCallback onCardLongPress;
+//  final VoidCallback onCardLongPress;
 
   @override
   _RoomCardState createState() => new _RoomCardState();
@@ -59,7 +63,7 @@ class _RoomCardState extends State<RoomCard>{
           );
         },
         // Long tap -> add options to sync or delete
-        onLongPress: widget.onCardLongPress,
+//        onLongPress: widget.onCardLongPress,
         trailing:
         hasPhoto ? photoSynced ? Icon(Icons.camera_alt, color: Colors.green,)
             : Icon(Icons.camera_alt, color: Colors.orange)
@@ -75,7 +79,7 @@ class _RoomCardState extends State<RoomCard>{
 
     return ExpansionTile(
       initiallyExpanded: true,
-      key: PageStorageKey<Map<String, dynamic>>(doc),
+      key: PageStorageKey(new Uuid().v1),
       title: Text(doc['name'], style: new TextStyle(
 //          fontStyle: FontStyle.italic,
           fontWeight: FontWeight.bold
@@ -84,13 +88,31 @@ class _RoomCardState extends State<RoomCard>{
         Navigator.of(widget.context).push(
           new MaterialPageRoute(builder: (context) => EditRoomGroup(roomgroup: doc['path'])),
         );}),
-      children: doc['children'].length > 0 ? doc['children']
-          .map<Widget>((child) {
-            print(child.toString());
-            // Start streams here?
-            return _roomCard(new Map<String,dynamic>.from(child));
-      })
-          .toList() : null,
+      children: doc['children'].length > 0 ?
+          [ new DragAndDropList(
+            doc['children'].length,
+            itemBuilder: (BuildContext context, index) {
+              return _roomCard(new Map<String,dynamic>.from(doc['children'][index]));
+            },
+            onDragFinish: (before, after) {
+              List newList = new List.from(doc['children']);
+              newList.removeAt(before);
+              newList.insert(after, doc['children'][before]);
+              print(newList.toString());
+              Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(doc['path']).setData({'children': newList,}, merge: true);
+              print('before: ' + before.toString());
+              print('after: ' + after.toString());
+            },
+            canDrag: (index) => true,
+            canBeDraggedTo: (one, two) => true,
+            dragElevation: 8.0,
+          )]
+//      doc['children']
+//          .map<Widget>((child) {
+//            // Start streams here?
+//            return _roomCard(new Map<String,dynamic>.from(child));
+//      })
+          : [new Container()],
     );
   }
 

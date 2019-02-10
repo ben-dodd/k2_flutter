@@ -4,7 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:k2e/autocomplete.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_jobs/tasks/acm/edit_acm.dart';
 import 'package:k2e/pages/my_jobs/tasks/acm/edit_sample_asbestos_air.dart';
@@ -13,6 +12,7 @@ import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
 import 'package:k2e/widgets/acm_card.dart';
 import 'package:k2e/widgets/custom_auto_complete.dart';
+import 'package:k2e/widgets/custom_typeahead.dart';
 import 'package:k2e/widgets/dialogs.dart';
 import 'package:k2e/widgets/loading.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -35,11 +35,16 @@ class _EditRoomState extends State<EditRoom> {
   String room;
   bool localPhoto = false;
   List<Map<String, String>> roomgrouplist = new List();
-
-  List<String> rooms = AutoComplete.rooms.split(';');
+  final Map constants = DataManager.get().constants;
   GlobalKey key = new GlobalKey<AutoCompleteTextFieldState<String>>();
 
-  final controllerRoomCode = TextEditingController();
+//  final controllerRoomCode = TextEditingController();
+  final _roomCodeController = TextEditingController();
+  final _roomNameController = TextEditingController();
+
+  List rooms;
+  List items;
+  List materials;
   
   var _formKey = GlobalKey<FormState>();
 //  GlobalKey formFieldKey = new GlobalKey<AutoCompleteFormFieldState<String>>();
@@ -58,6 +63,10 @@ class _EditRoomState extends State<EditRoom> {
 //    controllerRoomCode.addListener(_updateRoomCode);
     _loadRoom();
     _scrollController = ScrollController();
+
+    rooms = constants['roomsuggestions'];
+    items = constants['buildingitems'];
+    materials = constants['buildingmaterials'];
     super.initState();
   }
 
@@ -136,51 +145,24 @@ class _EditRoomState extends State<EditRoom> {
                           ),
                         )],
                       ),
-                      new Container(
-                        child: new TextFormField(
-                          decoration: new InputDecoration(
-                            labelText: "Room Name",
-                          ),
-                          onSaved: (String value) {
-                            roomObj["name"] = value.trim();
-                          },
-                          validator: (String value) {
-                            return value.isEmpty ? 'You must add a room name' : null;
-                          },
-                          focusNode: _focusNodes[0],
-                          initialValue: roomObj["name"],
-                          textInputAction: TextInputAction.next,
-                          textCapitalization: TextCapitalization.words,
-                          onFieldSubmitted: (v) {
-                            FocusScope.of(context).requestFocus(_focusNodes[1]);
-                          },
-                        ),
-//                        child: new AutoCompleteFormField(
-//                          decoration: new InputDecoration(
-//                              labelText: "Room Name"
-//                          ),
-//                          key: formFieldKey,
-//                          scrollController: _scrollController,
-//                          textInputAction: TextInputAction.next,
-//                          initialValue: roomObj["name"] != null ? roomObj["name"] : "",
-//                          suggestions: rooms,
-//
-//                          textChanged: (item) {
-//                            _updateName(item);
-//                          },
-//                          itemSubmitted: (item) {
-//                            _updateName(item.toString());
-//                          },
-//                          itemBuilder: (context, item) {
-//                            return new Padding(
-//                                padding: EdgeInsets.all(8.0), child: new Text(item));
-//                          },
-//                          itemSorter: (a, b) {
-//                            return a.compareTo(b);
-//                          },
-//                          itemFilter: (item, query) {
-//                            return item.toLowerCase().contains(query.toLowerCase());
-//                          }),
+                      CustomTypeAhead(
+                        controller: _roomNameController,
+  //                            initialValue: acmObj['materialrisk_surfacedesc'],
+                        capitalization: TextCapitalization.words,
+                        textInputAction: TextInputAction.done,
+                        label: 'Room Name',
+                        suggestions: rooms,
+                        onSaved: (value) => roomObj['name'] = value.trim(),
+                        validator: (value) { },
+                        focusNode: _focusNodes[0],
+                        nextFocus: _focusNodes[1],
+                        onSuggestionSelected: (suggestion) {
+                          _roomNameController.text = suggestion['label'];
+                          if (_roomCodeController.text == '') {
+                            _roomCodeController.text = suggestion['code'];
+                          }
+                        },
+                        onSubmitted: (v) { },
                       ),
                       new Container(
                         child: TextFormField(
@@ -188,14 +170,9 @@ class _EditRoomState extends State<EditRoom> {
                                 labelText: "Room Code",
                                 hintText: "e.g. B1 (use for large surveys with many similar rooms)",
                             ),
+                            controller: _roomCodeController,
                             autocorrect: false,
-                            onSaved: (String value) {
-                              roomObj["roomcode"] = value.trim();
-                            },
-                            validator: (String value) {
-//                              return value.length > 0 ? 'You must add a room name' : null;
-                            },
-                            initialValue: roomObj["roomcode"],
+                            onSaved: (String value) => roomObj["roomcode"] = value.trim(),
                             focusNode: _focusNodes[1],
                             textCapitalization: TextCapitalization.characters,
                           ),
@@ -237,6 +214,19 @@ class _EditRoomState extends State<EditRoom> {
               ExpansionTile(
                 title: new Text("Presumed and Sampled Materials", style: Styles.h2,),
                 children: <Widget>[
+                    new Row(children: <Widget> [
+                      new Container(
+                          alignment: Alignment.topLeft,
+                          child: Checkbox(value: roomObj['presume'] != null ? roomObj['presume'] : false,
+                              onChanged: (value) => setState(() {
+                                roomObj['presume'] = roomObj['presume'] != null ? !roomObj['presume'] : true;
+                              }))
+                      ),
+                      new Container(
+                        alignment: Alignment.topLeft,
+                        child: new Text("Presume Entire Room (Inaccessible)", style: Styles.label,),
+                      ),
+                    ]),
                     widget.room != null ? new StreamBuilder(
                         stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').where("roompath", isEqualTo: widget.room).snapshots(),
                         builder: (context, snapshot) {
@@ -373,27 +363,27 @@ class _EditRoomState extends State<EditRoom> {
                       })
                         :
                       new Container(),
-                    widget.room != null ?
-                      new Container(
-                        alignment: Alignment.center,
-                        padding: EdgeInsets.only(top: 14.0,),
-                        child: new OutlineButton(
-                            shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
-                            child: Text("Delete Room",
-                                style: new TextStyle(color: Theme.of(context).accentColor, fontWeight: FontWeight.bold
-                                )
-                            ),
-  //                          color: Colors.white,
-                            onPressed: () {
-                              _deleteDialog();
-                            }
-                        ),
-                      )
-                        :
-                        new Container(),
 //                    buildBuildingMaterials(),
                     ],
                 ),
+                widget.room != null ?
+                new Container(
+                  alignment: Alignment.center,
+                  padding: EdgeInsets.only(top: 14.0,),
+                  child: new OutlineButton(
+                      shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
+                      child: Text("Delete Room",
+                          style: new TextStyle(color: Theme.of(context).accentColor, fontWeight: FontWeight.bold
+                          )
+                      ),
+                      //                          color: Colors.white,
+                      onPressed: () {
+                        _deleteDialog();
+                      }
+                  ),
+                )
+                    :
+                new Container(),
             ]
           ),
         ),
@@ -456,71 +446,96 @@ class _EditRoomState extends State<EditRoom> {
   buildBuildingMaterials (index) {
 //      print("Building item: " + item.toString());
     var item = roomObj['buildingmaterials'][index];
+    TextEditingController labelController = TextEditingController(text: item['label']);
+    TextEditingController materialController = TextEditingController(text: item['material']);
     Widget widget = new Row(
       children: <Widget>[
         new Container(
-          width: 100.0,
+          width: 150.0,
           alignment: Alignment.topLeft,
           padding: EdgeInsets.only(right: 14.0,),
 //          child: new Text(item["label"], style: Styles.label,),
-          child: TextFormField(
-            style: new TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-            initialValue: item["label"],
-            autocorrect: false,
-            focusNode: _focusNodes[(index * 2) + 2],
-            autovalidate: true,
-            textInputAction: TextInputAction.next,
-            onFieldSubmitted: (text) {
-              print(text.toString());
-              setState(() {
-                roomObj['buildingmaterials'][index]["label"] = text.trim();
-              });
-              FocusScope.of(context).requestFocus(_focusNodes[(index * 2) + 3]);
-            },
-            validator: (String value) {
-//              return value.contains('@') ? 'Do not use the @ character' : null;
-            },
-            onSaved: (text) {
-              setState(() {
-                roomObj['buildingmaterials'][index]["label"] = text.trim();
-              });
-            },
-            textCapitalization: TextCapitalization.sentences,
-          )
+        child: CustomTypeAhead(
+          controller: labelController,
+          capitalization: TextCapitalization.sentences,
+          textInputAction: TextInputAction.next,
+          label: 'Item',
+          suggestions: items,
+          onSaved: (value) => roomObj['buildingmaterials'][index]["label"] = value.trim(),
+          validator: (value) { },
+          focusNode: _focusNodes[(index * 2) + 2],
+          nextFocus: _focusNodes[(index * 2) + 3],
+        ),
+//          child: TextFormField(
+//            style: new TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+//            initialValue: item["label"],
+//            autocorrect: false,
+//            focusNode: _focusNodes[(index * 2) + 2],
+//            autovalidate: true,
+//            textInputAction: TextInputAction.next,
+//            onFieldSubmitted: (text) {
+//              print(text.toString());
+//              setState(() {
+//                roomObj['buildingmaterials'][index]["label"] = text.trim();
+//              });
+//              FocusScope.of(context).requestFocus(_focusNodes[(index * 2) + 3]);
+//            },
+//            validator: (String value) {
+////              return value.contains('@') ? 'Do not use the @ character' : null;
+//            },
+//            onSaved: (text) {
+//              setState(() {
+//                roomObj['buildingmaterials'][index]["label"] = text.trim();
+//              });
+//            },
+//            textCapitalization: TextCapitalization.sentences,
+//          )
         ),
         new Flexible(
-          child: TextFormField(
-            initialValue: item["material"],
-            autocorrect: false,
-            focusNode: _focusNodes[(index * 2) + 3],
-            autovalidate: true,
+          child: CustomTypeAhead(
+            controller: materialController,
+            capitalization: TextCapitalization.none,
             textInputAction: TextInputAction.next,
-            onFieldSubmitted: (text) {
-              setState(() {
-                roomObj['buildingmaterials'][index]["material"] = text.trim();
-              });
-              if (roomObj['buildingmaterials'][index+1] != null && roomObj['buildingmaterials'][index+1]["label"].trim().length > 0) {
-                FocusScope.of(context).requestFocus(_focusNodes[((index + 1) * 2) + 3]);
-              } else {
-                // If label field isn't filled in, go to it on Keyboard Next otherwise go to the next material
-                FocusScope.of(context).requestFocus(_focusNodes[((index + 1) * 2) + 2]);
-              }
-              if (roomObj['buildingmaterials'].length < index + 2) {
-                roomObj['buildingmaterials'] =
-                new List<dynamic>.from(roomObj['buildingmaterials'])
-                  ..addAll([{"label": "", "material": "",}]);
-              }
-            },
-            validator: (String value) {
-//              return value.contains('@') ? 'Do not use the @ character' : null;
-            },
-            onSaved: (text) {
-              setState(() {
-                roomObj['buildingmaterials'][index]["material"] = text.trim();
-              });
-            },
-            textCapitalization: TextCapitalization.none,
+            label: 'Material',
+            suggestions: materials,
+            onSaved: (value) => roomObj['buildingmaterials'][index]["material"] = value.trim(),
+            validator: (value) { },
+            focusNode: _focusNodes[(index * 2) + 3],
+            nextFocus: (roomObj['buildingmaterials'].length - 1 != index && roomObj['buildingmaterials'][index+1] != null && roomObj['buildingmaterials'][index+1]["label"].trim().length > 0)
+            ? _focusNodes[((index + 1) * 2) + 3] : _focusNodes[((index + 1) * 2) + 2],
           ),
+//          child: TextFormField(
+//            initialValue: item["material"],
+//            autocorrect: false,
+//            focusNode: _focusNodes[(index * 2) + 3],
+//            autovalidate: true,
+//            textInputAction: TextInputAction.next,
+//            onFieldSubmitted: (text) {
+//              setState(() {
+//                roomObj['buildingmaterials'][index]["material"] = text.trim();
+//              });
+//              if (roomObj['buildingmaterials'][index+1] != null && roomObj['buildingmaterials'][index+1]["label"].trim().length > 0) {
+//                FocusScope.of(context).requestFocus(_focusNodes[((index + 1) * 2) + 3]);
+//              } else {
+//                // If label field isn't filled in, go to it on Keyboard Next otherwise go to the next material
+//                FocusScope.of(context).requestFocus(_focusNodes[((index + 1) * 2) + 2]);
+//              }
+//              if (roomObj['buildingmaterials'].length < index + 2) {
+//                roomObj['buildingmaterials'] =
+//                new List<dynamic>.from(roomObj['buildingmaterials'])
+//                  ..addAll([{"label": "", "material": "",}]);
+//              }
+//            },
+//            validator: (String value) {
+////              return value.contains('@') ? 'Do not use the @ character' : null;
+//            },
+//            onSaved: (text) {
+//              setState(() {
+//                roomObj['buildingmaterials'][index]["material"] = text.trim();
+//              });
+//            },
+//            textCapitalization: TextCapitalization.none,
+//          ),
         )
       ]
     );
@@ -573,9 +588,9 @@ class _EditRoomState extends State<EditRoom> {
             }
             setState(() {
               roomObj = doc.data;
+              _roomNameController.text = roomObj['name'];
+              _roomCodeController.text = roomObj['roomcode'];
               initRoomGroup = doc.data['roomgrouppath'];
-//              if (roomObj['roomgrouppath'] != null) _roomgroup = { "path": roomObj['roomgrouppath'], "name": roomObj['roomgroupname'] };
-              if (doc.data["roomcode"] != null) controllerRoomCode.text = doc.data["roomcode"];
               isLoading = false;
             });
       });
