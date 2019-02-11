@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_jobs/tasks/map/edit_map.dart';
 import 'package:k2e/styles.dart';
-import 'package:k2e/widgets/map_card.dart';
+import 'package:k2e/pages/my_jobs/tasks/map/map_card.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
 

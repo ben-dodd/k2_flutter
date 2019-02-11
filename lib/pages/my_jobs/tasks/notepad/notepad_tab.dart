@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_jobs/tasks/notepad/edit_note.dart';
 import 'package:k2e/styles.dart';
-import 'package:k2e/widgets/note_card.dart';
+import 'package:k2e/pages/my_jobs/tasks/notepad/note_card.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
 

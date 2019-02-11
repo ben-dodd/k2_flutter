@@ -43,10 +43,16 @@ class MapPainter extends StatefulWidget {
 class _MapPainterState extends State<MapPainter> {
   List<Offset> points; //List of points in one Tap or ery point or path is kept here
   bool lineInProgress = false;
-  double scale = 0.2;
+  double scale = 1.0;
   double rotation = 0.0;
-  double startScale = 0.2;
+  double translateX = 0.0;
+  double translateY = 0.0;
+  double startScale = 1.0;
   double startRotation = 0.0;
+  int intervals = 10;
+  int divisions = 4;
+  int subdivisions = 2;
+  double angleLimit = 22.5;
 //  VoidCallback clearAll;
 
   /*
@@ -67,6 +73,7 @@ class _MapPainterState extends State<MapPainter> {
   // User tap one point
   void _tapUp(TapUpDetails details) {
     print('tapUp');
+    print(details.globalPosition.toString());
     setState(() {
       var object = this.contexto.findRenderObject();
       var translation = object?.getTransformTo(null)?.getTranslation();
@@ -75,33 +82,33 @@ class _MapPainterState extends State<MapPainter> {
       if (lineInProgress) {
         print('new point finished');
         points[1] =
-        new Offset(snapPoint(details.globalPosition.dx) - translation.x,
-            snapPoint(details.globalPosition.dy)
-                - translation.y
+        snapPoint(transformPoint(new Offset(details.globalPosition.dx - translation.x,
+            details.globalPosition.dy
+                - translation.y)), points[0]
         );
 //        lineInProgress = false;
         widget.updatePoints(points);
         points = [
-          new Offset(snapPoint(details.globalPosition.dx) - translation.x,
-              snapPoint(details.globalPosition.dy)
-                  - translation.y
+          transformPoint(new Offset(details.globalPosition.dx - translation.x,
+              details.globalPosition.dy
+                  - translation.y)
           ),
-          new Offset(snapPoint(details.globalPosition.dx) - translation.x,
-              snapPoint(details.globalPosition.dy)
-                  - translation.y
+          transformPoint(new Offset(details.globalPosition.dx - translation.x,
+              details.globalPosition.dy
+                  - translation.y)
           ),
         ];
         widget.updatePaths(points);
       } else {
         print ('new point started');
         points = [
-          new Offset(snapPoint(details.globalPosition.dx) - translation.x,
-              snapPoint(details.globalPosition.dy)
-                  - translation.y
+          transformPoint(new Offset(details.globalPosition.dx - translation.x,
+              details.globalPosition.dy
+                  - translation.y)
           ),
-          new Offset(snapPoint(details.globalPosition.dx) - translation.x,
-              snapPoint(details.globalPosition.dy)
-                  - translation.y
+          transformPoint(new Offset(details.globalPosition.dx - translation.x,
+              details.globalPosition.dy
+                  - translation.y)
           ),
         ];
         lineInProgress = true;
@@ -115,61 +122,28 @@ class _MapPainterState extends State<MapPainter> {
     print('tapCancel');
   }
 
-//  // User touch and drag over the screen
-//  void _panStart(DragStartDetails details) {
-//    print('panStart');
-//    setState(() {
-//      var object = this.contexto.findRenderObject();
-//      var translation = object?.getTransformTo(null)?.getTranslation();
-//      points = [
-//        new Offset(details.globalPosition.dx - translation.x,
-//            details.globalPosition.dy
-//                - translation.y
-//        ),
-//        new Offset(details.globalPosition.dx - translation.x,
-//            details.globalPosition.dy
-//                - translation.y
-//        )
-//      ];
-//      widget.updatePaths(points);
-//      // Add here to refresh the screen. If paths.add is only in panEnd
-//      // only update the screen when finger is up
-//    });
-//  }
-//
-//  // User drag over screen
-//  void _panUpdate(DragUpdateDetails details) {
-//    // print('panUpdate'); //Lot of prints :-/
-//
-//    setState(() {
-//      var object = this.contexto.findRenderObject();
-//      var translation = object?.getTransformTo(null)?.getTranslation();
-//      points[1] = (new Offset(details.globalPosition.dx - translation.x,
-//          details.globalPosition.dy
-//              - translation.y
-//      ));
-//      widget.updatePoints(points);
-//    });
-//  }
-
   // Pinch zoom
   void _scaleStart(ScaleStartDetails details) {
    print('scale start');
-//   print (details.toString());
+   print (details.toString());
    setState(() {
+//     lineInProgress = false;
      var object = this.contexto.findRenderObject();
      var translation = object?.getTransformTo(null)?.getTranslation();
      points = [
-       new Offset(snapPoint(details.focalPoint.dx) - translation.x,
-           snapPoint(details.focalPoint.dy)
-               - translation.y
+       transformPoint(new Offset(details.focalPoint.dx - translation.x,
+           details.focalPoint.dy
+               - translation.y)
        ),
-       new Offset(snapPoint(details.focalPoint.dx) - translation.x,
-           snapPoint(details.focalPoint.dy)
-               - translation.y
+       transformPoint(new Offset(details.focalPoint.dx - translation.x,
+           details.focalPoint.dy
+               - translation.y)
        )
      ];
-     widget.updatePaths(points);
+     print(points.toString());
+     if (lineInProgress) widget.updatePoints(points);
+      else widget.updatePaths(points);
+    lineInProgress = false;
      // Add here to refresh the screen. If paths.add is only in panEnd
      // only update the screen when finger is up
    });
@@ -177,17 +151,19 @@ class _MapPainterState extends State<MapPainter> {
 
   void _scaleUpdate(ScaleUpdateDetails details) {
     print('scale update');
-    print (details.toString());
-    if (details.scale == scale && details.rotation == rotation) {
+//    print (details.toString());
+//    print (rotation.toString());
+//    print (startRotation.toString());
+//    print (details.rotation.toString());
+    if (startScale / details.scale == scale && details.rotation + startRotation == rotation) {
       // No pinching, draw line
       setState(() {
         var object = this.contexto.findRenderObject();
         var translation = object?.getTransformTo(null)?.getTranslation();
-        points[1] = (new Offset(snapPoint(details.focalPoint.dx) - translation.x,
-            snapPoint(details.focalPoint.dy)
-                - translation.y
-        ));
-        widget.updatePoints(points);
+        points[1] = snapPoint(transformPoint(new Offset(details.focalPoint.dx - translation.x,
+            details.focalPoint.dy
+                - translation.y)), points[0]);
+        print(points.toString());
       });
     } else {
       setState(() {
@@ -196,6 +172,7 @@ class _MapPainterState extends State<MapPainter> {
         scale = startScale * details.scale;
       });
     }
+    widget.updatePoints(points);
   }
 
   void _scaleEnd(ScaleEndDetails details) {
@@ -203,14 +180,41 @@ class _MapPainterState extends State<MapPainter> {
     startScale = scale;
   }
 
-  double snapPoint(double point) {
-    double interval = _w/(4 * 2);
-//    print('Interval: ' + interval.toString());
-//    print('Point: ' + point.toString());
-//    print('Divide: ' + (point ~/ interval).toString());
-//    print('Interval * divide: ' + (interval * (point ~/ interval)).toString());
-//    print ((interval * (point ~/ interval)).toString());
-    return interval * (point ~/ interval);
+  Offset snapPoint(Offset p, Offset q) {
+//    return point;
+    double angle = atan2(q.dy - p.dy, q.dx - p.dx) * 180 / pi;
+    double snapAngle = angleLimit * (angle ~/ angleLimit);
+    double angleDifference = (angle - snapAngle) * pi / 180;
+
+    print ('Angle: ' + angle.toString() + ', SnapAngle: ' + snapAngle.toString() + ', angleDifference: ' + angleDifference.toString());
+    double interval = _w * scale/(intervals * divisions * subdivisions);
+    return Offset(interval * (p.dx ~/ interval), interval * (p.dy ~/ interval));
+//    return rotatePoint(Offset(interval * (p.dx ~/ interval), interval * (p.dy ~/ interval)), q, angleDifference);
+  }
+
+  Offset transformPoint(Offset p) {
+    // Get origin to rotate around
+    Offset o = Offset(_w/2, _h/2);
+
+    // Translate to the origin, apply scaling
+    Offset t = Offset((p.dx - o.dx) * (1/scale), (p.dy - o.dy) * (1/scale));
+
+    // Apply rotation
+    t = Offset(cos(-rotation) * (t.dx) - sin(-rotation) * (t.dy),
+        sin(-rotation) * (t.dx) + cos(-rotation) * (t.dy));
+
+    // Translate back
+    t = Offset(t.dx + o.dx, t.dy + o.dy);
+
+    // Snap
+    return t;
+//    return Offset(cos(-rotation) * (p.dx - o.dx) - sin(-rotation) * (p.dy - o.dy) + o.dx,
+//        sin(-rotation) * (p.dx - o.dx) + cos(-rotation) * (p.dy - o.dy) + o.dy);
+  }
+
+  Offset rotatePoint(Offset t, Offset o, double rotation){
+    return Offset(cos(rotation) * (t.dx - o.dx) - sin(rotation) * (t.dy - o.dy) + o.dx,
+        sin(rotation) * (t.dx - o.dx) + cos(rotation) * (t.dy - o.dy) + o.dy);
   }
 
   double _w, _h;
@@ -227,7 +231,7 @@ class _MapPainterState extends State<MapPainter> {
     print('Width is: ' + _w.toString());
 //    if (widget.arrowPaths.length == 0) paths.clear();
     print('Paths in MapPainter: ' + widget.paths.toString());
-    return RawGestureDetector(
+    return Transform(transform: Matrix4.rotationZ(rotation)..scale(scale), origin: Offset(_w/2, _h/2), child: RawGestureDetector(
       gestures: <Type, GestureRecognizerFactory>{
         TapGestureRecognizer: GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
             () => TapGestureRecognizer(),
@@ -254,20 +258,20 @@ class _MapPainterState extends State<MapPainter> {
       Container(
         height: _h,
         width: _w,
-        child: new Container(alignment: Alignment.center, child: Transform(transform: Matrix4.rotationZ(rotation)..scale(scale), origin: Offset(_w/2, _h/2), child: Stack(
+        child: new Container(alignment: Alignment.center, child: Stack(
         children: <Widget> [
           widget.photo !=null ? widget.photo : new Container(height: _h, width: _w, child: GridPaper(
-            interval: _w/4,
-            divisions: 2,
-            subdivisions: 4,
+            interval: _w/intervals,
+            divisions: divisions,
+            subdivisions: subdivisions,
 //            color: Color(0x7FC3E8F3),
-            color: Color(0xFF000000),
+            color: Color(0x7F003080),
           ),),
           new CustomPaint(
             foregroundPainter: new MyPainter(
               lineColor: widget.pathColour,
               aImg: widget.image,
-              width: 4.0,
+              width: 2.0,
               canvasWidth: _w.toInt(),
               canvasHeight: _h.toInt(),
               paths: widget.paths,
@@ -318,25 +322,26 @@ class MyPainter extends CustomPainter {
   void paint(Canvas canvasFinal, Size size) {
     final recorder = new ui.PictureRecorder(); // dart:ui
     final canvas = new Canvas(recorder);
-    final Offset center = Offset(canvasWidth.toDouble() / 2, canvasHeight.toDouble() / 2);
     if (paths == null || paths.isEmpty) return;
     for (List<Offset> points in paths) {
       if (points.length > 1) {
         Path path = Path();
         // Translate by rotation
-        Offset origin = rotate_point(center, scale_point(points[0], scale), rotation);
+        Offset origin = points[0];
         // Translate by scale
         path.moveTo(origin.dx, origin.dy);
         for (Offset o in points) {
-          Offset to = rotate_point(center, scale_point(o, scale), rotation);
-          path.lineTo(to.dx, to.dy);
+          path.lineTo(o.dx, o.dy);
         }
         canvas.drawPath(
           path,
           Paint()
             ..color = lineColor
             ..style = PaintingStyle.stroke
-            ..strokeWidth = this.width,
+            ..strokeWidth = this.width
+            ..strokeCap = StrokeCap.butt
+            ..strokeJoin = StrokeJoin.miter
+            ..strokeMiterLimit = 3.0
         );
       } else {
         canvas.drawPoints(
@@ -345,7 +350,10 @@ class MyPainter extends CustomPainter {
           Paint()
             ..color = lineColor
             ..style = PaintingStyle.stroke
-            ..strokeWidth = this.width,
+            ..strokeWidth = this.width
+            ..strokeCap = StrokeCap.butt
+            ..strokeJoin = StrokeJoin.miter
+            ..strokeMiterLimit = 3.0
         );
       }
     }

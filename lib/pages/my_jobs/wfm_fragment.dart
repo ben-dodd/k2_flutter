@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/data/wfm_manager.dart';
 import 'package:k2e/model/jobheader.dart';
-import 'package:k2e/widgets/wfm_job_card.dart';
+import 'package:k2e/pages/my_jobs/wfm_job_card.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // This page lists all your current jobs

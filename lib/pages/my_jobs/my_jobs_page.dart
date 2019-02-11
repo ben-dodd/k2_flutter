@@ -7,7 +7,7 @@ import 'package:k2e/pages/my_jobs/tasks/job_page.dart';
 import 'package:k2e/pages/my_jobs/wfm_fragment.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/widgets/fab_dialer.dart';
-import 'package:k2e/widgets/job_card.dart';
+import 'package:k2e/pages/my_jobs/job_card.dart';
 import 'package:k2e/widgets/loading.dart';
 import 'package:uuid/uuid.dart';
 

@@ -4,7 +4,7 @@ import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/strings.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/utils/timesheet.dart';
-import 'package:k2e/widgets/pulsecard.dart';
+import 'package:k2e/pages/my_jobs/tasks/timelog/pulsecard.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
 
