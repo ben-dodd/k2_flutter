@@ -34,7 +34,7 @@ class _MapsTabState extends State<MapsTab> {
                   style: Styles.h1),
             ),
             new StreamBuilder(
-                stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('notes').snapshots(),
+                stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('maps').snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) return
                     Container(
@@ -70,6 +70,8 @@ class _MapsTabState extends State<MapsTab> {
                         )
                     );
                   return ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
                       itemCount: snapshot.data.documents.length,
                       itemBuilder: (context, index) {
                         print(snapshot.data.documents[index]['jobnumber']);

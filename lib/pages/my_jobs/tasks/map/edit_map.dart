@@ -10,6 +10,8 @@ import 'package:k2e/pages/my_jobs/tasks/acm/edit_sample_asbestos_air.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
+import 'package:k2e/utils/firebase_conversion_functions.dart';
+import 'package:k2e/utils/map_painter.dart';
 import 'package:k2e/widgets/acm_card.dart';
 import 'package:k2e/widgets/loading.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -33,39 +35,20 @@ class _EditMapState extends State<EditMap> {
   bool localPhoto = false;
   List<Map<String, String>> mapgrouplist = new List();
 
+  List<List<Offset>> paths = new List<List<Offset>>();
+  List<Offset> offsetPoints; //List of points in one Tap or ery point o
+
   final controllerMapCode = TextEditingController();
   
   var _formKey = GlobalKey<FormState>();
-//  GlobalKey formFieldKey = new GlobalKey<AutoCompleteFormFieldState<String>>();
-
-  ScrollController _scrollController;
-
-  // Create list of focus nodes
-  final _focusNodes = List<FocusNode>.generate(
-    200,
-    (i) => FocusNode(),
-  );
 
   @override
   void initState() {
     map = widget.map;
 //    controllerMapCode.addListener(_updateMapCode);
     _loadMap();
-    _scrollController = ScrollController();
     super.initState();
   }
-
-//  _updateName(name) {
-//    this.setState(() {
-//      mapObj["name"] = name.trim();
-//    });
-//  }
-//
-//  _updateMapCode() {
-//    this.setState(() {
-//      mapObj["mapcode"] = controllerMapCode.text.trim();
-//    });
-//  }
 
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -78,319 +61,41 @@ class _EditMapState extends State<EditMap> {
             ),
             actions: <Widget>[
               new IconButton(icon: const Icon(Icons.check), onPressed: () {
-                if (_formKey.currentState.validate()){
-                  _formKey.currentState.save();
-                  // Update map group map if new map has been added or if map's map group has changed
-//                  print("Widget Map" + widget.map.toString());
-//                  print(mapObj['mapgroup'].toString());
-//                  print(initMapGroup.toString());
-                  if (mapObj['path'] == null) {
-                    Firestore.instance.document(DataManager.get().currentJobPath).collection('maps').add(mapObj).then((doc) {
-                      mapObj['path'] = doc.documentID;
-                      if (mapObj['mapgrouppath'] == null || mapObj['mapgrouppath'] != initMapGroup) {
-                        updateMapGroups(initMapGroup, mapObj, widget.map);
-                      } else {
-                        updateMapCard(mapObj['mapgrouppath'], mapObj);
-                      }
-                      Firestore.instance.document(DataManager.get().currentJobPath).collection('maps').document(doc.documentID).setData({"path": doc.documentID}, merge: true);
-                      });
-                  } else {
-                    if (mapObj['mapgrouppath'] == null || mapObj['mapgrouppath'] != initMapGroup) {
-                      updateMapGroups(initMapGroup, mapObj, widget.map);
-                    } else {
-                      updateMapCard(mapObj['mapgrouppath'], mapObj);
-                    }
-                    Firestore.instance.document(DataManager.get().currentJobPath).collection('maps').document(map).setData(
-                        mapObj, merge: true);
+//                if (_formKey.currentState.validate()){
+//                  _formKey.currentState.save();
+                  if (paths.length > 0) {
+                    // Convert List of Lists of Offsets into a format Firebase can store
+                    // Firebase can't do Lists of Lists
+                    mapObj['paths'] = convertListListOffsetToFirestore(paths);
                   }
+
+                  Firestore.instance.document(DataManager.get().currentJobPath).collection('maps').document(mapObj['path']).setData(
+                      mapObj, merge: true);
                   Navigator.pop(context);
-                }
+                  Navigator.pop(context);
+//                }
               })
             ]
         ),
         body: isLoading ?
         loadingPage(loadingText: 'Loading map info...')
-        : GestureDetector(
-            onTap: () {
-              FocusScope.of(context).requestFocus(new FocusNode());
+        : new Container(
+          child: MapPainter(
+            pathColour: Colors.black,
+            paths: paths,
+            photo: null,
+            updatePaths: (List<Offset> points) {
+              setState(() {
+                offsetPoints = points;
+                paths.add(offsetPoints);
+              });
             },
-            child: Form(
-              key: _formKey,
-              child: ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                  controller: _scrollController,
-                  padding: new EdgeInsets.all(8.0),
-//                  padding: new EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 200.0),
-                  children: <Widget>[
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                      new Container(
-                        alignment: Alignment.center,
-                        height: 312.0,
-                        width: 240.0,
-                        decoration: BoxDecoration(border: new Border.all(color: Colors.black)),
-                        child: GestureDetector(
-                            onTap: () {
-                              ImagePicker.pickImage(source: ImageSource.camera).then((image) {
-//                                          _imageFile = image;
-                                localPhoto = true;
-                                _handleImageUpload(image);
-                              });
-                            },
-//                                    child: (_imageFile != null)
-//                                        ? Image.file(_imageFile)
-                            child: localPhoto ?
-                            new Image.file(new File(mapObj['path_local']))
-                                : (mapObj['path_remote'] != null) ?
-                            new CachedNetworkImage(
-                              imageUrl: mapObj['path_remote'],
-                              placeholder: new CircularProgressIndicator(),
-                              errorWidget: new Icon(Icons.error),
-                              fadeInDuration: new Duration(seconds: 1),
-                            )
-                                :  new Icon(
-                              Icons.camera, color: CompanyColors.accentRippled,
-                              size: 48.0,)
-                          ),
-                        )],
-                      ),
-                      new Container(
-                        child: new TextFormField(
-                          decoration: new InputDecoration(
-                            labelText: "Map Name",
-                          ),
-                          onSaved: (String value) {
-                            mapObj["name"] = value.trim();
-                          },
-                          validator: (String value) {
-                            return value.isEmpty ? 'You must add a map name' : null;
-                          },
-                          focusNode: _focusNodes[0],
-                          initialValue: mapObj["name"],
-                          textInputAction: TextInputAction.next,
-                          textCapitalization: TextCapitalization.words,
-                          onFieldSubmitted: (v) {
-                            FocusScope.of(context).requestFocus(_focusNodes[1]);
-                          },
-                        ),
-                      ),
-                      new Container(
-                        child: TextFormField(
-                            decoration: const InputDecoration(
-                                labelText: "Map Code",
-                                hintText: "e.g. B1 (use for large surveys with many similar maps)",
-                            ),
-                            autocorrect: false,
-                            onSaved: (String value) {
-                              mapObj["mapcode"] = value.trim();
-                            },
-                            validator: (String value) {
-//                              return value.length > 0 ? 'You must add a map name' : null;
-                            },
-                            initialValue: mapObj["mapcode"],
-                            focusNode: _focusNodes[1],
-                            textCapitalization: TextCapitalization.characters,
-                          ),
-                        ),
-                    new Container(
-                      alignment: Alignment.topLeft,
-                      padding: EdgeInsets.only(top: 14.0,),
-                      child: new Text("Map Group/Building/Level", style: Styles.label,),
-                    ),
-                    new Container(
-                      alignment: Alignment.topLeft,
-                      child: DropdownButton<String>(
-                        value: (mapObj['mapgrouppath'] == null) ? null : mapObj['mapgrouppath'],
-                        iconSize: 24.0,
-                        items: mapgrouplist.map((Map<String,String> mapgroup) {
-                          print(mapgroup.toString());
-                          String val = "Untitled";
-                          if (mapgroup['name'] != null) val = mapgroup['name'];
-                          return new DropdownMenuItem<String>(
-                            value: mapgroup["path"],
-                            child: new Text(val),
-                          );
-                        }).toList(),
-                        hint: Text("-"),
-                        onChanged: (value) {
-                          setState(() {
-//                            _mapgroup = mapgrouplist.firstWhere((e) => e['path'] == value);
-                            if (value == '') {
-                              mapObj['maptype'] = 'orphan';
-                            } else mapObj['maptype'] = null;
-                            mapObj["mapgroupname"] = mapgrouplist.firstWhere((e) => e['path'] == value)['name'];;
-                            mapObj["mapgrouppath"] = value;
-//                              acm.setData({"map": _map}, merge: true);
-                          });
-                        },
-                      ),
-                    ),
-                    new Divider(),
-                    new Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.only(top: 14.0, bottom: 14.0,),
-                      child: new Text("Presumed and Sampled Materials", style: Styles.h2,),
-                    ),
-                    widget.map != null ? new StreamBuilder(
-                        stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').where("mappath", isEqualTo: widget.map).snapshots(),
-                        builder: (context, snapshot) {
-                          print("Map object : " + widget.map.toString());
-                          if (!snapshot.hasData) return
-                            Container(
-                                padding: EdgeInsets.only(top: 16.0),
-                                alignment: Alignment.center,
-                                color: Colors.white,
-
-                                child: Column(
-                                    mainAxisAlignment: MainAxisAlignment
-                                        .center,
-                                    children: <Widget>[
-                                      new CircularProgressIndicator(),
-                                      Container(
-                                          alignment: Alignment.center,
-                                          height: 64.0,
-                                          child:
-                                          Text("Loading ACM items...")
-                                      )
-                                    ]));
-                          if (snapshot.data.documents.length == 0) return
-                            Center(
-                                child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Icon(Icons.not_interested, size: 64.0),
-                                      Container(
-                                          alignment: Alignment.center,
-                                          height: 64.0,
-                                          child:
-                                          Text('This job has no ACM items.')
-                                      )
-                                    ]
-                                )
-                            );
-                          return ListView.builder(
-                              shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
-                              itemCount: snapshot.data.documents.length,
-                              itemBuilder: (context, index) {
-                                print(snapshot.data.documents[index]['jobnumber']);
-                                var doc = snapshot.data.documents[index].data;
-                                doc['path'] = snapshot.data.documents[index].documentID;
-                                return AcmCard(
-                                  doc: snapshot.data.documents[index],
-                                  onCardClick: () async {
-                                    if (snapshot.data.documents[index]['sampletype'] == 'air'){
-                                      Navigator.of(context).push(
-                                        new MaterialPageRoute(builder: (context) =>
-                                            EditSampleAsbestosAir(
-                                                sample: snapshot.data.documents[index]
-                                                    .documentID)),
-                                      );
-                                    } else {
-                                      Navigator.of(context).push(
-                                        new MaterialPageRoute(builder: (context) =>
-                                            EditACM(
-                                                acm: snapshot.data.documents[index]
-                                                    .documentID)),
-                                      );
-                                    }
-                                  },
-                                  onCardLongPress: () {
-                                    // Delete
-                                    // Bulk add /clone etc.
-                                  },
-                                );
-                              }
-                          );
-                        }
-                    )
-                    :
-
-                    new Center(
-                    child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Icon(Icons.not_interested, size: 64.0),
-                      Container(
-                          alignment: Alignment.center,
-                          height: 64.0,
-                          child:
-                          Text('This job has no ACM items.')
-                        )
-                      ]
-                    )
-                    ),
-                    new Container(padding: EdgeInsets.only(top: 14.0)),
-                    new Divider(),
-                    new Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.only(top: 14.0,),
-                      child: new Text("Building Materials", style: Styles.h2,),
-                    ),
-                    new Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        new Container(
-                          alignment: Alignment.center,
-                          padding: EdgeInsets.fromLTRB(2.0,8.0,4.0, 8.0,),
-                          child: new OutlineButton(
-                              child: const Text("Load New Template"),
-                              color: Colors.white,
-                              onPressed: () {
-//                                showMapTemplateDialog(context, mapObj, applyTemplate,);
-                              },
-                              shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
-                          ),
-                        ),
-                        new Container(
-                          alignment: Alignment.center,
-                          padding: EdgeInsets.fromLTRB(4.0,8.0,2.0, 8.0,),
-                          child: new OutlineButton(
-                              child: const Text("Clear Empty Rows"),
-                              color: Colors.white,
-                              onPressed: () {
-                                if (mapObj["buildingmaterials"] != null && mapObj["buildingmaterials"].length > 0) {
-                                  this.setState(() {
-                                    mapObj["buildingmaterials"] = mapObj["buildingmaterials"].where((bm) => bm["material"] == null || bm["material"].trim().length > 0).toList();
-                                  });
-                                }
-                              },
-                            shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0),),
-                          ),
-                        ),],
-                    ),
-                    (mapObj['buildingmaterials'] != null && mapObj['buildingmaterials'].length > 0) ?
-//                    mapObj['buildingmaterials'].map((item) => buildBuildingMaterials(item))
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: mapObj['buildingmaterials'].length,
-                        itemBuilder: (context, index) {
-                        return buildBuildingMaterials(index);
-                      })
-                        :
-                        new Container(),
-                    new Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.only(top: 14.0,),
-                      child: new OutlineButton(
-                          shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
-                          child: Text("Delete Map",
-                              style: new TextStyle(color: Theme.of(context).accentColor, fontWeight: FontWeight.bold
-                              )
-                          ),
-//                          color: Colors.white,
-                          onPressed: () {
-                            _deleteDialog();
-                          }
-                      ),
-                    ),
-//                    buildBuildingMaterials(),
-                    ],
-                ),
-              ),
+            updatePoints: (List<Offset> points) {
+              setState(() {
+                offsetPoints = points;
+              });
+            },
+          )
         ),
     );
   }
@@ -447,86 +152,6 @@ class _EditMapState extends State<EditMap> {
     Navigator.pop(context);
   }
 
-  buildBuildingMaterials (index) {
-//      print("Building item: " + item.toString());
-    var item = mapObj['buildingmaterials'][index];
-    Widget widget = new Row(
-      children: <Widget>[
-        new Container(
-          width: 100.0,
-          alignment: Alignment.topLeft,
-          padding: EdgeInsets.only(right: 14.0,),
-//          child: new Text(item["label"], style: Styles.label,),
-          child: TextFormField(
-            style: new TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-            initialValue: item["label"],
-            autocorrect: false,
-            focusNode: _focusNodes[(index * 2) + 2],
-            autovalidate: true,
-            textInputAction: TextInputAction.next,
-            onFieldSubmitted: (text) {
-              print(text.toString());
-              setState(() {
-                mapObj['buildingmaterials'][index]["label"] = text.trim();
-              });
-              FocusScope.of(context).requestFocus(_focusNodes[(index * 2) + 3]);
-            },
-            validator: (String value) {
-//              return value.contains('@') ? 'Do not use the @ character' : null;
-            },
-            onSaved: (text) {
-              setState(() {
-                mapObj['buildingmaterials'][index]["label"] = text.trim();
-              });
-            },
-            textCapitalization: TextCapitalization.sentences,
-          )
-        ),
-        new Flexible(
-          child: TextFormField(
-            initialValue: item["material"],
-            autocorrect: false,
-            focusNode: _focusNodes[(index * 2) + 3],
-            autovalidate: true,
-            textInputAction: TextInputAction.next,
-            onFieldSubmitted: (text) {
-              setState(() {
-                mapObj['buildingmaterials'][index]["material"] = text.trim();
-              });
-              if (mapObj['buildingmaterials'][index+1] != null && mapObj['buildingmaterials'][index+1]["label"].trim().length > 0) {
-                FocusScope.of(context).requestFocus(_focusNodes[((index + 1) * 2) + 3]);
-              } else {
-                // If label field isn't filled in, go to it on Keyboard Next otherwise go to the next material
-                FocusScope.of(context).requestFocus(_focusNodes[((index + 1) * 2) + 2]);
-              }
-              if (mapObj['buildingmaterials'].length < index + 2) {
-                mapObj['buildingmaterials'] =
-                new List<dynamic>.from(mapObj['buildingmaterials'])
-                  ..addAll([{"label": "", "material": "",}]);
-              }
-            },
-            validator: (String value) {
-//              return value.contains('@') ? 'Do not use the @ character' : null;
-            },
-            onSaved: (text) {
-              setState(() {
-                mapObj['buildingmaterials'][index]["material"] = text.trim();
-              });
-            },
-            textCapitalization: TextCapitalization.none,
-          ),
-        )
-      ]
-    );
-    return widget;
-  }
-
-  void applyTemplate(mapObj) {
-    this.setState(() {
-      mapObj = mapObj;
-    });
-  }
-
   void _loadMap() async {
     print('map is ' + map.toString());
     // Load mapgroups from job
@@ -541,9 +166,9 @@ class _EditMapState extends State<EditMap> {
       mapObj['name'] = null;
       mapObj['path_local'] = null;
       mapObj['path_remote'] = null;
-      mapObj['buildingmaterials'] = null;
       mapObj['maptype'] = 'orphan';
       mapObj['path'] = new Uuid().v1();
+      mapObj['paths'] = new List<List<Offset>>();
 
       setState(() {
         isLoading = false;
@@ -555,18 +180,22 @@ class _EditMapState extends State<EditMap> {
       Firestore.instance.document(DataManager.get().currentJobPath)
           .collection('maps').document(map).get().then((doc) {
             // image
-            if (doc.data['path_remote'] == null && doc.data['path_local'] != null){
-              // only local image available (e.g. when taking photos with no internet)
-              localPhoto = true;
-              _handleImageUpload(File(doc.data['path_local']));
-            } else if (doc.data['path_remote'] != null) {
-              localPhoto = false;
-            }
+          mapObj = doc.data;
+          if (mapObj['paths'] != null) paths = convertFirestoreToListListOffset(mapObj['paths']);
+          else paths = new List<List<Offset>>();
+
+          if (mapObj['path_remote'] == null && mapObj['path_local'] != null){
+            // only local image available (e.g. when taking photos with no internet)
+            localPhoto = true;
+            _handleImageUpload(File(mapObj['path_local']));
+          } else if (mapObj['path_remote'] != null) {
+            localPhoto = false;
+          }
             setState(() {
-              mapObj = doc.data;
-              initMapGroup = doc.data['mapgrouppath'];
+              mapObj = mapObj;
+              initMapGroup = mapObj['mapgrouppath'];
 //              if (mapObj['mapgrouppath'] != null) _mapgroup = { "path": mapObj['mapgrouppath'], "name": mapObj['mapgroupname'] };
-              if (doc.data["mapcode"] != null) controllerMapCode.text = doc.data["mapcode"];
+              if (mapObj["mapcode"] != null) controllerMapCode.text = mapObj["mapcode"];
               isLoading = false;
             });
       });
