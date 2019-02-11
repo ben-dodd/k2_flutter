@@ -32,7 +32,7 @@ class _AcmTabState extends State<AcmTab> {
               style: Styles.h1),
         ),
         new StreamBuilder(
-            stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').orderBy('roomname').snapshots(),
+            stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').snapshots(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) return
                 Container(
@@ -72,6 +72,7 @@ class _AcmTabState extends State<AcmTab> {
                   physics: NeverScrollableScrollPhysics(),
                   itemCount: snapshot.data.documents.length,
                   itemBuilder: (context, index) {
+                    print(snapshot.data.documents[index]['jobnumber']);
                     return AcmCard(
                       doc: snapshot.data.documents[index],
                       onCardClick: () async {

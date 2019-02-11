@@ -19,7 +19,6 @@ import 'package:k2e/widgets/loading.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
 import 'package:k2e/utils/firebase_conversion_functions.dart';
-import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class EditACM extends StatefulWidget {
   EditACM({Key key, this.acm}) : super(key: key);
@@ -35,7 +34,7 @@ class _EditACMState extends State<EditACM> {
   // DOCUMENT IDS
   DocumentReference sample;
   DocumentReference acm;
-  final Map<String,dynamic> constants = DataManager.get().constants;
+  final Map constants = DataManager.get().constants;
   Map<String,String> _room;
   List<List<Offset>> arrowPaths = new List<List<Offset>>();
   List<List<Offset>> shadePaths = new List<List<Offset>>();
