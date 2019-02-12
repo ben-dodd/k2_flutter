@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
+import 'package:k2e/pages/my_jobs/tasks/map/map_helper_functions.dart';
 import 'package:k2e/theme.dart';
 import 'package:vector_math/vector_math_64.dart';
 
@@ -41,18 +42,91 @@ class MapPainter extends StatefulWidget {
 }
 
 class _MapPainterState extends State<MapPainter> {
-  List<Offset> points; //List of points in one Tap or ery point or path is kept here
+  List<Offset> points = new List(2); //List of points in one Tap or ery point or path is kept here
   bool lineInProgress = false;
+  bool pathInProgress = false;
+  Offset stackOffset = null;
+  bool dragging = false;
+  int dragFingerCount = 0;
+
+  // DEFAULT MODE
+  // Modes can be:
+  //  edit: Allows for drawing of walls + moving & deleting
+  //  nav: Allows for panning, scrolling
+  String mode = 'edit';
+
+  // DEFAULT LAYER
+  // Layers can be:
+  // image: Add image from photo or file, or add other map to be displayed below (semi-transparent)
+  int layer = 1;
+
   double scale = 1.0;
   double rotation = 0.0;
   double translateX = 0.0;
   double translateY = 0.0;
+
   double startScale = 1.0;
   double startRotation = 0.0;
+  double startTranslateX = 0.0;
+  double startTranslateY = 0.0;
+
+  // Settings
+  bool gestureRotationEnabled = false;
+  bool gestureTranslationEnabled = true;
+  bool gestureScaleEnabled = true;
+
   int intervals = 10;
   int divisions = 4;
   int subdivisions = 2;
-  double angleLimit = 22.5;
+  double angleLimit = 15;
+
+  Offset snapPoint(Offset p, Offset q) {
+    var object = this.contexto.findRenderObject();
+    var translation = object?.getTransformTo(null)?.getTranslation();
+
+    transformPoint(
+      Offset(p.dx - translation.x, p.dy - translation.y),
+      Offset(_w/2, _h/2),
+      scale,
+      rotation,
+      translateX,
+      translateY,
+    );
+
+    int increments = intervals * divisions * subdivisions;
+    double interval = _w * scale/increments;
+    Offset t = new Offset(roundToMultiple(p.dx, interval), roundToMultiple(p.dy, interval));
+    if (q != null) {
+      // Limit angle to be multiple of the angleLimit
+
+      print(p.toString());
+      print(q.toString());
+//    return point;
+      double angle = atan2(q.dy - t.dy, q.dx - t.dx) * 180 / pi;
+//    double snapAngle = angleLimit * (angle ~/ angleLimit);
+      double snapAngle = roundToMultiple(angle, angleLimit);
+      double snapAngleRad = (snapAngle * pi / 180) - pi;
+
+//      print('Angle: ' + angle.toString() + ', SnapAngle: ' +
+//          snapAngle.toString() + ', angleDifference: ' +
+//          angleDifference.toString());
+
+      double distance = sqrt((t.dx - q.dx)*(t.dx - q.dx) + (t.dy - q.dy)*(t.dy - q.dy));
+      print('Distance between points: ' + distance.toString());
+      print ('Angle in degrees: ' + snapAngle.toString());
+      print('Angle in radians; ' + snapAngleRad.toString());
+
+//      print (movePoint(p, snapAngleRad, distance).toString());
+//      return movePoint(p, snapAngleRad, distance);
+
+      print (snapToAngle(t, q, snapAngleRad).toString());
+      return snapToAngle(t, q, snapAngleRad);
+//      return p;
+    } else {
+      return t;
+    }
+  }
+
 //  VoidCallback clearAll;
 
   /*
@@ -75,101 +149,104 @@ class _MapPainterState extends State<MapPainter> {
     print('tapUp');
     print(details.globalPosition.toString());
     setState(() {
-      var object = this.contexto.findRenderObject();
-      var translation = object?.getTransformTo(null)?.getTranslation();
-      // translation.y have the offset from the top of the screen to the "canvas".
+      Offset newPoint = snapPoint(details.globalPosition, points[0]);
 
-      if (lineInProgress) {
-        print('new point finished');
-        points[1] =
-        snapPoint(transformPoint(new Offset(details.globalPosition.dx - translation.x,
-            details.globalPosition.dy
-                - translation.y)), points[0]
-        );
-//        lineInProgress = false;
-        widget.updatePoints(points);
-        points = [
-          transformPoint(new Offset(details.globalPosition.dx - translation.x,
-              details.globalPosition.dy
-                  - translation.y)
-          ),
-          transformPoint(new Offset(details.globalPosition.dx - translation.x,
-              details.globalPosition.dy
-                  - translation.y)
-          ),
-        ];
-        widget.updatePaths(points);
+      if (pathInProgress) {
+        if (lineInProgress) {
+          print('new point finished');
+          points[1] = newPoint;
+          lineInProgress = false;
+          widget.updatePoints(points);
+          points = [ newPoint, newPoint ];
+          print('NEW POINT IN TAPUP - LINEINPROGRESS');
+          widget.updatePaths(points);
+        } else {
+          print ('new point started');
+          points = [ points[1] != null ? points[1] : newPoint , newPoint ];
+//          lineInProgress = false;
+          print('NEW POINT IN TAPUP - LINEINPROGRESS FALSE');
+          widget.updatePaths(points);
+        }
       } else {
-        print ('new point started');
-        points = [
-          transformPoint(new Offset(details.globalPosition.dx - translation.x,
-              details.globalPosition.dy
-                  - translation.y)
-          ),
-          transformPoint(new Offset(details.globalPosition.dx - translation.x,
-              details.globalPosition.dy
-                  - translation.y)
-          ),
-        ];
-        lineInProgress = true;
+        print ('new point + path started');
+        points = [ newPoint , newPoint ];
         widget.updatePaths(points);
+        print('NEW POINT IN TAPUP - PATH AND LINE FALSE');
+        lineInProgress = true;
+        pathInProgress = true;
       }
     });
   }
 
-  // Not used
+  // Not used - when tap becomes scale or pan
   void _tapCancel() {
     print('tapCancel');
   }
 
+  void loadStackOffset() {
+    print ('Loading stack offset!');
+    if (lineInProgress) {
+      points[1] = stackOffset;
+//      lineInProgress = false;
+      widget.updatePoints(points);
+      points = [ stackOffset, stackOffset];
+    } else {
+      points = [ points[1] != null ? points[1] : stackOffset , stackOffset ];
+    }
+    widget.updatePaths(points);
+    print('NEW POINT IN LOADSTACKOFFSET ' + lineInProgress.toString() + ' line, ' + pathInProgress.toString() + ' path');
+
+    lineInProgress = true;
+    pathInProgress = true;
+    stackOffset = null;
+  }
+
   // Pinch zoom
   void _scaleStart(ScaleStartDetails details) {
-   print('scale start');
-   print (details.toString());
-   setState(() {
+    print('scale start');
+    print (details.toString());
+    setState(() {
 //     lineInProgress = false;
-     var object = this.contexto.findRenderObject();
-     var translation = object?.getTransformTo(null)?.getTranslation();
-     points = [
-       transformPoint(new Offset(details.focalPoint.dx - translation.x,
-           details.focalPoint.dy
-               - translation.y)
-       ),
-       transformPoint(new Offset(details.focalPoint.dx - translation.x,
-           details.focalPoint.dy
-               - translation.y)
-       )
-     ];
-     print(points.toString());
-     if (lineInProgress) widget.updatePoints(points);
-      else widget.updatePaths(points);
-    lineInProgress = false;
-     // Add here to refresh the screen. If paths.add is only in panEnd
-     // only update the screen when finger is up
-   });
+      var object = this.contexto.findRenderObject();
+      var translation = object?.getTransformTo(null)?.getTranslation();
+      if (pathInProgress) {
+        Offset newOffset = snapPoint(details.focalPoint, points[0]);
+        if (lineInProgress) {
+          print('new point finished');
+          // set up new point to be added if scale is not a zoom/rotation
+          stackOffset = newOffset;
+        } else {
+          print ('new point started');
+          stackOffset = newOffset;
+        }
+      } else {
+        print ('new point + path started');
+        lineInProgress = true;
+        pathInProgress = true;
+        Offset newOffset = snapPoint(details.focalPoint, null);
+        points = [newOffset, newOffset];
+        widget.updatePaths(points);
+        print('NEW POINT IN SCALE START - pathINPROGRESES FALSE');
+      }
+    });
   }
 
   void _scaleUpdate(ScaleUpdateDetails details) {
-    print('scale update');
-//    print (details.toString());
-//    print (rotation.toString());
-//    print (startRotation.toString());
-//    print (details.rotation.toString());
+//    print('scale update ' + details.toString());
     if (startScale / details.scale == scale && details.rotation + startRotation == rotation) {
       // No pinching, draw line
+      if (stackOffset != null) {
+        loadStackOffset();
+      }
       setState(() {
         var object = this.contexto.findRenderObject();
         var translation = object?.getTransformTo(null)?.getTranslation();
-        points[1] = snapPoint(transformPoint(new Offset(details.focalPoint.dx - translation.x,
-            details.focalPoint.dy
-                - translation.y)), points[0]);
-        print(points.toString());
+        points[1] = snapPoint(details.focalPoint, points[0]);
       });
     } else {
       setState(() {
-        //Delete point
-        rotation = startRotation + details.rotation;
-        scale = startScale * details.scale;
+        if (gestureRotationEnabled) rotation = startRotation + details.rotation;
+        if (gestureScaleEnabled) scale = startScale * details.scale;
       });
     }
     widget.updatePoints(points);
@@ -180,41 +257,53 @@ class _MapPainterState extends State<MapPainter> {
     startScale = scale;
   }
 
-  Offset snapPoint(Offset p, Offset q) {
-//    return point;
-    double angle = atan2(q.dy - p.dy, q.dx - p.dx) * 180 / pi;
-    double snapAngle = angleLimit * (angle ~/ angleLimit);
-    double angleDifference = (angle - snapAngle) * pi / 180;
-
-    print ('Angle: ' + angle.toString() + ', SnapAngle: ' + snapAngle.toString() + ', angleDifference: ' + angleDifference.toString());
-    double interval = _w * scale/(intervals * divisions * subdivisions);
-    return Offset(interval * (p.dx ~/ interval), interval * (p.dy ~/ interval));
-//    return rotatePoint(Offset(interval * (p.dx ~/ interval), interval * (p.dy ~/ interval)), q, angleDifference);
+  void _panUpdate(DragUpdateDetails details) {
+    if (dragFingerCount > 1 && gestureTranslationEnabled) {
+//      print('pan view: ' + details.toString());
+      setState(() {
+        translateX = translateX + details.delta.dx;
+        translateY = translateY + details.delta.dy;
+      });
+    } else {
+      if (dragging && pathInProgress) {
+        _scaleUpdate(ScaleUpdateDetails(
+          focalPoint: details.globalPosition,
+          rotation: 0.0,
+          scale: 1.0,
+        ));
+      } else {
+        dragging = true;
+        print(points.toString() + ' ' + details.globalPosition.toString());
+        _scaleStart(ScaleStartDetails(
+          focalPoint: details.globalPosition,
+        ));
+      }
+    }
   }
 
-  Offset transformPoint(Offset p) {
-    // Get origin to rotate around
-    Offset o = Offset(_w/2, _h/2);
+  void _panEnd(DragEndDetails details) {
+    print('pan end: ' + details.toString());
+    dragFingerCount = 0;
+    if (dragging) {
+      // Finish path
+      print('new point finished');
 
-    // Translate to the origin, apply scaling
-    Offset t = Offset((p.dx - o.dx) * (1/scale), (p.dy - o.dy) * (1/scale));
-
-    // Apply rotation
-    t = Offset(cos(-rotation) * (t.dx) - sin(-rotation) * (t.dy),
-        sin(-rotation) * (t.dx) + cos(-rotation) * (t.dy));
-
-    // Translate back
-    t = Offset(t.dx + o.dx, t.dy + o.dy);
-
-    // Snap
-    return t;
-//    return Offset(cos(-rotation) * (p.dx - o.dx) - sin(-rotation) * (p.dy - o.dy) + o.dx,
-//        sin(-rotation) * (p.dx - o.dx) + cos(-rotation) * (p.dy - o.dy) + o.dy);
+      lineInProgress = false;
+      widget.updatePoints(points);
+      points = [ points[1], points[1] ];
+      print('NEW POINT IN PAN END');
+      widget.updatePaths(points);
+    }
+    dragging = false;
   }
 
-  Offset rotatePoint(Offset t, Offset o, double rotation){
-    return Offset(cos(rotation) * (t.dx - o.dx) - sin(rotation) * (t.dy - o.dy) + o.dx,
-        sin(rotation) * (t.dx - o.dx) + cos(rotation) * (t.dy - o.dy) + o.dy);
+  void _doubleTap() {
+    print('double tap TAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP');
+    setState(() {
+      lineInProgress = false;
+      pathInProgress = false;
+      dragging = false;
+    });
   }
 
   double _w, _h;
@@ -226,12 +315,12 @@ class _MapPainterState extends State<MapPainter> {
     _w = MediaQuery.of(context).size.width;
     _h = MediaQuery.of(context).size.height;
 
-    print('Scale is: ' + scale.toString());
-    print('Height is: ' + _h.toString());
-    print('Width is: ' + _w.toString());
+//    print('Scale is: ' + scale.toString());
+//    print('Height is: ' + _h.toString());
+//    print('Width is: ' + _w.toString());
 //    if (widget.arrowPaths.length == 0) paths.clear();
-    print('Paths in MapPainter: ' + widget.paths.toString());
-    return Transform(transform: Matrix4.rotationZ(rotation)..scale(scale), origin: Offset(_w/2, _h/2), child: RawGestureDetector(
+//    print('Paths in MapPainter: ' + widget.paths.toString());
+    return Transform(transform: Matrix4.rotationZ(rotation)..scale(scale)..translate(translateX, translateY), origin: Offset(_w/2 + translateX, _h/2 + translateY), child: RawGestureDetector(
       gestures: <Type, GestureRecognizerFactory>{
         TapGestureRecognizer: GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
             () => TapGestureRecognizer(),
@@ -250,6 +339,24 @@ class _MapPainterState extends State<MapPainter> {
                 ..onStart = _scaleStart
                 ..onUpdate = _scaleUpdate
                 ..onEnd = _scaleEnd;
+            }
+        ),
+        DoubleTapGestureRecognizer: GestureRecognizerFactoryWithHandlers<DoubleTapGestureRecognizer>(
+            () => DoubleTapGestureRecognizer(),
+            (DoubleTapGestureRecognizer instance) {
+              instance
+                ..onDoubleTap = _doubleTap;
+            }
+        ),
+        ImmediateMultiDragGestureRecognizer: GestureRecognizerFactoryWithHandlers<ImmediateMultiDragGestureRecognizer>(
+            () => ImmediateMultiDragGestureRecognizer(),
+            (MultiDragGestureRecognizer instance) {
+              instance
+                ..onStart = (Offset offset) {
+                  dragFingerCount = dragFingerCount + 1;
+                  print ('on start drag ' + dragFingerCount.toString());
+                  return new PanView(_panUpdate, _panEnd);
+                };
             }
         )
       },
@@ -271,7 +378,7 @@ class _MapPainterState extends State<MapPainter> {
             foregroundPainter: new MyPainter(
               lineColor: widget.pathColour,
               aImg: widget.image,
-              width: 2.0,
+              width: 1.0,
               canvasWidth: _w.toInt(),
               canvasHeight: _h.toInt(),
               paths: widget.paths,
@@ -379,4 +486,23 @@ Offset rotate_point(Offset o, Offset p, double angle){
 Offset scale_point(Offset o, double scale) {
   return o;
 //  return Offset(o.dx * scale, o.dy * scale);
+}
+
+class PanView extends Drag {
+  final GestureDragUpdateCallback onUpdate;
+  final GestureDragEndCallback onEnd;
+
+  PanView(this.onUpdate, this.onEnd);
+
+  @override
+  void update(DragUpdateDetails details) {
+    super.update(details);
+    onUpdate(details);
+  }
+
+  @override
+  void end(DragEndDetails details) {
+    super.end(details);
+    onEnd(details);
+  }
 }
