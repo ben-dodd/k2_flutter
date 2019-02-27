@@ -21,6 +21,7 @@ class DataManager {
   String currentJobNumber;
   List<Map<String, String>> currentJobSamples;
   TimeCounter currentTimeCounter;
+  List<Map<String, String>> staff;
 
   // Current State
   String currentRoom;

@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
+import 'package:k2e/pages/my_jobs/tasks/coc/coc_card.dart';
+import 'package:k2e/pages/my_jobs/tasks/coc/edit_coc.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/widgets/loading.dart';
 import 'package:uuid/uuid.dart';
@@ -85,8 +87,14 @@ class _AssignSampleNumbersState extends State<AssignSampleNumbers> {
                         physics: NeverScrollableScrollPhysics(),
                         itemCount: snapshot.data.documents.length,
                         itemBuilder: (context, index) {
-                          return Text(snapshot.data.documents[index]['jobNumber']);
-                        }
+                        return CocCard(doc: snapshot.data.documents[index], onCardClick: () {
+                          Navigator.of(context).push(
+                              new MaterialPageRoute(builder: (context) =>
+                                  EditCoc(coc: snapshot.data.documents[index]
+                                      .documentID)));
+                          },
+                          onCardLongPress: null,);
+                      }
                     );
                   }
               ),
@@ -160,7 +168,7 @@ class _AssignSampleNumbersState extends State<AssignSampleNumbers> {
                 padding: EdgeInsets.only(top: 14.0,),
                 child: new OutlineButton(
                     shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
-                    child: Text("Add Historic Sample",
+                    child: Text("Add Historic Chain of Custody",
                         style: new TextStyle(color: Theme.of(context).accentColor, fontWeight: FontWeight.bold
                         )
                     ),

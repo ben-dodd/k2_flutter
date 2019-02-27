@@ -86,6 +86,13 @@
             </list>
           </value>
         </entry>
+        <entry key="calendarro">
+          <value>
+            <list>
+              <option value="C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/calendarro-0.0.5/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="camera">
           <value>
             <list>
@@ -620,6 +627,7 @@
       <root url="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/built_collection-4.1.0/lib" />
       <root url="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/built_value-6.3.0/lib" />
       <root url="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/cached_network_image-0.4.2/lib" />
+      <root url="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/calendarro-0.0.5/lib" />
       <root url="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/camera-0.2.9+1/lib" />
       <root url="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/charcode-1.1.2/lib" />
       <root url="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/cloud_firestore-0.8.2+3/lib" />

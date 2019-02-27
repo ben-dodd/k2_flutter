@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:calendarro/date_utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -17,6 +18,8 @@ import 'package:k2e/widgets/dialogs.dart';
 import 'package:k2e/widgets/loading.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
+import 'package:calendarro/calendarro.dart';
+
 
 class EditCoc extends StatefulWidget {
   EditCoc({Key key, this.coc}) : super(key: key);
@@ -46,6 +49,8 @@ class _EditCocState extends State<EditCoc> {
   List rooms;
   List items;
   List materials;
+  List staff;
+  final List<String> personnelSelected = <String>[];
 
   var _formKey = GlobalKey<FormState>();
 
@@ -61,9 +66,19 @@ class _EditCocState extends State<EditCoc> {
 
   @override
   void initState() {
+    staff = [];
+    if (DataManager.get().staff == null) {
+      Firestore.instance.collection('state').document('staff').get().then((doc) {
+        doc.data.forEach((key, value) => staff.add(value['name'].toString()));
+        staff.sort((a, b) { return a.compareTo(b); } );
+        print(staff.toString());
+      });
+    } else {
+      staff = DataManager.get().staff;
+    }
     coc = widget.coc;
 //    controllerRoomCode.addListener(_updateRoomCode);
-    _loadRoom();
+    _loadCoc();
     _scrollController = ScrollController();
 
     rooms = constants['roomsuggestions'];
@@ -135,58 +150,54 @@ class _EditCocState extends State<EditCoc> {
                   onSubmitted: (v) {},
                 ),
                 new Container(
-                  child: TextFormField(
-                    decoration: const InputDecoration(
-                      labelText: "Room Code",
-                      hintText: "e.g. B1 (use for large surveys with many similar rooms)",
-                    ),
-                    controller: _roomCodeController,
-                    autocorrect: false,
-                    onSaved: (String value) =>
-                    cocObj["roomcode"] = value.trim(),
-                    focusNode: _focusNodes[1],
-                    textCapitalization: TextCapitalization.characters,
-                  ),
+                  alignment: Alignment.topLeft,
+                  padding: EdgeInsets.only(top: 14.0,),
+                  child: new Text(
+                    "Sample Date(s)", style: Styles.label,),
+                ),
+                Calendarro(
+                  startDate: DateUtils.getFirstDayOfCurrentMonth(),
+                  endDate: DateUtils.getLastDayOfCurrentMonth(),
+                  selectionMode: SelectionMode.MULTI,
+                  displayMode: DisplayMode.MONTHS,
+//                  selectedDates: cocObj['dates'].map((date) { return new DateTime(date); } ).toList(),
                 ),
                 new Container(
                   alignment: Alignment.topLeft,
                   padding: EdgeInsets.only(top: 14.0,),
                   child: new Text(
-                    "Room Group/Building/Level", style: Styles.label,),
+                    "Sampled By", style: Styles.label,),
                 ),
                 new Container(
                   alignment: Alignment.topLeft,
                   child: DropdownButton<String>(
-                    value: (cocObj['roomgrouppath'] == null)
-                        ? null
-                        : cocObj['roomgrouppath'],
+                    value: personnelSelected.isEmpty ? null : personnelSelected.last,
                     iconSize: 24.0,
-                    items: roomgrouplist.map((Map<String, String> roomgroup) {
-                      print(roomgroup.toString());
-                      String val = "Untitled";
-                      if (roomgroup['name'] != null) val = roomgroup['name'];
+                    items: staff.map((staff) {
                       return new DropdownMenuItem<String>(
-                        value: roomgroup["path"],
-                        child: new Text(val),
+                        value: staff,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Icon(
+                              Icons.check,
+                              color: personnelSelected.contains(staff) ? null : Colors.transparent,
+                            ),
+                            SizedBox(width: 16),
+                            Text(staff),
+                          ],
+                        ),
                       );
                     }).toList(),
                     hint: Text("-"),
-                    onChanged: (value) {
+                    onChanged: (String newValue) {
                       setState(() {
-//                            _roomgroup = roomgrouplist.firstWhere((e) => e['path'] == value);
-                        if (value == '') {
-                          cocObj['roomtype'] = 'orphan';
-                        } else
-                          cocObj['roomtype'] = null;
-                        cocObj["roomgroupname"] =
-                        roomgrouplist.firstWhere((e) => e['path'] ==
-                            value)['name'];
-                        ;
-                        cocObj["roomgrouppath"] = value;
-                        DataManager
-                            .get()
-                            .currentRoomGroup = value;
-//                              acm.setData({"room": _room}, merge: true);
+                        print(personnelSelected.toString());
+                        print(newValue);
+                        if (personnelSelected.contains(newValue))
+                          personnelSelected.remove(newValue);
+                        else
+                          personnelSelected.add(newValue);
                       });
                     },
                   ),
@@ -314,7 +325,7 @@ class _EditCocState extends State<EditCoc> {
     });
   }
 
-  void _loadRoom() async {
+  void _loadCoc() async {
 //    print("Loading room");
     if (coc == null) {
       _title = "Add New Chain of Custody";
@@ -333,6 +344,7 @@ class _EditCocState extends State<EditCoc> {
         // image
         setState(() {
           cocObj = doc.data;
+          if (cocObj['personnel'] != null) cocObj['personnel'].forEach((p) { personnelSelected.add(p); });
           _roomNameController.text = cocObj['name'];
           _roomCodeController.text = cocObj['roomcode'];
           isLoading = false;
