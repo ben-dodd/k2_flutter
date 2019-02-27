@@ -44,6 +44,17 @@ class Styles {
     fontSize: 12.0,
   );
 
+  static TextStyle labelDisabled = new TextStyle(
+    color: Colors.black26,
+    fontSize: 12.0,
+  );
+
+  static TextStyle acmCard = new TextStyle(
+    color: Colors.white,
+    fontWeight: FontWeight.bold,
+    fontSize: 18.0,
+  );
+
   static TextStyle logButton = new TextStyle(
     fontSize: 16.0,
   );

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/styles.dart';
+import 'package:k2e/widgets/dialogs.dart';
 import 'package:k2e/widgets/loading.dart';
 import 'package:uuid/uuid.dart';
 
@@ -186,7 +187,7 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
                     ),
 //                          color: Colors.white,
                     onPressed: () {
-                      _deleteDialog();
+                      showDeleteRoomGroupDialog(context, roomObj, _deleteRoomGroup,);
                     }
                 ),
               )
@@ -199,43 +200,30 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
     );
   }
 
-  void _deleteDialog() {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: new Text('Delete Room'),
-            content: new Text('Are you sure you wish to delete this room group (' + roomObj['name'] + ')?\nNote: All rooms linked to this room will be orphaned.'),
-            actions: <Widget>[
-              new FlatButton(
-                child: new Text('Cancel', style: new TextStyle(color: Colors.black)),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-              new FlatButton(
-                  child: new Text('Delete'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    _deleteRoomGroup();
-                  }
-              ),
-            ],
-          );
+  void _deleteRoomGroup(rooms, acms) {
+  print(rooms.toString() + acms.toString());
+  var path = DataManager.get().currentJobPath;
+    // Remove room references or delete rooms
+    Firestore.instance.document(path).collection('rooms').where('roomgrouppath', isEqualTo: widget.roomgroup).getDocuments().then((doc) {
+      doc.documents.forEach((room) {
+        if (rooms) {
+          Firestore.instance.document(path).collection('acm').where('roompath', isEqualTo: room.documentID).getDocuments().then((doc2) {
+            doc2.documents.forEach((acm) {
+              if (acms) {
+                Firestore.instance.document(path).collection('acm').document(acm.documentID).delete();
+              } else {
+                Firestore.instance.document(path).collection('rooms').document(acm.documentID).setData({'roomname': null, 'roompath': null }, merge: true);
+              }
+            });
+            Firestore.instance.document(path).collection('rooms').document(room.documentID).delete();
+          });
         }
-    );
-  }
-
-  void _deleteRoomGroup() {
-    // Remove room references
-    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').where('roomgrouppath', isEqualTo: widget.roomgroup).getDocuments().then((doc) {
-      doc.documents.forEach((doc) {
-        Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(doc.documentID).setData({'roomgroupname': null, 'roomgrouppath': null, 'roomtype': 'orphan'}, merge: true);
+        Firestore.instance.document(path).collection('rooms').document(room.documentID).setData({'roomgroupname': null, 'roomgrouppath': null, 'roomtype': 'orphan'}, merge: true);
       });
     });
 
     // Remove room
-    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(widget.roomgroup).delete();
+    Firestore.instance.document(path).collection('rooms').document(widget.roomgroup).delete();
 
     // Pop
     Navigator.pop(context);

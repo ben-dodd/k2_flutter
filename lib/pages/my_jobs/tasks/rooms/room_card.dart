@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_jobs/tasks/rooms/edit_room.dart';
 import 'package:k2e/pages/my_jobs/tasks/rooms/edit_room_group.dart';
+import 'package:k2e/theme.dart';
 import 'package:k2e/utils/draggable/dragable_flutter_list.dart';
 import 'package:uuid/uuid.dart';
 
@@ -65,9 +66,9 @@ class _RoomCardState extends State<RoomCard>{
         // Long tap -> add options to sync or delete
 //        onLongPress: widget.onCardLongPress,
         trailing:
-        hasPhoto ? photoSynced ? Icon(Icons.camera_alt, color: Colors.green,)
-            : Icon(Icons.camera_alt, color: Colors.orange)
-            : Icon(Icons.camera_alt, color: Colors.red)
+        hasPhoto ? photoSynced ? Icon(Icons.camera_alt, color: CompanyColors.checkYes,)
+            : Icon(Icons.camera_alt, color: CompanyColors.checkMaybe)
+            : Icon(Icons.camera_alt, color: CompanyColors.checkNo)
     );
 
     if (doc['children'].length == 0) return new ListTile(
@@ -89,29 +90,29 @@ class _RoomCardState extends State<RoomCard>{
           new MaterialPageRoute(builder: (context) => EditRoomGroup(roomgroup: doc['path'])),
         );}),
       children: doc['children'].length > 0 ?
-          [ new DragAndDropList(
-            doc['children'].length,
-            itemBuilder: (BuildContext context, index) {
-              return _roomCard(new Map<String,dynamic>.from(doc['children'][index]));
-            },
-            onDragFinish: (before, after) {
-              List newList = new List.from(doc['children']);
-              newList.removeAt(before);
-              newList.insert(after, doc['children'][before]);
-              print(newList.toString());
-              Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(doc['path']).setData({'children': newList,}, merge: true);
-              print('before: ' + before.toString());
-              print('after: ' + after.toString());
-            },
-            canDrag: (index) => true,
-            canBeDraggedTo: (one, two) => true,
-            dragElevation: 8.0,
-          )]
-//      doc['children']
-//          .map<Widget>((child) {
-//            // Start streams here?
-//            return _roomCard(new Map<String,dynamic>.from(child));
-//      })
+//          [ new DragAndDropList(
+//            doc['children'].length,
+//            itemBuilder: (BuildContext context, index) {
+//              return _roomCard(new Map<String,dynamic>.from(doc['children'][index]));
+//            },
+//            onDragFinish: (before, after) {
+//              List newList = new List.from(doc['children']);
+//              newList.removeAt(before);
+//              newList.insert(after, doc['children'][before]);
+//              print(newList.toString());
+//              Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(doc['path']).setData({'children': newList,}, merge: true);
+//              print('before: ' + before.toString());
+//              print('after: ' + after.toString());
+//            },
+//            canDrag: (index) => true,
+//            canBeDraggedTo: (one, two) => true,
+//            dragElevation: 8.0,
+//          )]
+          doc['children']
+              .map<Widget>((child) {
+                // Start streams here?
+                return _roomCard(new Map<String,dynamic>.from(child));
+          }).toList()
           : [new Container()],
     );
   }

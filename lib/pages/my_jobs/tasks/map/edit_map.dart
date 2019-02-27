@@ -72,7 +72,6 @@ class _EditMapState extends State<EditMap> {
                   Firestore.instance.document(DataManager.get().currentJobPath).collection('maps').document(mapObj['path']).setData(
                       mapObj, merge: true);
                   Navigator.pop(context);
-                  Navigator.pop(context);
 //                }
               })
             ]

@@ -37,6 +37,18 @@ class CompanyColors {
   static const Color resultMid = Color(0xFFFFD930);
   static const Color resultLow = Color(0xFFB2E6A1);
 
+  // icon colours
+  static const Color checkNo = Color(0xFFE33714);
+  static const Color checkMaybe = Color(0xFFFFD930);
+  static const Color checkYes = Color(0xFFB2E6A1);
+
+  // acm key colours
+  static const Color acmPositive = Color(0xFFE33714);
+  static const Color strongPresume = Color(0xFFFFA930);
+  static const Color weakPresume = Color(0xFFFFD930);
+  static const Color acmNegative = Color(0xFFB2E6A1);
+
+
   // icons
   static Icon asbestosIcon = new Icon(
       Icons.whatshot, color: iconYellow

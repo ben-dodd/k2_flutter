@@ -16,7 +16,13 @@ class AcmTab extends StatefulWidget {
 class _AcmTabState extends State<AcmTab> {
   String _loadingText = 'Loading ACM...';
   bool hasSamples = true;
-
+// TODO: Give options to display ACM in different ways. e.g.
+  // 1) Tree view with Rooms
+  // 2) Order by type (idKey)
+  // 3) Order by material
+  // 4) Order by risk
+  // 5) Display in table
+  // 6) Display in table as it would be in a report
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -72,7 +78,6 @@ class _AcmTabState extends State<AcmTab> {
                   physics: NeverScrollableScrollPhysics(),
                   itemCount: snapshot.data.documents.length,
                   itemBuilder: (context, index) {
-                    print(snapshot.data.documents[index]['jobnumber']);
                     return AcmCard(
                       doc: snapshot.data.documents[index],
                       onCardClick: () async {
@@ -84,7 +89,6 @@ class _AcmTabState extends State<AcmTab> {
                                           .documentID)),
                               );
                         } else {
-                          print(context.toString());
                           Navigator.of(context).push(
                             new MaterialPageRoute(builder: (context) =>
                                 EditACM(

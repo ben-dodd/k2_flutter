@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
+import 'package:k2e/styles.dart';
 import 'package:k2e/widgets/customdialog.dart';
 
 class DuplicateRoomsDialog extends StatefulWidget {
@@ -169,6 +170,94 @@ class _RoomTemplateDialogState extends State<RoomTemplateDialog> {
             widget.applyTemplate(widget.roomObj);
             Navigator.of(context).pop();
           },
+        ),
+      ],
+    );
+  }
+}
+
+void showDeleteRoomGroupDialog(context, roomObj, deleteRoomGroup) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return DeleteRoomGroupDialog(roomObj: roomObj, deleteRoomGroup: deleteRoomGroup);
+    },
+  );
+}
+
+class DeleteRoomGroupDialog extends StatefulWidget {
+  DeleteRoomGroupDialog({
+    this.roomObj,
+    this.deleteRoomGroup,
+  }) : super();
+
+  final roomObj;
+  final deleteRoomGroup;
+
+  @override
+  _DeleteRoomGroupDialogState createState() => new _DeleteRoomGroupDialogState();
+}
+
+class _DeleteRoomGroupDialogState extends State<DeleteRoomGroupDialog> {
+
+  bool deleteRooms = false;
+  bool deleteAcm = false;
+
+  @override
+  void initState() {
+//    selected = "Basic";
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: new Text('Delete Room'),
+      content: new Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget> [
+          new Text('Are you sure you wish to delete this room group (' + widget.roomObj['name'] + ')?'),
+          new Row(children: <Widget> [
+            new Container(
+              alignment: Alignment.topLeft,
+              child: Checkbox(value: deleteRooms,
+                  onChanged: (value) => setState(() {
+                    deleteRooms = value;
+                  })),
+            ),
+            new Container(
+              alignment: Alignment.topLeft,
+              child: new Text("Delete Rooms in Group", style: Styles.label,),
+            ),
+          ]),
+          new Row(children: <Widget> [
+            new Container(
+              alignment: Alignment.topLeft,
+              child: Checkbox(value: deleteAcm,
+                onChanged: (value) => deleteRooms ? setState(() {
+                  deleteAcm = !deleteAcm;
+                }) : null,
+              ),
+            ),
+            new Container(
+              alignment: Alignment.topLeft,
+              child: new Text("Delete ACM in Rooms", style: Styles.label,),
+            ),
+          ]),
+        ],),
+      actions: <Widget>[
+        new FlatButton(
+          child: new Text('Cancel', style: new TextStyle(color: Colors.black)),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        new FlatButton(
+            child: new Text('Delete'),
+            onPressed: () {
+              Navigator.of(context).pop();
+              widget.deleteRoomGroup(deleteRooms, deleteAcm);
+            }
         ),
       ],
     );

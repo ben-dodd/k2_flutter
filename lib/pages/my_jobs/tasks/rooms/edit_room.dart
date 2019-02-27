@@ -212,6 +212,7 @@ class _EditRoomState extends State<EditRoom> {
                       ),
                     ),
               ExpansionTile(
+                initiallyExpanded: true,
                 title: new Text("Presumed and Sampled Materials", style: Styles.h2,),
                 children: <Widget>[
                     new Row(children: <Widget> [
@@ -269,7 +270,6 @@ class _EditRoomState extends State<EditRoom> {
                               physics: NeverScrollableScrollPhysics(),
                               itemCount: snapshot.data.documents.length,
                               itemBuilder: (context, index) {
-                                print(snapshot.data.documents[index]['jobnumber']);
                                 var doc = snapshot.data.documents[index].data;
                                 doc['path'] = snapshot.data.documents[index].documentID;
                                 return AcmCard(
@@ -319,6 +319,7 @@ class _EditRoomState extends State<EditRoom> {
 //                    new Container(padding: EdgeInsets.only(top: 14.0)),
 //                    new Divider(),
               ExpansionTile(
+                initiallyExpanded: true,
                 title: new Text("Building Materials", style: Styles.h2,),
                 children: <Widget>[
                     new Row(
@@ -459,7 +460,7 @@ class _EditRoomState extends State<EditRoom> {
           controller: labelController,
           capitalization: TextCapitalization.sentences,
           textInputAction: TextInputAction.next,
-          label: 'Item',
+//          label: 'Item',
           suggestions: items,
           onSaved: (value) => roomObj['buildingmaterials'][index]["label"] = value.trim(),
           validator: (value) { },
@@ -496,7 +497,7 @@ class _EditRoomState extends State<EditRoom> {
             controller: materialController,
             capitalization: TextCapitalization.none,
             textInputAction: TextInputAction.next,
-            label: 'Material',
+//            label: 'Material',
             suggestions: materials,
             onSaved: (value) => roomObj['buildingmaterials'][index]["material"] = value.trim(),
             validator: (value) { },

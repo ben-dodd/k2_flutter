@@ -314,13 +314,46 @@ class _EditACMState extends State<EditACM> {
                 new IconButton(icon: const Icon(Icons.check), onPressed: () {
                   if (_formKey.currentState.validate()) {
                     _formKey.currentState.save();
+                    if (showMaterialRisk) {
+                      acmObj['mRisk'] = true;
+                      if (materialRiskSet) {
+                        acmObj['mRiskScore'] = materialRiskScore;
+                        acmObj['mRiskLevel'] = materialRiskLevel;
+                        acmObj['mRiskText'] = materialRiskText;
+                      } else {
+                        acmObj['mRiskScore'] = materialRiskScore;
+                        acmObj['mRiskLevel'] = -1;
+                        acmObj['mRiskText'] = 'Incomplete';
+                      }
+                    }
+                    if (showPriorityRisk) {
+                      acmObj['pRisk'] = true;
+                      if (priorityRiskSet) {
+                        acmObj['pRiskScore'] = priorityRiskScore;
+                        acmObj['pRiskLevel'] = priorityRiskLevel;
+                        acmObj['pRiskText'] = priorityRiskText;
+                      } else {
+                        acmObj['pRiskScore'] = priorityRiskScore;
+                        acmObj['pRiskLevel'] = -1;
+                        acmObj['pRiskText'] = 'Incomplete';
+                      }
+                      if (totalRiskSet) {
+                        acmObj['tRiskScore'] = totalRiskScore;
+                        acmObj['tRiskLevel'] = totalRiskLevel;
+                        acmObj['tRiskText'] = totalRiskText;
+                      } else {
+                        acmObj['tRiskScore'] = totalRiskScore;
+                        acmObj['tRiskLevel'] = -1;
+                        acmObj['tRiskText'] = 'Incomplete';
+                      }
+                    }
                     if (arrowPaths.length > 0) {
                       // Convert List of Lists of Offsets into a format Firebase can store
                       // Firebase can't do Lists of Lists
                       acmObj['arrowPaths'] = convertListListOffsetToFirestore(arrowPaths);
                     }
 
-                    Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').document(acmObj['path']).setData(
+                    Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').document(widget.acm).setData(
                         acmObj, merge: true);
                     Navigator.pop(context);
                   }
@@ -2042,6 +2075,9 @@ class _EditACMState extends State<EditACM> {
         }
         _room = {"path": acmObj['roompath'], "name": acmObj['roomname']};
 
+        showMaterialRisk = acmObj['mRisk'] == true;
+        showPriorityRisk = acmObj['pRisk'] == true;
+
         // Load autosuggests
         this._itemController.text = acmObj['description'];
         this._materialController.text = acmObj['material'];
@@ -2143,17 +2179,21 @@ class _EditACMState extends State<EditACM> {
 
   void _handleGallery() async {
     ImagePicker.pickImage(source: ImageSource.gallery).then((image) {
-      _clearArrows();
-      localPhoto = true;
-      _handleImageUpload(image);
+      if (image != null) {
+        _clearArrows();
+        localPhoto = true;
+        _handleImageUpload(image);
+      }
     });
   }
 
   void _handleCamera() {
     ImagePicker.pickImage(source: ImageSource.camera).then((image) {
-      _clearArrows();
-      localPhoto = true;
-      _handleImageUpload(image);
+      if (image != null) {
+        _clearArrows();
+        localPhoto = true;
+        _handleImageUpload(image);
+      }
     });
   }
 

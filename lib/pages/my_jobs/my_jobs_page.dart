@@ -61,7 +61,7 @@ class _MyJobsPageState extends State<MyJobsPage> {
                             return ListView.builder(
                                 itemCount: snapshot.data.documents.length,
                                 itemBuilder: (context, index) {
-                                  print(snapshot.data.documents[index]['path']);
+//                                  print(snapshot.data.documents[index]['path']);
                                   return Dismissible(
                                     key: new Key(snapshot.data.documents[index]['path']),
                                     onDismissed: (direction) async {
