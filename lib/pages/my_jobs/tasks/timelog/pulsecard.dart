@@ -78,7 +78,7 @@ class _PulseCardState extends State<PulseCard>
       padding: EdgeInsets.symmetric(vertical: 16.0),
     decoration: new BoxDecoration(
     color: colorAnimation.value,
-    border: new Border.all(color: (widget.bordercolor != null) ? widget.bordercolor : Colors.black12, width: 2.0),
+    border: new Border.all(color: (widget.bordercolor != null) ? widget.bordercolor : Colors.black12, width: 1.0),
     borderRadius: (widget.radius != null) ? new BorderRadius.circular(widget.radius) : new BorderRadius.circular(50.0),
     ),
         child:

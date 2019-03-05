@@ -34,14 +34,23 @@ class _WfmJobState extends State<WfmJobCard>{
     } else {
       icon = CompanyColors.generalIcon;
     }
-    return new ListTile(
-      leading: icon,
-      title: Row(children: <Widget> [
-        Text(widget.jobHeader.jobnumber + ': ', style: Styles.h2,),
-        Flexible(
-            child: Text(' ' + widget.jobHeader.clientname, overflow: TextOverflow.ellipsis,))]),
-      subtitle: Text(widget.jobHeader.address),
-      onTap: widget.onCardClick,
+    return new Container(
+      margin: EdgeInsets.symmetric(vertical: 4.0),
+      padding: EdgeInsets.fromLTRB(8.0,0.0,4.0,0.0),
+      decoration: new BoxDecoration(
+        color: Colors.white,
+        border: new Border.all(color: Colors.black38, width: 1.0),
+        borderRadius: new BorderRadius.circular(4.0),
+      ),
+      child: ListTile(
+        leading: icon,
+        title: Row(children: <Widget> [
+          Text(widget.jobHeader.jobnumber + ': ', style: Styles.h2,),
+          Flexible(
+              child: Text(' ' + widget.jobHeader.clientname, overflow: TextOverflow.ellipsis,))]),
+        subtitle: Text(widget.jobHeader.address),
+        onTap: widget.onCardClick,
+      ),
     );
   }
 }

@@ -4,7 +4,6 @@ import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_jobs/tasks/coc/coc_card.dart';
 import 'package:k2e/pages/my_jobs/tasks/coc/edit_coc.dart';
 import 'package:k2e/styles.dart';
-import 'package:k2e/widgets/loading.dart';
 import 'package:uuid/uuid.dart';
 
 class AssignSampleNumbers extends StatefulWidget {

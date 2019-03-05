@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_jobs/tasks/acm/edit_sample_asbestos_air.dart';
 import 'package:k2e/pages/my_jobs/tasks/acm/edit_acm.dart';
+import 'package:k2e/pages/my_jobs/tasks/coc/coc_card.dart';
+import 'package:k2e/pages/my_jobs/tasks/coc/edit_coc.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/pages/my_jobs/tasks/acm/acm_card.dart';
 
@@ -32,7 +34,7 @@ class _CocTabState extends State<CocTab> {
               style: Styles.h1),
         ),
         new StreamBuilder(
-            stream: Firestore.instance.collection('cocs').where('jobNumber', isEqualTo: DataManager.get().currentJobNumber).snapshots(),
+            stream: Firestore.instance.collection('cocs').where('jobNumber', isEqualTo: DataManager.get().currentJobNumber).where('deleted', isEqualTo: false).snapshots(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) return
                 Container(
@@ -72,25 +74,15 @@ class _CocTabState extends State<CocTab> {
                   physics: NeverScrollableScrollPhysics(),
                   itemBuilder: (context, index) {
                     print(snapshot.data.documents[index]['jobnumber']);
-                    return AcmCard(
+                    return CocCard(
                       doc: snapshot.data.documents[index],
                       onCardClick: () async {
-                        if (snapshot.data.documents[index]['sampletype'] == 'air'){
-                          Navigator.of(context).push(
-                              new MaterialPageRoute(builder: (context) =>
-                                  EditSampleAsbestosAir(
-                                      sample: snapshot.data.documents[index]
-                                          .documentID)),
-                              );
-                        } else {
-                          print(context.toString());
-                          Navigator.of(context).push(
-                            new MaterialPageRoute(builder: (context) =>
-                                EditACM(
-                                    acm: snapshot.data.documents[index]
-                                        .documentID)),
-                          );
-                        }
+                        Navigator.of(context).push(
+                          new MaterialPageRoute(builder: (context) =>
+                              EditCoc(
+                                  coc: snapshot.data.documents[index]
+                                      .documentID)),
+                        );
                       },
                       onCardLongPress: () {
                         // Delete

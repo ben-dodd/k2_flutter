@@ -1,24 +1,16 @@
-import 'dart:io';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:calendarro/date_utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/pages/my_jobs/tasks/acm/edit_acm.dart';
-import 'package:k2e/pages/my_jobs/tasks/acm/edit_sample_asbestos_air.dart';
 import 'package:k2e/styles.dart';
-import 'package:k2e/theme.dart';
-import 'package:k2e/utils/camera.dart';
-import 'package:k2e/pages/my_jobs/tasks/acm/acm_card.dart';
 import 'package:k2e/widgets/custom_auto_complete.dart';
 import 'package:k2e/widgets/custom_typeahead.dart';
 import 'package:k2e/widgets/dialogs.dart';
 import 'package:k2e/widgets/loading.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:uuid/uuid.dart';
+import 'package:flutter_calendar/flutter_calendar.dart';
+import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart';
 import 'package:calendarro/calendarro.dart';
+import 'package:uuid/uuid.dart';
 
 
 class EditCoc extends StatefulWidget {
@@ -51,6 +43,7 @@ class _EditCocState extends State<EditCoc> {
   List materials;
   List staff;
   final List<String> personnelSelected = <String>[];
+  final List<DateTime> datesSelected = <DateTime>[];
 
   var _formKey = GlobalKey<FormState>();
 
@@ -88,6 +81,9 @@ class _EditCocState extends State<EditCoc> {
   }
 
   Widget build(BuildContext context) {
+    print(staff.toString());
+    print(personnelSelected.toString());
+    print(datesSelected.toString());
     return new Scaffold(
 //        resizeToAvoidBottomPadding: false,
       appBar:
@@ -100,11 +96,9 @@ class _EditCocState extends State<EditCoc> {
             new IconButton(icon: const Icon(Icons.check), onPressed: () {
               if (_formKey.currentState.validate()) {
                 _formKey.currentState.save();
-                // Update room group map if new room has been added or if room's room group has changed
-                Firestore.instance.document(DataManager
-                    .get()
-                    .currentJobPath).collection('rooms').document(
-                    cocObj['path']).setData(cocObj);
+                cocObj['personnel'] = personnelSelected;
+                cocObj['dates'] = datesSelected;
+                Firestore.instance.collection('cocs').document(coc).setData(cocObj);
                 Navigator.pop(context);
               }
             })
@@ -124,42 +118,25 @@ class _EditCocState extends State<EditCoc> {
               padding: new EdgeInsets.all(8.0),
 //                  padding: new EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 200.0),
               children: <Widget>[
-                Text(cocObj['jobNumber']),
-                Text(cocObj['client']),
-                Text(cocObj['address']),
+                Container(height: 16.0,),
+                Text(cocObj['jobNumber'] + ': ' + cocObj['client'], style: Styles.h2,),
+                Text(cocObj['address'], style: Styles.h3,),
                 Text(cocObj['currentVersion'] == null
                     ? 'Not issued'
-                    : 'Latest version: ' + cocObj['currentVersion']),
-                CustomTypeAhead(
-                  controller: _roomNameController,
-//                            initialValue: acmObj['materialrisk_surfacedesc'],
-                  capitalization: TextCapitalization.words,
-                  textInputAction: TextInputAction.done,
-                  label: 'Room Name',
-                  suggestions: rooms,
-                  onSaved: (value) => cocObj['name'] = value.trim(),
-                  validator: (value) {},
-                  focusNode: _focusNodes[0],
-                  nextFocus: _focusNodes[1],
-                  onSuggestionSelected: (suggestion) {
-                    _roomNameController.text = suggestion['label'];
-                    if (_roomCodeController.text == '') {
-                      _roomCodeController.text = suggestion['code'];
-                    }
-                  },
-                  onSubmitted: (v) {},
-                ),
+                    : 'Latest version: ' + cocObj['currentVersion'], style: Styles.comment),
                 new Container(
                   alignment: Alignment.topLeft,
-                  padding: EdgeInsets.only(top: 14.0,),
+                  padding: EdgeInsets.only(top: 14.0, bottom: 16.0),
                   child: new Text(
                     "Sample Date(s)", style: Styles.label,),
                 ),
                 Calendarro(
-                  startDate: DateUtils.getFirstDayOfCurrentMonth(),
-                  endDate: DateUtils.getLastDayOfCurrentMonth(),
+//                  startDate: DateUtils.getFirstDayOfMonth(new DateTime.now().month - 2),
+//                  endDate: DateUtils.getLastDayOfNextMonth(),
                   selectionMode: SelectionMode.MULTI,
-                  displayMode: DisplayMode.MONTHS,
+                  displayMode: DisplayMode.WEEKS,
+//                  dayTileBuilder: ,
+                  selectedDates: datesSelected,
 //                  selectedDates: cocObj['dates'].map((date) { return new DateTime(date); } ).toList(),
                 ),
                 new Container(
@@ -203,6 +180,7 @@ class _EditCocState extends State<EditCoc> {
                   ),
                 ),
                 ExpansionTile(
+                  initiallyExpanded: true,
                   title: new Text("Samples", style: Styles.h2,),
                   children: <Widget>[
                     new Row(
@@ -212,7 +190,7 @@ class _EditCocState extends State<EditCoc> {
                           alignment: Alignment.center,
                           padding: EdgeInsets.fromLTRB(2.0, 8.0, 4.0, 8.0,),
                           child: new OutlineButton(
-                            child: const Text("Load New Template"),
+                            child: const Text("Add 10 More Rows"),
                             color: Colors.white,
                             onPressed: () {
                               showRoomTemplateDialog(
@@ -222,38 +200,16 @@ class _EditCocState extends State<EditCoc> {
                                 borderRadius: new BorderRadius.circular(30.0)),
                           ),
                         ),
-                        new Container(
-                          alignment: Alignment.center,
-                          padding: EdgeInsets.fromLTRB(4.0, 8.0, 2.0, 8.0,),
-                          child: new OutlineButton(
-                            child: const Text("Clear Empty Rows"),
-                            color: Colors.white,
-                            onPressed: () {
-                              if (cocObj["buildingmaterials"] != null &&
-                                  cocObj["buildingmaterials"].length > 0) {
-                                this.setState(() {
-                                  cocObj["buildingmaterials"] =
-                                      cocObj["buildingmaterials"].where((bm) =>
-                                      bm["material"] == null || bm["material"]
-                                          .trim()
-                                          .length > 0).toList();
-                                });
-                              }
-                            },
-                            shape: new RoundedRectangleBorder(
-                              borderRadius: new BorderRadius.circular(30.0),),
-                          ),
-                        ),
                       ],
                     ),
-                    (cocObj['buildingmaterials'] != null &&
-                        cocObj['buildingmaterials'].length > 0) ?
+                    (cocObj['samples'] != null &&
+                        cocObj['samples'].length > 0) ?
                     ListView.builder(
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
-                        itemCount: cocObj['buildingmaterials'].length,
+                        itemCount: cocObj['samples'].length,
                         itemBuilder: (context, index) {
-                          return buildBuildingMaterials(index);
+                          return buildSamples(index);
                         })
                         :
                     new Container(),
@@ -267,9 +223,9 @@ class _EditCocState extends State<EditCoc> {
     );
   }
 
-  buildBuildingMaterials(index) {
+  buildSamples(index) {
 //      print("Building item: " + item.toString());
-    var item = cocObj['buildingmaterials'][index];
+    var item = cocObj['samples'][index];
     TextEditingController labelController = TextEditingController(
         text: item['label']);
     TextEditingController materialController = TextEditingController(
@@ -288,7 +244,7 @@ class _EditCocState extends State<EditCoc> {
 //          label: 'Item',
               suggestions: items,
               onSaved: (value) =>
-              cocObj['buildingmaterials'][index]["label"] = value.trim(),
+              cocObj['samples'][index]["label"] = value.trim(),
               validator: (value) {},
               focusNode: _focusNodes[(index * 2) + 2],
               nextFocus: _focusNodes[(index * 2) + 3],
@@ -302,12 +258,12 @@ class _EditCocState extends State<EditCoc> {
 //            label: 'Material',
               suggestions: materials,
               onSaved: (value) =>
-              cocObj['buildingmaterials'][index]["material"] = value.trim(),
+              cocObj['samples'][index]["material"] = value.trim(),
               validator: (value) {},
               focusNode: _focusNodes[(index * 2) + 3],
-              nextFocus: (cocObj['buildingmaterials'].length - 1 != index &&
-                  cocObj['buildingmaterials'][index + 1] != null &&
-                  cocObj['buildingmaterials'][index + 1]["label"]
+              nextFocus: (cocObj['samples'].length - 1 != index &&
+                  cocObj['samples'][index + 1] != null &&
+                  cocObj['samples'][index + 1]["label"]
                       .trim()
                       .length > 0)
                   ? _focusNodes[((index + 1) * 2) + 3] : _focusNodes[((index +
@@ -344,7 +300,10 @@ class _EditCocState extends State<EditCoc> {
         // image
         setState(() {
           cocObj = doc.data;
+          print(cocObj['samples'].toString());
           if (cocObj['personnel'] != null) cocObj['personnel'].forEach((p) { personnelSelected.add(p); });
+          if (cocObj['dates'] != null) cocObj['dates'].forEach((d) { datesSelected.add(d); });
+            else datesSelected.add(new DateTime.now());
           _roomNameController.text = cocObj['name'];
           _roomCodeController.text = cocObj['roomcode'];
           isLoading = false;

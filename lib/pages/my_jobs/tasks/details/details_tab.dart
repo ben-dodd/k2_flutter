@@ -139,8 +139,8 @@ class _DetailsTabState extends State<DetailsTab> {
                                 padding: EdgeInsets.fromLTRB(4.0,0.0,4.0,0.0),
                                 decoration: new BoxDecoration(
                                   color: Colors.white,
-                                  border: new Border.all(color: Colors.black38, width: 2.0),
-//                                  borderRadius: new BorderRadius.circular(16.0),
+                                  border: new Border.all(color: Colors.black38, width: 1.0),
+                                  borderRadius: new BorderRadius.circular(4.0),
                                 ), child: GestureDetector(
                                     onTap: () {
                                         ImagePicker.pickImage(source: ImageSource.camera).then((image) {
