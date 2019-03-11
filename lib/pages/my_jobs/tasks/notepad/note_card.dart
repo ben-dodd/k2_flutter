@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:k2e/theme.dart';
 
 class NoteCard extends StatefulWidget {
-
   NoteCard({
     this.note,
     @required this.onCardClick,
@@ -16,10 +15,9 @@ class NoteCard extends StatefulWidget {
 
   @override
   _NoteCardState createState() => new _NoteCardState();
-
 }
 
-class _NoteCardState extends State<NoteCard>{
+class _NoteCardState extends State<NoteCard> {
   String title;
   String note;
 
@@ -39,7 +37,8 @@ class _NoteCardState extends State<NoteCard>{
       note = widget.note['note'];
     }
 
-    if (widget.note['path_local'] == null && widget.note['path_remote'] == null) {
+    if (widget.note['path_local'] == null &&
+        widget.note['path_remote'] == null) {
       hasPhoto = false;
     } else {
       hasPhoto = true;
@@ -50,33 +49,41 @@ class _NoteCardState extends State<NoteCard>{
       }
     }
 
-
     return Container(
 //      margin: EdgeInsets.symmetric(vertical: 4.0),
-    padding: EdgeInsets.fromLTRB(8.0,0.0,4.0,0.0),
-    decoration: new BoxDecoration(
-    color: Colors.white,
-    ),
-    child:
-    new ListTile(
-        dense: true,
-        contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-        leading: new Container(width: 40.0, padding: EdgeInsets.all(0.0), margin: EdgeInsets.all(0.0),
-            alignment: Alignment.center,
-            child: Icon(Icons.create)),
-        title: Text(title),
-        subtitle: Text(note, overflow: TextOverflow.ellipsis, maxLines: 3,),
+      padding: EdgeInsets.fromLTRB(8.0, 0.0, 4.0, 0.0),
+      decoration: new BoxDecoration(
+        color: Colors.white,
+      ),
+      child: new ListTile(
+          dense: true,
+          contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+          leading: new Container(
+              width: 40.0,
+              padding: EdgeInsets.all(0.0),
+              margin: EdgeInsets.all(0.0),
+              alignment: Alignment.center,
+              child: Icon(Icons.create)),
+          title: Text(title),
+          subtitle: Text(
+            note,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 3,
+          ),
 
-        // Tap -> go through to job task
-        onTap: widget.onCardClick,
-        // Long tap -> add options to sync or delete
+          // Tap -> go through to job task
+          onTap: widget.onCardClick,
+          // Long tap -> add options to sync or delete
 //        onLongPress: widget.onCardLongPress,
-        // TODO: Icons display whether sample has photo or not
-        trailing:
-        hasPhoto ? photoSynced ? Icon(Icons.camera_alt, color: CompanyColors.checkYes,)
-            : Icon(Icons.camera_alt, color: CompanyColors.checkMaybe)
-            : Icon(Icons.camera_alt, color: CompanyColors.checkNo)
-    ),
+          // TODO: Icons display whether sample has photo or not
+          trailing: hasPhoto
+              ? photoSynced
+                  ? Icon(
+                      Icons.camera_alt,
+                      color: CompanyColors.checkYes,
+                    )
+                  : Icon(Icons.camera_alt, color: CompanyColors.checkMaybe)
+              : Icon(Icons.camera_alt, color: CompanyColors.checkNo)),
     );
   }
 }

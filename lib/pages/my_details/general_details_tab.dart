@@ -20,23 +20,35 @@ class _GeneralDetailsTabState extends State<GeneralDetailsTab> {
 
   @override
   void initState() {
-    fireStream = Firestore.instance.collection('users').document(DataManager.get().user).snapshots();
+    fireStream = Firestore.instance
+        .collection('users')
+        .document(DataManager.get().user)
+        .snapshots();
     controllerDisplayName.addListener(_updateDisplayName);
     controllerEmail.addListener(_updateEmail);
     controllerPhone.addListener(_updatePhone);
     super.initState();
   }
 
-  _updateDisplayName(){
-    Firestore.instance.collection('users').document(DataManager.get().user).setData({"displayName": controllerDisplayName.text},merge: true);
+  _updateDisplayName() {
+    Firestore.instance
+        .collection('users')
+        .document(DataManager.get().user)
+        .setData({"displayName": controllerDisplayName.text}, merge: true);
   }
 
-  _updateEmail(){
-    Firestore.instance.collection('users').document(DataManager.get().user).setData({"email": controllerEmail.text},merge: true);
+  _updateEmail() {
+    Firestore.instance
+        .collection('users')
+        .document(DataManager.get().user)
+        .setData({"email": controllerEmail.text}, merge: true);
   }
 
-  _updatePhone(){
-    Firestore.instance.collection('users').document(DataManager.get().user).setData({"phone": int.tryParse(controllerPhone.text)},merge: true);
+  _updatePhone() {
+    Firestore.instance
+        .collection('users')
+        .document(DataManager.get().user)
+        .setData({"phone": int.tryParse(controllerPhone.text)}, merge: true);
   }
 
   @override
@@ -61,54 +73,45 @@ class _GeneralDetailsTabState extends State<GeneralDetailsTab> {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.active) {
               print(snapshot.data.toString());
-              print('details = ${snapshot.data['displayName']} ${snapshot.data['email']} ${snapshot.data['phone']}');
-              if (!snapshot.hasData) return
-                loadingPage(loadingText: 'Loading user data...');
+              print(
+                  'details = ${snapshot.data['displayName']} ${snapshot.data['email']} ${snapshot.data['phone']}');
+              if (!snapshot.hasData)
+                return loadingPage(loadingText: 'Loading user data...');
               if (controllerDisplayName.text == '') {
                 controllerDisplayName.text = snapshot.data['displayName'];
                 controllerEmail.text = snapshot.data['email'];
                 controllerPhone.text = '0' + snapshot.data['phone'].toString();
               }
-              return ListView(children: <Widget> [
+              return ListView(children: <Widget>[
                 Container(
-                child: Column(
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child:
-                      TextField(
-                        decoration: new InputDecoration(
-                            labelText: 'Display Name',
-                            hintText: 'Display Name'),
-                        controller: controllerDisplayName,
-                      ),
+                    child: Column(children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      decoration: new InputDecoration(
+                          labelText: 'Display Name', hintText: 'Display Name'),
+                      controller: controllerDisplayName,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child:
-                      TextField(
-                        decoration: new InputDecoration(
-                            labelText: 'Email',
-                            hintText: 'Email'),
-                        controller: controllerEmail,
-                      ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      decoration: new InputDecoration(
+                          labelText: 'Email', hintText: 'Email'),
+                      controller: controllerEmail,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child:
-                      TextField(
-                        decoration: new InputDecoration(
-                            labelText: 'Phone',
-                            hintText: 'Phone'),
-                        controller: controllerPhone,
-                        keyboardType: TextInputType.numberWithOptions(),
-                      ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      decoration: new InputDecoration(
+                          labelText: 'Phone', hintText: 'Phone'),
+                      controller: controllerPhone,
+                      keyboardType: TextInputType.numberWithOptions(),
                     ),
-                  ]
-                )
-              ),
-            ]
-              );
+                  ),
+                ])),
+              ]);
             } else if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
             } else {

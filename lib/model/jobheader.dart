@@ -1,13 +1,7 @@
 import 'package:meta/meta.dart';
 
 class JobHeader {
-  String
-  jobnumber,
-  address,
-  description,
-  clientname,
-  state,
-  type;
+  String jobnumber, address, description, clientname, state, type;
 
   JobHeader({
     @required this.jobnumber,
@@ -18,7 +12,7 @@ class JobHeader {
     this.type,
   });
 
-  static JobHeader fromMap(Map<String, dynamic> map){
+  static JobHeader fromMap(Map<String, dynamic> map) {
     JobHeader jobHeader = new JobHeader(
       jobnumber: map['jobNumber'],
       address: map['address'],
@@ -30,7 +24,7 @@ class JobHeader {
     return jobHeader;
   }
 
-  Map<String, dynamic> toMap(){
+  Map<String, dynamic> toMap() {
     Map<String, dynamic> map = new Map();
     map['jobnumber'] = jobnumber;
     map['address'] = address;

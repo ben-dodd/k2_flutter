@@ -74,50 +74,63 @@ class ScoreButton extends StatelessWidget {
       }
     }
     return new Container(
-      padding: EdgeInsets.symmetric(horizontal: 6.0),
-      child: InkWell(
-      onTap: () {
-        onClick();
-      },
-      onLongPress: () {
-        if (tooltip != null) {
-          showDialog<Null>(
-              context: context,
-              builder: (BuildContext context) {
-                return new CustomAlertDialog(
-                    title: new Text(tooltip.title, style: Styles.h2),
-                    content: new Container(
-                      decoration: new BoxDecoration(
-                        shape: BoxShape.rectangle,
-                        color: Colors.white,
-                        borderRadius: new BorderRadius.all(new Radius.circular(200.0))
-                      ),
-                      height: dialogHeight != null ? dialogHeight : 200.0,
-                      child: Column(
-                        children: <Widget>[
-                          Container(child: Text(tooltip.tip, style: Styles.body), alignment: Alignment.bottomLeft,),
-                          Container(child: Text(tooltip.subtip, style: Styles.comment), alignment: Alignment.bottomLeft,),
-                        ])
-                    ),
-                );
+        padding: EdgeInsets.symmetric(horizontal: 6.0),
+        child: InkWell(
+            onTap: () {
+              onClick();
+            },
+            onLongPress: () {
+              if (tooltip != null) {
+                showDialog<Null>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return new CustomAlertDialog(
+                        title: new Text(tooltip.title, style: Styles.h2),
+                        content: new Container(
+                            decoration: new BoxDecoration(
+                                shape: BoxShape.rectangle,
+                                color: Colors.white,
+                                borderRadius: new BorderRadius.all(
+                                    new Radius.circular(200.0))),
+                            height: dialogHeight != null ? dialogHeight : 200.0,
+                            child: Column(children: <Widget>[
+                              Container(
+                                child: Text(tooltip.tip, style: Styles.body),
+                                alignment: Alignment.bottomLeft,
+                              ),
+                              Container(
+                                child:
+                                    Text(tooltip.subtip, style: Styles.comment),
+                                alignment: Alignment.bottomLeft,
+                              ),
+                            ])),
+                      );
+                    });
               }
-          );
-        }
-      },
-      child: new Container(
-        height: 40.0,
-        decoration: new BoxDecoration(
-          color: scoreColor,
-          border: new Border.all(color: (bordercolor != null) ? bordercolor : Colors.black12, width: 2.0),
-          borderRadius: (radius != null) ? new BorderRadius.circular(radius) : new BorderRadius.circular(50.0),
-        ),
-        child: new Center(child: (text == null) ? new Text(score.toString(),
-          style: new TextStyle(fontSize: 16.0, color: textcolor),)
-          :new Text(text, style: new TextStyle(fontSize: 16.0, color: textcolor),),
-          ),
-        )
-      )
-    );
+            },
+            child: new Container(
+              height: 40.0,
+              decoration: new BoxDecoration(
+                color: scoreColor,
+                border: new Border.all(
+                    color: (bordercolor != null) ? bordercolor : Colors.black12,
+                    width: 2.0),
+                borderRadius: (radius != null)
+                    ? new BorderRadius.circular(radius)
+                    : new BorderRadius.circular(50.0),
+              ),
+              child: new Center(
+                child: (text == null)
+                    ? new Text(
+                        score.toString(),
+                        style: new TextStyle(fontSize: 16.0, color: textcolor),
+                      )
+                    : new Text(
+                        text,
+                        style: new TextStyle(fontSize: 16.0, color: textcolor),
+                      ),
+              ),
+            )));
   }
 }
 
@@ -167,48 +180,57 @@ class ToolTipButton extends StatelessWidget {
                             decoration: new BoxDecoration(
                                 shape: BoxShape.rectangle,
                                 color: Colors.white,
-                                borderRadius: new BorderRadius.all(new Radius.circular(200.0))
-                            ),
+                                borderRadius: new BorderRadius.all(
+                                    new Radius.circular(200.0))),
                             height: dialogHeight != null ? dialogHeight : 200.0,
-                            child: Column(
-                                children: <Widget>[
-                                  Container(child: Text(tooltip.tip, style: Styles.body), alignment: Alignment.bottomLeft,),
-                                  Container(child: Text(tooltip.subtip, style: Styles.comment), alignment: Alignment.bottomLeft,),
-                                ])
-                        ),
+                            child: Column(children: <Widget>[
+                              Container(
+                                child: Text(tooltip.tip, style: Styles.body),
+                                alignment: Alignment.bottomLeft,
+                              ),
+                              Container(
+                                child:
+                                    Text(tooltip.subtip, style: Styles.comment),
+                                alignment: Alignment.bottomLeft,
+                              ),
+                            ])),
                       );
-                    }
-                );
+                    });
               }
             },
             child: new Container(
               height: 40.0,
               decoration: new BoxDecoration(
                 color: scoreColor,
-                border: new Border.all(color: (bordercolor != null) ? bordercolor : Colors.black12, width: 2.0),
-                borderRadius: (radius != null) ? new BorderRadius.circular(radius) : new BorderRadius.circular(50.0),
+                border: new Border.all(
+                    color: (bordercolor != null) ? bordercolor : Colors.black12,
+                    width: 2.0),
+                borderRadius: (radius != null)
+                    ? new BorderRadius.circular(radius)
+                    : new BorderRadius.circular(50.0),
               ),
-              child: new Center(child: new Text(text, style: new TextStyle(fontSize: 16.0, color: textcolor),),
+              child: new Center(
+                child: new Text(
+                  text,
+                  style: new TextStyle(fontSize: 16.0, color: textcolor),
+                ),
               ),
-            )
-        )
-    );
+            )));
   }
 }
 
 class SelectButton extends StatelessWidget {
-  SelectButton({
-    @required this.onClick,
-    this.score,
-    this.onLongPress,
-    this.selected,
-    this.text,
-    this.tooltip,
-    this.bgcolor,
-    this.bordercolor,
-    this.radius,
-    this.textcolor
-  });
+  SelectButton(
+      {@required this.onClick,
+      this.score,
+      this.onLongPress,
+      this.selected,
+      this.text,
+      this.tooltip,
+      this.bgcolor,
+      this.bordercolor,
+      this.radius,
+      this.textcolor});
 
   final int score;
   final VoidCallback onClick;
@@ -224,7 +246,8 @@ class SelectButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     selected ? bgcolor = CompanyColors.accentRippled : bgcolor = Colors.white;
-    if (textcolor == null) selected ? textcolor = Colors.black87 : textcolor = Colors.black12;
+    if (textcolor == null)
+      selected ? textcolor = Colors.black87 : textcolor = Colors.black12;
     return new Container(
         padding: EdgeInsets.symmetric(horizontal: 6.0),
         child: InkWell(
@@ -240,29 +263,42 @@ class SelectButton extends StatelessWidget {
                           title: new Text(tooltip.title),
                           content: Container(
                               height: 120.0,
-                              child: Column(
-                                  children: <Widget>[
-                                    Container(child: Text(tooltip.tip), alignment: Alignment.bottomLeft,),
-                                    Container(child: Text(tooltip.subtip, style: Styles.comment), alignment: Alignment.bottomLeft,),
-                                  ])
-                          ));
-                    }
-                );
+                              child: Column(children: <Widget>[
+                                Container(
+                                  child: Text(tooltip.tip),
+                                  alignment: Alignment.bottomLeft,
+                                ),
+                                Container(
+                                  child: Text(tooltip.subtip,
+                                      style: Styles.comment),
+                                  alignment: Alignment.bottomLeft,
+                                ),
+                              ])));
+                    });
               }
             },
             child: new Container(
               height: 40.0,
               decoration: new BoxDecoration(
                 color: bgcolor,
-                border: new Border.all(color: (bordercolor != null) ? bordercolor : Colors.black12, width: 2.0),
-                borderRadius: (radius != null) ? new BorderRadius.circular(radius) : new BorderRadius.circular(0.0),
+                border: new Border.all(
+                    color: (bordercolor != null) ? bordercolor : Colors.black12,
+                    width: 2.0),
+                borderRadius: (radius != null)
+                    ? new BorderRadius.circular(radius)
+                    : new BorderRadius.circular(0.0),
               ),
-              child: new Center(child: (text == null) ? new Text(score.toString(),
-                style: new TextStyle(fontSize: 16.0, color: textcolor),)
-                  :new Text(text, style: new TextStyle(fontSize: 16.0, color: textcolor),),
+              child: new Center(
+                child: (text == null)
+                    ? new Text(
+                        score.toString(),
+                        style: new TextStyle(fontSize: 16.0, color: textcolor),
+                      )
+                    : new Text(
+                        text,
+                        style: new TextStyle(fontSize: 16.0, color: textcolor),
+                      ),
               ),
-            )
-        )
-    );
+            )));
   }
 }

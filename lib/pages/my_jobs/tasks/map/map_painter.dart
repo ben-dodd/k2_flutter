@@ -1,12 +1,12 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
-import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 import 'package:k2e/pages/my_jobs/tasks/map/map_helper_functions.dart';
-import 'package:k2e/theme.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 // Class to get an image from other object
@@ -42,7 +42,8 @@ class MapPainter extends StatefulWidget {
 }
 
 class _MapPainterState extends State<MapPainter> {
-  List<Offset> points = new List(2); //List of points in one Tap or ery point or path is kept here
+  List<Offset> points =
+      new List(2); //List of points in one Tap or ery point or path is kept here
   bool lineInProgress = false;
   bool pathInProgress = false;
   Offset stackOffset = null;
@@ -86,7 +87,7 @@ class _MapPainterState extends State<MapPainter> {
 
     transformPoint(
       Offset(p.dx - translation.x, p.dy - translation.y),
-      Offset(_w/2, _h/2),
+      Offset(_w / 2, _h / 2),
       scale,
       rotation,
       translateX,
@@ -94,8 +95,9 @@ class _MapPainterState extends State<MapPainter> {
     );
 
     int increments = intervals * divisions * subdivisions;
-    double interval = _w * scale/increments;
-    Offset t = new Offset(roundToMultiple(p.dx, interval), roundToMultiple(p.dy, interval));
+    double interval = _w * scale / increments;
+    Offset t = new Offset(
+        roundToMultiple(p.dx, interval), roundToMultiple(p.dy, interval));
     if (q != null) {
       // Limit angle to be multiple of the angleLimit
 
@@ -111,15 +113,16 @@ class _MapPainterState extends State<MapPainter> {
 //          snapAngle.toString() + ', angleDifference: ' +
 //          angleDifference.toString());
 
-      double distance = sqrt((t.dx - q.dx)*(t.dx - q.dx) + (t.dy - q.dy)*(t.dy - q.dy));
+      double distance =
+          sqrt((t.dx - q.dx) * (t.dx - q.dx) + (t.dy - q.dy) * (t.dy - q.dy));
       print('Distance between points: ' + distance.toString());
-      print ('Angle in degrees: ' + snapAngle.toString());
+      print('Angle in degrees: ' + snapAngle.toString());
       print('Angle in radians; ' + snapAngleRad.toString());
 
 //      print (movePoint(p, snapAngleRad, distance).toString());
 //      return movePoint(p, snapAngleRad, distance);
 
-      print (snapToAngle(t, q, snapAngleRad).toString());
+      print(snapToAngle(t, q, snapAngleRad).toString());
       return snapToAngle(t, q, snapAngleRad);
 //      return p;
     } else {
@@ -157,19 +160,19 @@ class _MapPainterState extends State<MapPainter> {
           points[1] = newPoint;
           lineInProgress = false;
           widget.updatePoints(points);
-          points = [ newPoint, newPoint ];
+          points = [newPoint, newPoint];
           print('NEW POINT IN TAPUP - LINEINPROGRESS');
           widget.updatePaths(points);
         } else {
-          print ('new point started');
-          points = [ points[1] != null ? points[1] : newPoint , newPoint ];
+          print('new point started');
+          points = [points[1] != null ? points[1] : newPoint, newPoint];
 //          lineInProgress = false;
           print('NEW POINT IN TAPUP - LINEINPROGRESS FALSE');
           widget.updatePaths(points);
         }
       } else {
-        print ('new point + path started');
-        points = [ newPoint , newPoint ];
+        print('new point + path started');
+        points = [newPoint, newPoint];
         widget.updatePaths(points);
         print('NEW POINT IN TAPUP - PATH AND LINE FALSE');
         lineInProgress = true;
@@ -184,17 +187,21 @@ class _MapPainterState extends State<MapPainter> {
   }
 
   void loadStackOffset() {
-    print ('Loading stack offset!');
+    print('Loading stack offset!');
     if (lineInProgress) {
       points[1] = stackOffset;
 //      lineInProgress = false;
       widget.updatePoints(points);
-      points = [ stackOffset, stackOffset];
+      points = [stackOffset, stackOffset];
     } else {
-      points = [ points[1] != null ? points[1] : stackOffset , stackOffset ];
+      points = [points[1] != null ? points[1] : stackOffset, stackOffset];
     }
     widget.updatePaths(points);
-    print('NEW POINT IN LOADSTACKOFFSET ' + lineInProgress.toString() + ' line, ' + pathInProgress.toString() + ' path');
+    print('NEW POINT IN LOADSTACKOFFSET ' +
+        lineInProgress.toString() +
+        ' line, ' +
+        pathInProgress.toString() +
+        ' path');
 
     lineInProgress = true;
     pathInProgress = true;
@@ -204,7 +211,7 @@ class _MapPainterState extends State<MapPainter> {
   // Pinch zoom
   void _scaleStart(ScaleStartDetails details) {
     print('scale start');
-    print (details.toString());
+    print(details.toString());
     setState(() {
 //     lineInProgress = false;
       var object = this.contexto.findRenderObject();
@@ -216,11 +223,11 @@ class _MapPainterState extends State<MapPainter> {
           // set up new point to be added if scale is not a zoom/rotation
           stackOffset = newOffset;
         } else {
-          print ('new point started');
+          print('new point started');
           stackOffset = newOffset;
         }
       } else {
-        print ('new point + path started');
+        print('new point + path started');
         lineInProgress = true;
         pathInProgress = true;
         Offset newOffset = snapPoint(details.focalPoint, null);
@@ -233,7 +240,8 @@ class _MapPainterState extends State<MapPainter> {
 
   void _scaleUpdate(ScaleUpdateDetails details) {
 //    print('scale update ' + details.toString());
-    if (startScale / details.scale == scale && details.rotation + startRotation == rotation) {
+    if (startScale / details.scale == scale &&
+        details.rotation + startRotation == rotation) {
       // No pinching, draw line
       if (stackOffset != null) {
         loadStackOffset();
@@ -290,7 +298,7 @@ class _MapPainterState extends State<MapPainter> {
 
       lineInProgress = false;
       widget.updatePoints(points);
-      points = [ points[1], points[1] ];
+      points = [points[1], points[1]];
       print('NEW POINT IN PAN END');
       widget.updatePaths(points);
     }
@@ -298,7 +306,8 @@ class _MapPainterState extends State<MapPainter> {
   }
 
   void _doubleTap() {
-    print('double tap TAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP');
+    print(
+        'double tap TAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP');
     setState(() {
       lineInProgress = false;
       pathInProgress = false;
@@ -320,76 +329,89 @@ class _MapPainterState extends State<MapPainter> {
 //    print('Width is: ' + _w.toString());
 //    if (widget.arrowPaths.length == 0) paths.clear();
 //    print('Paths in MapPainter: ' + widget.paths.toString());
-    return Transform(transform: Matrix4.rotationZ(rotation)..scale(scale)..translate(translateX, translateY), origin: Offset(_w/2 + translateX, _h/2 + translateY), child: RawGestureDetector(
-      gestures: <Type, GestureRecognizerFactory>{
-        TapGestureRecognizer: GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
-            () => TapGestureRecognizer(),
-            (TapGestureRecognizer instance) {
-              instance
-                ..onTap = () { print('tap'); }
-                ..onTapDown = _tapDown
-                ..onTapUp = _tapUp
-                ..onTapCancel = _tapCancel;
-            }
-        ),
-        ScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
-            () => ScaleGestureRecognizer(),
-            (ScaleGestureRecognizer instance) {
-              instance
-                ..onStart = _scaleStart
-                ..onUpdate = _scaleUpdate
-                ..onEnd = _scaleEnd;
-            }
-        ),
-        DoubleTapGestureRecognizer: GestureRecognizerFactoryWithHandlers<DoubleTapGestureRecognizer>(
-            () => DoubleTapGestureRecognizer(),
-            (DoubleTapGestureRecognizer instance) {
-              instance
-                ..onDoubleTap = _doubleTap;
-            }
-        ),
-        ImmediateMultiDragGestureRecognizer: GestureRecognizerFactoryWithHandlers<ImmediateMultiDragGestureRecognizer>(
-            () => ImmediateMultiDragGestureRecognizer(),
-            (MultiDragGestureRecognizer instance) {
-              instance
-                ..onStart = (Offset offset) {
-                  dragFingerCount = dragFingerCount + 1;
-                  print ('on start drag ' + dragFingerCount.toString());
-                  return new PanView(_panUpdate, _panEnd);
-                };
-            }
-        )
-      },
-      behavior: HitTestBehavior.translucent,
-      child:
-      Container(
-        height: _h,
-        width: _w,
-        child: new Container(alignment: Alignment.center, child: Stack(
-        children: <Widget> [
-          widget.photo !=null ? widget.photo : new Container(height: _h, width: _w, child: GridPaper(
-            interval: _w/intervals,
-            divisions: divisions,
-            subdivisions: subdivisions,
+    return Transform(
+      transform: Matrix4.rotationZ(rotation)
+        ..scale(scale)
+        ..translate(translateX, translateY),
+      origin: Offset(_w / 2 + translateX, _h / 2 + translateY),
+      child: RawGestureDetector(
+        gestures: <Type, GestureRecognizerFactory>{
+          TapGestureRecognizer:
+              GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
+                  () => TapGestureRecognizer(),
+                  (TapGestureRecognizer instance) {
+            instance
+              ..onTap = () {
+                print('tap');
+              }
+              ..onTapDown = _tapDown
+              ..onTapUp = _tapUp
+              ..onTapCancel = _tapCancel;
+          }),
+          ScaleGestureRecognizer:
+              GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
+                  () => ScaleGestureRecognizer(),
+                  (ScaleGestureRecognizer instance) {
+            instance
+              ..onStart = _scaleStart
+              ..onUpdate = _scaleUpdate
+              ..onEnd = _scaleEnd;
+          }),
+          DoubleTapGestureRecognizer:
+              GestureRecognizerFactoryWithHandlers<DoubleTapGestureRecognizer>(
+                  () => DoubleTapGestureRecognizer(),
+                  (DoubleTapGestureRecognizer instance) {
+            instance..onDoubleTap = _doubleTap;
+          }),
+          ImmediateMultiDragGestureRecognizer:
+              GestureRecognizerFactoryWithHandlers<
+                      ImmediateMultiDragGestureRecognizer>(
+                  () => ImmediateMultiDragGestureRecognizer(),
+                  (MultiDragGestureRecognizer instance) {
+            instance
+              ..onStart = (Offset offset) {
+                dragFingerCount = dragFingerCount + 1;
+                print('on start drag ' + dragFingerCount.toString());
+                return new PanView(_panUpdate, _panEnd);
+              };
+          })
+        },
+        behavior: HitTestBehavior.translucent,
+        child: Container(
+          height: _h,
+          width: _w,
+          child: new Container(
+            alignment: Alignment.center,
+            child: Stack(children: <Widget>[
+              widget.photo != null
+                  ? widget.photo
+                  : new Container(
+                      height: _h,
+                      width: _w,
+                      child: GridPaper(
+                        interval: _w / intervals,
+                        divisions: divisions,
+                        subdivisions: subdivisions,
 //            color: Color(0x7FC3E8F3),
-            color: Color(0x7F003080),
-          ),),
-          new CustomPaint(
-            foregroundPainter: new MyPainter(
-              lineColor: widget.pathColour,
-              aImg: widget.image,
-              width: 1.0,
-              canvasWidth: _w.toInt(),
-              canvasHeight: _h.toInt(),
-              paths: widget.paths,
-              rotation: rotation,
-              scale: scale,
-            ),
+                        color: Color(0x7F003080),
+                      ),
+                    ),
+              new CustomPaint(
+                foregroundPainter: new MyPainter(
+                  lineColor: widget.pathColour,
+                  aImg: widget.image,
+                  width: 1.0,
+                  canvasWidth: _w.toInt(),
+                  canvasHeight: _h.toInt(),
+                  paths: widget.paths,
+                  rotation: rotation,
+                  scale: scale,
+                ),
+              ),
+            ]),
           ),
-      ]),
+        ),
       ),
-    ),
-    ),
     );
   }
 }
@@ -406,23 +428,22 @@ class MyPainter extends CustomPainter {
   double scale;
   double rotation;
 
-  MyPainter(
-      {this.lineColor,
-        this.aImg,
-        this.width,
-        this.paths,
-        this.shape,
-        this.canvasWidth,
-        this.canvasHeight,
-        this.scale,
-        this.rotation,
-      });
+  MyPainter({
+    this.lineColor,
+    this.aImg,
+    this.width,
+    this.paths,
+    this.shape,
+    this.canvasWidth,
+    this.canvasHeight,
+    this.scale,
+    this.rotation,
+  });
 
   Future<void> _capturePng(ui.Image img) async {
     ByteData byteData = await img.toByteData(format: ui.ImageByteFormat.png);
     Uint8List pngBytes = byteData.buffer.asUint8List();
     aImg.image = new Image.memory(new Uint8List.view(pngBytes.buffer));
-
   }
 
   @override
@@ -441,27 +462,25 @@ class MyPainter extends CustomPainter {
           path.lineTo(o.dx, o.dy);
         }
         canvas.drawPath(
-          path,
-          Paint()
-            ..color = lineColor
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = this.width
-            ..strokeCap = StrokeCap.butt
-            ..strokeJoin = StrokeJoin.miter
-            ..strokeMiterLimit = 3.0
-        );
+            path,
+            Paint()
+              ..color = lineColor
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = this.width
+              ..strokeCap = StrokeCap.butt
+              ..strokeJoin = StrokeJoin.miter
+              ..strokeMiterLimit = 3.0);
       } else {
         canvas.drawPoints(
-          ui.PointMode.points,
-          points,
-          Paint()
-            ..color = lineColor
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = this.width
-            ..strokeCap = StrokeCap.butt
-            ..strokeJoin = StrokeJoin.miter
-            ..strokeMiterLimit = 3.0
-        );
+            ui.PointMode.points,
+            points,
+            Paint()
+              ..color = lineColor
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = this.width
+              ..strokeCap = StrokeCap.butt
+              ..strokeJoin = StrokeJoin.miter
+              ..strokeMiterLimit = 3.0);
       }
     }
     // Storing image
@@ -477,7 +496,7 @@ class MyPainter extends CustomPainter {
   }
 }
 
-Offset rotate_point(Offset o, Offset p, double angle){
+Offset rotate_point(Offset o, Offset p, double angle) {
   return p;
 //  return Offset(cos(angle) * (p.dx - o.dx) - sin(angle) * (p.dy - o.dy) + o.dx,
 //      sin(angle) * (p.dx - o.dx) + cos(angle) * (p.dy - o.dy) + o.dy);

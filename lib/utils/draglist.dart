@@ -25,10 +25,10 @@ class DragState extends State<Drag> {
         body: new SortableListView(
           items: rows,
           itemBuilder: (_, int index) => new Card(
-            child: new ListTile(
-                leading: new Icon(Icons.photo),
-                title: new Text(rows[index])),
-          ),
+                child: new ListTile(
+                    leading: new Icon(Icons.photo),
+                    title: new Text(rows[index])),
+              ),
         ),
       ),
     );

@@ -1,10 +1,11 @@
 import 'dart:async';
+
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:k2e/data/wfm_manager.dart';
 import 'package:k2e/strings.dart';
 import 'package:meta/meta.dart';
-import 'package:intl/intl.dart';
 import 'package:xml/xml.dart' as xml;
-import 'package:http/http.dart' as http;
 
 class TimeCounter {
   TimeCounter({
@@ -14,7 +15,7 @@ class TimeCounter {
     @required this.task_id,
     this.note,
     this.billable,
-});
+  });
 
   DateTime time_start;
   DateTime time_end;
@@ -24,7 +25,7 @@ class TimeCounter {
   String note;
   String billable;
 
-  Future stopTimer()async {
+  Future stopTimer() async {
     this.time_end = DateTime.now();
     int minutes = this.time_end.difference(this.time_start).inMinutes;
     String date = new DateFormat('yyyyMMdd').format(this.time_end);
@@ -42,7 +43,13 @@ class TimeCounter {
         task.text(minutes);
       });
     });
-    http.Response response = await http.post(Strings.wfmRoot + 'job.api/task?apiKey=' + Strings.wfmApi + '&accountKey=' + Strings.wfmAccount, body: task.build().toString());
+    http.Response response = await http.post(
+        Strings.wfmRoot +
+            'job.api/task?apiKey=' +
+            Strings.wfmApi +
+            '&accountKey=' +
+            Strings.wfmAccount,
+        body: task.build().toString());
     if (response != null) {
       print(response.body.toString());
       newTask = xml.parse(response.body).findAllElements('ID').first.text;
@@ -92,4 +99,3 @@ class TimeCounter {
     logTime(timesheet.build(), assign.build());
   }
 }
-

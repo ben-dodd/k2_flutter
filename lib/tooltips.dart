@@ -5,14 +5,7 @@ class ToolTip {
   final String tip;
   final String subtip;
 
-  ToolTip ({
-    @required
-    this.title,
-    @required
-    this.tip,
-    @required
-    this.subtip
-  });
+  ToolTip({@required this.title, @required this.tip, @required this.subtip});
 }
 
 class Tip {
@@ -20,18 +13,21 @@ class Tip {
   static final sample = new ToolTip(
     title: 'Sample',
     tip: 'The material in this room will be sampled for analysis.',
-    subtip: 'For demolition and refurbishment surveys, ALL materials should be sampled if possible. If the survey is a mix of management/refurbishment, the materials that are likely to be disturbed by planned refurbishment should be sampled. For management surveys, damaged or high risk materials should be sampled, while the sampling of undamaged materials should be discussed with the client prior to sampling.',
+    subtip:
+        'For demolition and refurbishment surveys, ALL materials should be sampled if possible. If the survey is a mix of management/refurbishment, the materials that are likely to be disturbed by planned refurbishment should be sampled. For management surveys, damaged or high risk materials should be sampled, while the sampling of undamaged materials should be discussed with the client prior to sampling.',
   );
   static final presume = new ToolTip(
     title: 'Presume',
     tip: 'The material must be presumed to contain asbestos.',
-    subtip: 'The "default" situation. Item cannot be presumed to be asbestos-free, or area or item was inaccessible. Examples: Jointing compound, HardieGlaze, Non-fibrous vinyl, Bakelite.',
+    subtip:
+        'The "default" situation. Item cannot be presumed to be asbestos-free, or area or item was inaccessible. Examples: Jointing compound, HardieGlaze, Non-fibrous vinyl, Bakelite.',
   );
   static final stronglypresume = new ToolTip(
-    title: 'Strongly Presume',
-    tip: 'The material is likely to contain asbestos but will not be sampled.',
-    subtip: 'Material is visually consistent with known ACM materials. Material has the appearance of asbestos. Asbestos was commonly used in material at time of installation. Examples: cement roofing, walls, drainpipes, water tanks, etc. Paper-backed vinyl, Bituminous fuse boards. Textured plaster ceilings (pre-1990). Millboard.'
-  );
+      title: 'Strongly Presume',
+      tip:
+          'The material is likely to contain asbestos but will not be sampled.',
+      subtip:
+          'Material is visually consistent with known ACM materials. Material has the appearance of asbestos. Asbestos was commonly used in material at time of installation. Examples: cement roofing, walls, drainpipes, water tanks, etc. Paper-backed vinyl, Bituminous fuse boards. Textured plaster ceilings (pre-1990). Millboard.');
 
   // ASSIGN SAMPLE
   static final assignSample = new ToolTip(
@@ -42,8 +38,10 @@ class Tip {
 
   static final presumeAs = new ToolTip(
     title: 'Strongly Presume as Sampled Material',
-    tip: 'If a material is visually consistent with a sampled material you may presume they have the same asbestos result.',
-    subtip: 'This is not appropriate with non-homogenous materials (e.g. textured plaster, jointing compound, soil, etc.)',
+    tip:
+        'If a material is visually consistent with a sampled material you may presume they have the same asbestos result.',
+    subtip:
+        'This is not appropriate with non-homogenous materials (e.g. textured plaster, jointing compound, soil, etc.)',
   );
 
   // MATERIAL RISK
@@ -51,7 +49,8 @@ class Tip {
   // ACCESSIBILITY
   static final accessibility_easy = new ToolTip(
     title: 'Accessibility: Easy',
-    tip: 'May be disturbed during normal occupancy. Does not require any equipment to access.',
+    tip:
+        'May be disturbed during normal occupancy. Does not require any equipment to access.',
     subtip: 'Ground floor wall cladding, floor coverings, etc.',
   );
 
@@ -63,27 +62,32 @@ class Tip {
 
   static final accessibility_difficult = new ToolTip(
     title: 'Accessibility: Difficult',
-    tip: 'Requires specialist equipment, dismantling of machinery or modification of the building to access.',
-    subtip: 'Above false ceilings, within walls, upper floor soffits and gables, cylinder insulation, etc.',
+    tip:
+        'Requires specialist equipment, dismantling of machinery or modification of the building to access.',
+    subtip:
+        'Above false ceilings, within walls, upper floor soffits and gables, cylinder insulation, etc.',
   );
 
   // PRODUCT
   static final material_product_1 = new ToolTip(
     title: 'Product Type: 1',
     tip: 'Non-friable or low friability. Asbestos-reinforced composites.',
-    subtip: 'Cement, vinyl tiles, plaster, plastics, resins, mastics, roofing felts etc.',
+    subtip:
+        'Cement, vinyl tiles, plaster, plastics, resins, mastics, roofing felts etc.',
   );
 
   static final material_product_2 = new ToolTip(
     title: 'Product Type: 2',
     tip: 'Medium friability.',
-    subtip: 'AIB, millboards, other low-density insulation boards, asbestos rope and textiles, paper-backed vinyl, gaskets, etc.',
+    subtip:
+        'AIB, millboards, other low-density insulation boards, asbestos rope and textiles, paper-backed vinyl, gaskets, etc.',
   );
 
   static final material_product_3 = new ToolTip(
     title: 'Product Type: 3',
     tip: 'Highly friable.',
-    subtip: 'Asbestos-contaminated dust or soil, loose asbestos, thermal insulation (e.g. boiler and pipe lagging), sprayed asbestos, etc.',
+    subtip:
+        'Asbestos-contaminated dust or soil, loose asbestos, thermal insulation (e.g. boiler and pipe lagging), sprayed asbestos, etc.',
   );
 
   // DAMAGE
@@ -96,19 +100,22 @@ class Tip {
   static final material_damage_1 = new ToolTip(
     title: 'Damage: 1',
     tip: 'Low damage.',
-    subtip: 'A few scratches or surface marks, broken edges on boards, tiles, etc.',
+    subtip:
+        'A few scratches or surface marks, broken edges on boards, tiles, etc.',
   );
 
   static final material_damage_2 = new ToolTip(
     title: 'Damage: 2',
     tip: 'Medium damage.',
-    subtip: 'Significant breakage of materials or several small areas where material has been damaged revealing loose asbestos fibres.',
+    subtip:
+        'Significant breakage of materials or several small areas where material has been damaged revealing loose asbestos fibres.',
   );
 
   static final material_damage_3 = new ToolTip(
     title: 'Damage: 3',
     tip: 'High damage',
-    subtip: 'High damage or delamination of materials, sprays and thermal insulation. Visible asbestos debris.',
+    subtip:
+        'High damage or delamination of materials, sprays and thermal insulation. Visible asbestos debris.',
   );
 
   // SURFACE
@@ -120,13 +127,16 @@ class Tip {
 
   static final material_surface_1 = new ToolTip(
     title: 'Surface Treatment: 1',
-    tip: 'Non-friable material, sealed moderately friable product or enclosed highly friable product.',
-    subtip: 'Enclosed sprays and lagging, AIB with exposed face painted, all cement and plaster materials.',
+    tip:
+        'Non-friable material, sealed moderately friable product or enclosed highly friable product.',
+    subtip:
+        'Enclosed sprays and lagging, AIB with exposed face painted, all cement and plaster materials.',
   );
 
   static final material_surface_2 = new ToolTip(
     title: 'Surface Treatment: 2',
-    tip: 'Encapsulated highly friable product or unsealed moderately friable product.',
+    tip:
+        'Encapsulated highly friable product or unsealed moderately friable product.',
     subtip: 'Unsealed AIB or encapsulated lagging and sprays.',
   );
 
@@ -373,7 +383,8 @@ class Tip {
   static final priority_maint_type_3 = new ToolTip(
     title: 'Maintenance Type: 3',
     tip: 'High levels of disturbance',
-    subtip: '(e.g. removing a number of AIB ceiling tiles to replace a valve or for recabling)',
+    subtip:
+        '(e.g. removing a number of AIB ceiling tiles to replace a valve or for recabling)',
   );
 
   static final priority_maint_freq_0 = new ToolTip(
@@ -406,5 +417,4 @@ class Tip {
   static final arrow = 'Draw arrow on photo';
   static final shade = 'Shade area on photo (in development)';
   static final reset = 'Remove arrows and shading';
-
 }

@@ -1,11 +1,10 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
-import 'package:flutter/material.dart';
-import 'dart:async';
 import 'dart:ui' as ui;
+
+import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:k2e/theme.dart';
-import 'package:vector_math/vector_math_64.dart';
 
 // Class to get an image from other object
 // Used like a reference parameter
@@ -15,22 +14,14 @@ class ImageAccess {
 
 class SamplePainter extends StatefulWidget {
   SamplePainter({
-    @required
-    this.photo,
-    @required
-    this.shadeOn,
-    @required
-    this.arrowOn,
-    @required
-    this.arrowPaths,
-    @required
-    this.shadePaths,
-    @required
-    this.pathColour,
-    @required
-    this.updatePaths,
-    @required
-    this.updatePoints,
+    @required this.photo,
+    @required this.shadeOn,
+    @required this.arrowOn,
+    @required this.arrowPaths,
+    @required this.shadePaths,
+    @required this.pathColour,
+    @required this.updatePaths,
+    @required this.updatePoints,
 //    @required
 //    this.clearAll,
   });
@@ -52,7 +43,8 @@ class SamplePainter extends StatefulWidget {
 }
 
 class _SamplePainterState extends State<SamplePainter> {
-  List<Offset> points; //List of points in one Tap or ery point or path is kept here
+  List<Offset>
+      points; //List of points in one Tap or ery point or path is kept here
   bool arrowInProgress = false;
 //  VoidCallback clearAll;
 
@@ -87,13 +79,9 @@ class _SamplePainterState extends State<SamplePainter> {
         } else {
           points = [
             new Offset(details.globalPosition.dx - translation.x,
-                details.globalPosition.dy
-                    - translation.y
-            ),
+                details.globalPosition.dy - translation.y),
             new Offset(details.globalPosition.dx - translation.x,
-                details.globalPosition.dy
-                    - translation.y
-            )
+                details.globalPosition.dy - translation.y)
           ];
           arrowInProgress = true;
         }
@@ -116,13 +104,9 @@ class _SamplePainterState extends State<SamplePainter> {
         var translation = object?.getTransformTo(null)?.getTranslation();
         points = [
           new Offset(details.globalPosition.dx - translation.x,
-              details.globalPosition.dy
-                  - translation.y
-          ),
+              details.globalPosition.dy - translation.y),
           new Offset(details.globalPosition.dx - translation.x,
-              details.globalPosition.dy
-                  - translation.y
-          )
+              details.globalPosition.dy - translation.y)
         ];
         widget.updatePaths(points);
         // Add here to refresh the screen. If paths.add is only in panEnd
@@ -140,9 +124,7 @@ class _SamplePainterState extends State<SamplePainter> {
         var object = this.contexto.findRenderObject();
         var translation = object?.getTransformTo(null)?.getTranslation();
         points[1] = (new Offset(details.globalPosition.dx - translation.x,
-            details.globalPosition.dy
-                - translation.y
-        ));
+            details.globalPosition.dy - translation.y));
         widget.updatePoints(points);
       });
     }
@@ -177,23 +159,24 @@ class _SamplePainterState extends State<SamplePainter> {
       child: Container(
         height: _h,
         width: _w,
-        child: new Container(alignment: Alignment.center, child: Stack(
-        children: <Widget> [
-          widget.photo,
-          new CustomPaint(
-            foregroundPainter: new MyPainter(
-              lineColor: widget.pathColour,
-              aImg: widget.image,
-              width: 8.0,
-              canvasWidth: _w.toInt(),
-              canvasHeight: _h.toInt(),
-              paths: widget.arrowPaths,
-              shape: 'arrow',
+        child: new Container(
+          alignment: Alignment.center,
+          child: Stack(children: <Widget>[
+            widget.photo,
+            new CustomPaint(
+              foregroundPainter: new MyPainter(
+                lineColor: widget.pathColour,
+                aImg: widget.image,
+                width: 8.0,
+                canvasWidth: _w.toInt(),
+                canvasHeight: _h.toInt(),
+                paths: widget.arrowPaths,
+                shape: 'arrow',
+              ),
             ),
-          ),
-      ]),
+          ]),
+        ),
       ),
-    ),
     );
   }
 }
@@ -210,18 +193,17 @@ class MyPainter extends CustomPainter {
 
   MyPainter(
       {this.lineColor,
-        this.aImg,
-        this.width,
-        this.paths,
-        this.shape,
-        this.canvasWidth,
-        this.canvasHeight});
+      this.aImg,
+      this.width,
+      this.paths,
+      this.shape,
+      this.canvasWidth,
+      this.canvasHeight});
 
   Future<void> _capturePng(ui.Image img) async {
     ByteData byteData = await img.toByteData(format: ui.ImageByteFormat.png);
     Uint8List pngBytes = byteData.buffer.asUint8List();
     aImg.image = new Image.memory(new Uint8List.view(pngBytes.buffer));
-
   }
 
   @override
@@ -252,12 +234,12 @@ class MyPainter extends CustomPainter {
 //          Vector3 axis = new Vector3(origin.dx, origin.dy, 0.0);
 //          Quaternion q = new Quaternion.axisAngle(axis, angle);
 //          if (angle < 0) angle = angle + 360.0;
-          print (angle.toString());
-          path.addPolygon(
-              [rotate_point(dest, p1, angle),
-              rotate_point(dest, p2, angle),
-              rotate_point(dest, p3, angle)],
-              true);
+          print(angle.toString());
+          path.addPolygon([
+            rotate_point(dest, p1, angle),
+            rotate_point(dest, p2, angle),
+            rotate_point(dest, p3, angle)
+          ], true);
           canvas.drawPath(
             path,
             Paint()
@@ -304,7 +286,7 @@ class MyPainter extends CustomPainter {
   }
 }
 
-Offset rotate_point(Offset o, Offset p, double angle){
+Offset rotate_point(Offset o, Offset p, double angle) {
   return Offset(cos(angle) * (p.dx - o.dx) - sin(angle) * (p.dy - o.dy) + o.dx,
       sin(angle) * (p.dx - o.dx) + cos(angle) * (p.dy - o.dy) + o.dy);
 }

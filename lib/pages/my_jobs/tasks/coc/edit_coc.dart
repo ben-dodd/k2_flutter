@@ -1,4 +1,4 @@
-import 'package:calendarro/date_utils.dart';
+import 'package:calendarro/calendarro.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
@@ -7,11 +7,7 @@ import 'package:k2e/widgets/custom_auto_complete.dart';
 import 'package:k2e/widgets/custom_typeahead.dart';
 import 'package:k2e/widgets/dialogs.dart';
 import 'package:k2e/widgets/loading.dart';
-import 'package:flutter_calendar/flutter_calendar.dart';
-import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart';
-import 'package:calendarro/calendarro.dart';
 import 'package:uuid/uuid.dart';
-
 
 class EditCoc extends StatefulWidget {
   EditCoc({Key key, this.coc}) : super(key: key);
@@ -29,9 +25,7 @@ class _EditCocState extends State<EditCoc> {
   String coc;
   bool localPhoto = false;
   List<Map<String, String>> roomgrouplist = new List();
-  final Map constants = DataManager
-      .get()
-      .constants;
+  final Map constants = DataManager.get().constants;
   GlobalKey key = new GlobalKey<AutoCompleteTextFieldState<String>>();
 
 //  final controllerRoomCode = TextEditingController();
@@ -54,16 +48,22 @@ class _EditCocState extends State<EditCoc> {
   // Create list of focus nodes
   final _focusNodes = List<FocusNode>.generate(
     200,
-        (i) => FocusNode(),
+    (i) => FocusNode(),
   );
 
   @override
   void initState() {
     staff = [];
     if (DataManager.get().staff == null) {
-      Firestore.instance.collection('state').document('staff').get().then((doc) {
+      Firestore.instance
+          .collection('state')
+          .document('staff')
+          .get()
+          .then((doc) {
         doc.data.forEach((key, value) => staff.add(value['name'].toString()));
-        staff.sort((a, b) { return a.compareTo(b); } );
+        staff.sort((a, b) {
+          return a.compareTo(b);
+        });
         print(staff.toString());
       });
     } else {
@@ -86,192 +86,223 @@ class _EditCocState extends State<EditCoc> {
     print(datesSelected.toString());
     return new Scaffold(
 //        resizeToAvoidBottomPadding: false,
-      appBar:
-      new AppBar(title: Text(_title),
+      appBar: new AppBar(
+          title: Text(_title),
           leading: new IconButton(
             icon: new Icon(Icons.clear),
             onPressed: () => Navigator.of(context).pop(),
           ),
           actions: <Widget>[
-            new IconButton(icon: const Icon(Icons.check), onPressed: () {
-              if (_formKey.currentState.validate()) {
-                _formKey.currentState.save();
-                cocObj['personnel'] = personnelSelected;
-                cocObj['dates'] = datesSelected;
-                Firestore.instance.collection('cocs').document(coc).setData(cocObj);
-                Navigator.pop(context);
-              }
-            })
-          ]
-      ),
-      body: isLoading ?
-      loadingPage(loadingText: 'Loading Chain of Custody...')
+            new IconButton(
+                icon: const Icon(Icons.check),
+                onPressed: () {
+                  if (_formKey.currentState.validate()) {
+                    _formKey.currentState.save();
+                    cocObj['personnel'] = personnelSelected;
+                    cocObj['dates'] = datesSelected;
+                    Firestore.instance
+                        .collection('cocs')
+                        .document(coc)
+                        .setData(cocObj);
+                    Navigator.pop(context);
+                  }
+                })
+          ]),
+      body: isLoading
+          ? loadingPage(loadingText: 'Loading Chain of Custody...')
           : GestureDetector(
-        onTap: () {
-          FocusScope.of(context).requestFocus(new FocusNode());
-        },
-        child: Form(
-          key: _formKey,
-          child: ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              controller: _scrollController,
-              padding: new EdgeInsets.all(8.0),
+              onTap: () {
+                FocusScope.of(context).requestFocus(new FocusNode());
+              },
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    controller: _scrollController,
+                    padding: new EdgeInsets.all(8.0),
 //                  padding: new EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 200.0),
-              children: <Widget>[
-                Container(height: 16.0,),
-                Text(cocObj['jobNumber'] + ': ' + cocObj['client'], style: Styles.h2,),
-                Text(cocObj['address'], style: Styles.h3,),
-                Text(cocObj['currentVersion'] == null
-                    ? 'Not issued'
-                    : 'Latest version: ' + cocObj['currentVersion'], style: Styles.comment),
-                new Container(
-                  alignment: Alignment.topLeft,
-                  padding: EdgeInsets.only(top: 14.0, bottom: 16.0),
-                  child: new Text(
-                    "Sample Date(s)", style: Styles.label,),
-                ),
-                Calendarro(
+                    children: <Widget>[
+                      Container(
+                        height: 16.0,
+                      ),
+                      Text(
+                        cocObj['jobNumber'] + ': ' + cocObj['client'],
+                        style: Styles.h2,
+                      ),
+                      Text(
+                        cocObj['address'],
+                        style: Styles.h3,
+                      ),
+                      Text(
+                          cocObj['currentVersion'] == null
+                              ? 'Not issued'
+                              : 'Latest version: ' + cocObj['currentVersion'],
+                          style: Styles.comment),
+                      new Container(
+                        alignment: Alignment.topLeft,
+                        padding: EdgeInsets.only(top: 14.0, bottom: 16.0),
+                        child: new Text(
+                          "Sample Date(s)",
+                          style: Styles.label,
+                        ),
+                      ),
+                      Calendarro(
 //                  startDate: DateUtils.getFirstDayOfMonth(new DateTime.now().month - 2),
 //                  endDate: DateUtils.getLastDayOfNextMonth(),
-                  selectionMode: SelectionMode.MULTI,
-                  displayMode: DisplayMode.WEEKS,
+                        selectionMode: SelectionMode.MULTI,
+                        displayMode: DisplayMode.WEEKS,
 //                  dayTileBuilder: ,
-                  selectedDates: datesSelected,
+                        selectedDates: datesSelected,
 //                  selectedDates: cocObj['dates'].map((date) { return new DateTime(date); } ).toList(),
-                ),
-                new Container(
-                  alignment: Alignment.topLeft,
-                  padding: EdgeInsets.only(top: 14.0,),
-                  child: new Text(
-                    "Sampled By", style: Styles.label,),
-                ),
-                new Container(
-                  alignment: Alignment.topLeft,
-                  child: DropdownButton<String>(
-                    value: personnelSelected.isEmpty ? null : personnelSelected.last,
-                    iconSize: 24.0,
-                    items: staff.map((staff) {
-                      return new DropdownMenuItem<String>(
-                        value: staff,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Icon(
-                              Icons.check,
-                              color: personnelSelected.contains(staff) ? null : Colors.transparent,
-                            ),
-                            SizedBox(width: 16),
-                            Text(staff),
-                          ],
+                      ),
+                      new Container(
+                        alignment: Alignment.topLeft,
+                        padding: EdgeInsets.only(
+                          top: 14.0,
                         ),
-                      );
-                    }).toList(),
-                    hint: Text("-"),
-                    onChanged: (String newValue) {
-                      setState(() {
-                        print(personnelSelected.toString());
-                        print(newValue);
-                        if (personnelSelected.contains(newValue))
-                          personnelSelected.remove(newValue);
-                        else
-                          personnelSelected.add(newValue);
-                      });
-                    },
-                  ),
-                ),
-                ExpansionTile(
-                  initiallyExpanded: true,
-                  title: new Text("Samples", style: Styles.h2,),
-                  children: <Widget>[
-                    new Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        new Container(
-                          alignment: Alignment.center,
-                          padding: EdgeInsets.fromLTRB(2.0, 8.0, 4.0, 8.0,),
-                          child: new OutlineButton(
-                            child: const Text("Add 10 More Rows"),
-                            color: Colors.white,
-                            onPressed: () {
-                              showRoomTemplateDialog(
-                                context, cocObj, applyTemplate,);
-                            },
-                            shape: new RoundedRectangleBorder(
-                                borderRadius: new BorderRadius.circular(30.0)),
+                        child: new Text(
+                          "Sampled By",
+                          style: Styles.label,
+                        ),
+                      ),
+                      new Container(
+                        alignment: Alignment.topLeft,
+                        child: DropdownButton<String>(
+                          value: personnelSelected.isEmpty
+                              ? null
+                              : personnelSelected.last,
+                          iconSize: 24.0,
+                          items: staff.map((staff) {
+                            return new DropdownMenuItem<String>(
+                              value: staff,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Icon(
+                                    Icons.check,
+                                    color: personnelSelected.contains(staff)
+                                        ? null
+                                        : Colors.transparent,
+                                  ),
+                                  SizedBox(width: 16),
+                                  Text(staff),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                          hint: Text("-"),
+                          onChanged: (String newValue) {
+                            setState(() {
+                              print(personnelSelected.toString());
+                              print(newValue);
+                              if (personnelSelected.contains(newValue))
+                                personnelSelected.remove(newValue);
+                              else
+                                personnelSelected.add(newValue);
+                            });
+                          },
+                        ),
+                      ),
+                      ExpansionTile(
+                        initiallyExpanded: true,
+                        title: new Text(
+                          "Samples",
+                          style: Styles.h2,
+                        ),
+                        children: <Widget>[
+                          new Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              new Container(
+                                alignment: Alignment.center,
+                                padding: EdgeInsets.fromLTRB(
+                                  2.0,
+                                  8.0,
+                                  4.0,
+                                  8.0,
+                                ),
+                                child: new OutlineButton(
+                                  child: const Text("Add 10 More Rows"),
+                                  color: Colors.white,
+                                  onPressed: () {
+                                    showRoomTemplateDialog(
+                                      context,
+                                      cocObj,
+                                      applyTemplate,
+                                    );
+                                  },
+                                  shape: new RoundedRectangleBorder(
+                                      borderRadius:
+                                          new BorderRadius.circular(30.0)),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                    (cocObj['samples'] != null &&
-                        cocObj['samples'].length > 0) ?
-                    ListView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: cocObj['samples'].length,
-                        itemBuilder: (context, index) {
-                          return buildSamples(index);
-                        })
-                        :
-                    new Container(),
+                          (cocObj['samples'] != null &&
+                                  cocObj['samples'].length > 0)
+                              ? ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  itemCount: cocObj['samples'].length,
+                                  itemBuilder: (context, index) {
+                                    return buildSamples(index);
+                                  })
+                              : new Container(),
 //                    buildBuildingMaterials(),
-                  ],
-                ),
-              ]
-          ),
-        ),
-      ),
+                        ],
+                      ),
+                    ]),
+              ),
+            ),
     );
   }
 
   buildSamples(index) {
 //      print("Building item: " + item.toString());
     var item = cocObj['samples'][index];
-    TextEditingController labelController = TextEditingController(
-        text: item['label']);
-    TextEditingController materialController = TextEditingController(
-        text: item['material']);
-    Widget widget = new Row(
-        children: <Widget>[
-          new Container(
-            width: 150.0,
-            alignment: Alignment.topLeft,
-            padding: EdgeInsets.only(right: 14.0,),
+    TextEditingController labelController =
+        TextEditingController(text: item['label']);
+    TextEditingController materialController =
+        TextEditingController(text: item['material']);
+    Widget widget = new Row(children: <Widget>[
+      new Container(
+        width: 150.0,
+        alignment: Alignment.topLeft,
+        padding: EdgeInsets.only(
+          right: 14.0,
+        ),
 //          child: new Text(item["label"], style: Styles.label,),
-            child: CustomTypeAhead(
-              controller: labelController,
-              capitalization: TextCapitalization.sentences,
-              textInputAction: TextInputAction.next,
+        child: CustomTypeAhead(
+          controller: labelController,
+          capitalization: TextCapitalization.sentences,
+          textInputAction: TextInputAction.next,
 //          label: 'Item',
-              suggestions: items,
-              onSaved: (value) =>
-              cocObj['samples'][index]["label"] = value.trim(),
-              validator: (value) {},
-              focusNode: _focusNodes[(index * 2) + 2],
-              nextFocus: _focusNodes[(index * 2) + 3],
-            ),
-          ),
-          new Flexible(
-            child: CustomTypeAhead(
-              controller: materialController,
-              capitalization: TextCapitalization.none,
-              textInputAction: TextInputAction.next,
+          suggestions: items,
+          onSaved: (value) => cocObj['samples'][index]["label"] = value.trim(),
+          validator: (value) {},
+          focusNode: _focusNodes[(index * 2) + 2],
+          nextFocus: _focusNodes[(index * 2) + 3],
+        ),
+      ),
+      new Flexible(
+        child: CustomTypeAhead(
+          controller: materialController,
+          capitalization: TextCapitalization.none,
+          textInputAction: TextInputAction.next,
 //            label: 'Material',
-              suggestions: materials,
-              onSaved: (value) =>
+          suggestions: materials,
+          onSaved: (value) =>
               cocObj['samples'][index]["material"] = value.trim(),
-              validator: (value) {},
-              focusNode: _focusNodes[(index * 2) + 3],
-              nextFocus: (cocObj['samples'].length - 1 != index &&
+          validator: (value) {},
+          focusNode: _focusNodes[(index * 2) + 3],
+          nextFocus: (cocObj['samples'].length - 1 != index &&
                   cocObj['samples'][index + 1] != null &&
-                  cocObj['samples'][index + 1]["label"]
-                      .trim()
-                      .length > 0)
-                  ? _focusNodes[((index + 1) * 2) + 3] : _focusNodes[((index +
-                  1) * 2) + 2],
-            ),
-          )
-        ]
-    );
+                  cocObj['samples'][index + 1]["label"].trim().length > 0)
+              ? _focusNodes[((index + 1) * 2) + 3]
+              : _focusNodes[((index + 1) * 2) + 2],
+        ),
+      )
+    ]);
     return widget;
   }
 
@@ -301,9 +332,16 @@ class _EditCocState extends State<EditCoc> {
         setState(() {
           cocObj = doc.data;
           print(cocObj['samples'].toString());
-          if (cocObj['personnel'] != null) cocObj['personnel'].forEach((p) { personnelSelected.add(p); });
-          if (cocObj['dates'] != null) cocObj['dates'].forEach((d) { datesSelected.add(d); });
-            else datesSelected.add(new DateTime.now());
+          if (cocObj['personnel'] != null)
+            cocObj['personnel'].forEach((p) {
+              personnelSelected.add(p);
+            });
+          if (cocObj['dates'] != null)
+            cocObj['dates'].forEach((d) {
+              datesSelected.add(d);
+            });
+          else
+            datesSelected.add(new DateTime.now());
           _roomNameController.text = cocObj['name'];
           _roomCodeController.text = cocObj['roomcode'];
           isLoading = false;

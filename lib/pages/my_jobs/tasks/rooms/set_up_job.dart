@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/styles.dart';
-import 'package:k2e/widgets/loading.dart';
 import 'package:uuid/uuid.dart';
 
 class SetUpJob extends StatefulWidget {
@@ -16,12 +15,8 @@ class _SetUpJobState extends State<SetUpJob> {
   String _title = "Set Up Job";
   bool addAllOrphans = false;
   String templateName = '-';
-  List roomGroupTemplates = DataManager
-      .get()
-      .roomGroupTemplates;
-  List roomTemplates = DataManager
-      .get()
-      .roomTemplates;
+  List roomGroupTemplates = DataManager.get().roomGroupTemplates;
+  List roomTemplates = DataManager.get().roomTemplates;
 
 //  Map<String, dynamic> roomObj = new Map<String, dynamic>();
 
@@ -38,27 +33,31 @@ class _SetUpJobState extends State<SetUpJob> {
   Widget build(BuildContext context) {
     return new Scaffold(
 //        resizeToAvoidBottomPadding: false,
-      appBar:
-      new AppBar(title: Text(_title),
+      appBar: new AppBar(
+          title: Text(_title),
           leading: new IconButton(
             icon: new Icon(Icons.clear),
             onPressed: () => Navigator.of(context).pop(),
           ),
           actions: <Widget>[
-            new IconButton(icon: const Icon(Icons.check),
-                onPressed: templateName == '-' ? null : () {
+            new IconButton(
+                icon: const Icon(Icons.check),
+                onPressed: templateName == '-'
+                    ? null
+                    : () {
 //              if (_formKey.currentState.validate()) {
 //                _formKey.currentState.save();
 //                Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(roomObj['path']).setData(roomObj, merge: true);
 //                if (addAllOrphans) addAllOrphansToGroup();
-                  if (templateName != '-' && roomGroupTemplates.firstWhere((
-                      template) => template['name'] == templateName)['rooms'] !=
-                      null) createRoomsFromTemplate();
-                  Navigator.pop(context);
+                        if (templateName != '-' &&
+                            roomGroupTemplates.firstWhere((template) =>
+                                    template['name'] ==
+                                    templateName)['rooms'] !=
+                                null) createRoomsFromTemplate();
+                        Navigator.pop(context);
 //              }
-                })
-          ]
-      ),
+                      })
+          ]),
       body: GestureDetector(
         onTap: () {
           FocusScope.of(context).requestFocus(new FocusNode());
@@ -72,9 +71,13 @@ class _SetUpJobState extends State<SetUpJob> {
             children: <Widget>[
               new Container(
                 alignment: Alignment.topLeft,
-                padding: EdgeInsets.only(top: 14.0,),
+                padding: EdgeInsets.only(
+                  top: 14.0,
+                ),
                 child: new Text(
-                  "Create Rooms from Template", style: Styles.label,),
+                  "Create Rooms from Template",
+                  style: Styles.label,
+                ),
               ),
               new DropdownButton<String>(
                   value: templateName,
@@ -89,8 +92,7 @@ class _SetUpJobState extends State<SetUpJob> {
                     setState(() {
                       templateName = value;
                     });
-                  }
-              ),
+                  }),
             ],
           ),
         ),
@@ -100,8 +102,8 @@ class _SetUpJobState extends State<SetUpJob> {
 
   void createRoomsFromTemplate() {
 //    print ('Creating rooms from template ' + templateName);
-    var template = roomGroupTemplates.firstWhere((
-        template) => template['name'] == templateName);
+    var template = roomGroupTemplates
+        .firstWhere((template) => template['name'] == templateName);
 //    print(template.toString());
     if (template == null || template['rooms'] == null) return;
 //    print(template['rooms'].length.toString());
@@ -113,15 +115,15 @@ class _SetUpJobState extends State<SetUpJob> {
         'path_local': null,
         'path_remote': null,
         'buildingmaterials': roomTemplates.firstWhere((template) =>
-        template['name'] == room['template'])['buildingmaterials'],
+            template['name'] == room['template'])['buildingmaterials'],
         'roomtype': 'orphan',
 //        'roomgroupname': roomObj['name'],
 //        'roomgrouppath': roomObj['path'],
         'path': new Uuid().v1(),
       };
-      Firestore.instance.document(DataManager
-          .get()
-          .currentJobPath).collection('rooms')
+      Firestore.instance
+          .document(DataManager.get().currentJobPath)
+          .collection('rooms')
           .document(newRoom['path'])
           .setData(newRoom, merge: true);
 //      childList[index] = {
@@ -139,13 +141,12 @@ class _SetUpJobState extends State<SetUpJob> {
             'material': acm['material'],
             'roomname': room['name'],
             'roompath': newRoom['path'],
-            'jobnumber': DataManager
-                .get()
-                .currentJobNumber,
+            'jobnumber': DataManager.get().currentJobNumber,
           };
-          Firestore.instance.document(DataManager
-              .get()
-              .currentJobPath).collection('acm').add(newAcm);
+          Firestore.instance
+              .document(DataManager.get().currentJobPath)
+              .collection('acm')
+              .add(newAcm);
         });
       }
 //      if (index == template['rooms'].length-1) {

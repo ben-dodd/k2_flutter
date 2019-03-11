@@ -48,29 +48,15 @@ class CompanyColors {
   static const Color weakPresume = Color(0xFFFFD930);
   static const Color acmNegative = Color(0xFFB2E6A1);
 
-
   // icons
-  static Icon asbestosIcon = new Icon(
-      Icons.whatshot, color: iconYellow
-  );
-  static Icon methIcon = new Icon(
-      Icons.lightbulb_outline, color: iconPink
-  );
-  static Icon noiseIcon = new Icon(
-      Icons.hearing, color: iconBrown
-  );
-  static Icon bioIcon = new Icon(
-      Icons.local_florist, color: iconDGreen
-  );
+  static Icon asbestosIcon = new Icon(Icons.whatshot, color: iconYellow);
+  static Icon methIcon = new Icon(Icons.lightbulb_outline, color: iconPink);
+  static Icon noiseIcon = new Icon(Icons.hearing, color: iconBrown);
+  static Icon bioIcon = new Icon(Icons.local_florist, color: iconDGreen);
 //  static Icon stackIcon = new Icon(
 //      Icons.hot_tub, color: iconYellow
 //  );
-  static Icon stackIcon = new Icon(
-      Icons.filter_drama, color: iconLGreen
-  );
+  static Icon stackIcon = new Icon(Icons.filter_drama, color: iconLGreen);
 
-  static Icon generalIcon = new Icon(
-    Icons.assignment
-  );
-
+  static Icon generalIcon = new Icon(Icons.assignment);
 }

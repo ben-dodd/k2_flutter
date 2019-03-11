@@ -9,11 +9,11 @@ import 'package:k2e/model/jobheader.dart';
 import 'package:k2e/utils/timesheet.dart';
 
 class DataManager {
-
   static final DataManager _dm = new DataManager._internal();
   // Temp Storage
 //  List<JobHeader> myJobCache;
-  List<JobHeader> wfmJobCache = new List(); // this holds all jobs gathered from the last WFM api request
+  List<JobHeader> wfmJobCache =
+      new List(); // this holds all jobs gathered from the last WFM api request
 
   List<CameraDescription> cameras;
   String user;
@@ -34,69 +34,172 @@ class DataManager {
   List<String> buildingmaterials;
 
   // Job templates
-  List roomGroupTemplates =
-    [
-      {'name': '-'},
-      {
-        'name': 'Management: 3 Bedroom House',
-        'rooms': [
-          { 'name': 'Kitchen', 'template': 'Kitchen', },
-          { 'name': 'Lounge', 'template': 'Lounge', },
-          { 'name': 'Dining Room', 'template': 'Basic', },
-          { 'name': 'Hallway', 'template': 'Hallway', },
-          { 'name': 'Bathroom', 'template': 'Bathroom/Toilet', },
-          { 'name': 'Toilet', 'template': 'Bathroom/Toilet', },
-          { 'name': 'Laundry', 'template': 'Bathroom/Toilet', },
-          { 'name': 'Bedroom 1', 'template': 'Basic', },
-          { 'name': 'Bedroom 2', 'template': 'Basic', },
-          { 'name': 'Bedroom 3', 'template': 'Basic', },
-          { 'name': 'Ceiling Space', 'template': 'Basic', 'acm': [
-            {'description': 'Surfaces', 'material': 'dust', }
-          ]},
-          { 'name': 'Exterior', 'template': 'Basic', },
-          { 'name': 'Garage', 'template': 'Basic', },
-          { 'name': 'Shed', 'template': 'Basic', },
-        ],
-      },
-      {
-        'name': 'Demolition: 3 Bedroom House',
-        'rooms': [
-          { 'name': 'Kitchen', 'template': 'Kitchen', },
-          { 'name': 'HWC', 'template': 'Basic', },
-          { 'name': 'Lounge', 'template': 'Lounge', },
-          { 'name': 'Fireplace', 'template': 'Basic', },
-          { 'name': 'Dining Room', 'template': 'Basic', },
-          { 'name': 'Hallway', 'template': 'Hallway', },
-          { 'name': 'Fuse Board', 'template': 'Basic', },
-          { 'name': 'Bathroom', 'template': 'Bathroom/Toilet', },
-          { 'name': 'Toilet', 'template': 'Bathroom/Toilet', },
-          { 'name': 'Laundry', 'template': 'Bathroom/Toilet', },
-          { 'name': 'Bedroom 1', 'template': 'Basic', },
-          { 'name': 'Bedroom 2', 'template': 'Basic', },
-          { 'name': 'Bedroom 3', 'template': 'Basic', },
-          { 'name': 'Ceiling Space', 'template': 'Basic', 'acm': [
-            {'description': 'Surfaces', 'material': 'dust', }
-          ]},
-          { 'name': 'Exterior', 'template': 'Basic', 'acm': [
-            { 'description': 'Soil', 'material': 'soil', }
-          ]},
-          { 'name': 'Garage', 'template': 'Basic', },
-          { 'name': 'Shed', 'template': 'Basic', },
-        ],
-      },
-      {'name': 'Locomotive Type DC'},
-      {'name': 'Locomotive Type DCP'},
-      {'name': 'Locomotive Type DFM'},
-      {'name': 'Locomotive Type DFT'},
-      {'name': 'Locomotive Type DH'},
-      {'name': 'Locomotive Type DSC'},
-      {'name': 'Locomotive Type DXB'},
-      {'name': 'Locomotive Type EF'},
-      {'name': 'Electrical Substation'},
-    ];
+  List roomGroupTemplates = [
+    {'name': '-'},
+    {
+      'name': 'Management: 3 Bedroom House',
+      'rooms': [
+        {
+          'name': 'Kitchen',
+          'template': 'Kitchen',
+        },
+        {
+          'name': 'Lounge',
+          'template': 'Lounge',
+        },
+        {
+          'name': 'Dining Room',
+          'template': 'Basic',
+        },
+        {
+          'name': 'Hallway',
+          'template': 'Hallway',
+        },
+        {
+          'name': 'Bathroom',
+          'template': 'Bathroom/Toilet',
+        },
+        {
+          'name': 'Toilet',
+          'template': 'Bathroom/Toilet',
+        },
+        {
+          'name': 'Laundry',
+          'template': 'Bathroom/Toilet',
+        },
+        {
+          'name': 'Bedroom 1',
+          'template': 'Basic',
+        },
+        {
+          'name': 'Bedroom 2',
+          'template': 'Basic',
+        },
+        {
+          'name': 'Bedroom 3',
+          'template': 'Basic',
+        },
+        {
+          'name': 'Ceiling Space',
+          'template': 'Basic',
+          'acm': [
+            {
+              'description': 'Surfaces',
+              'material': 'dust',
+            }
+          ]
+        },
+        {
+          'name': 'Exterior',
+          'template': 'Basic',
+        },
+        {
+          'name': 'Garage',
+          'template': 'Basic',
+        },
+        {
+          'name': 'Shed',
+          'template': 'Basic',
+        },
+      ],
+    },
+    {
+      'name': 'Demolition: 3 Bedroom House',
+      'rooms': [
+        {
+          'name': 'Kitchen',
+          'template': 'Kitchen',
+        },
+        {
+          'name': 'HWC',
+          'template': 'Basic',
+        },
+        {
+          'name': 'Lounge',
+          'template': 'Lounge',
+        },
+        {
+          'name': 'Fireplace',
+          'template': 'Basic',
+        },
+        {
+          'name': 'Dining Room',
+          'template': 'Basic',
+        },
+        {
+          'name': 'Hallway',
+          'template': 'Hallway',
+        },
+        {
+          'name': 'Fuse Board',
+          'template': 'Basic',
+        },
+        {
+          'name': 'Bathroom',
+          'template': 'Bathroom/Toilet',
+        },
+        {
+          'name': 'Toilet',
+          'template': 'Bathroom/Toilet',
+        },
+        {
+          'name': 'Laundry',
+          'template': 'Bathroom/Toilet',
+        },
+        {
+          'name': 'Bedroom 1',
+          'template': 'Basic',
+        },
+        {
+          'name': 'Bedroom 2',
+          'template': 'Basic',
+        },
+        {
+          'name': 'Bedroom 3',
+          'template': 'Basic',
+        },
+        {
+          'name': 'Ceiling Space',
+          'template': 'Basic',
+          'acm': [
+            {
+              'description': 'Surfaces',
+              'material': 'dust',
+            }
+          ]
+        },
+        {
+          'name': 'Exterior',
+          'template': 'Basic',
+          'acm': [
+            {
+              'description': 'Soil',
+              'material': 'soil',
+            }
+          ]
+        },
+        {
+          'name': 'Garage',
+          'template': 'Basic',
+        },
+        {
+          'name': 'Shed',
+          'template': 'Basic',
+        },
+      ],
+    },
+    {'name': 'Locomotive Type DC'},
+    {'name': 'Locomotive Type DCP'},
+    {'name': 'Locomotive Type DFM'},
+    {'name': 'Locomotive Type DFT'},
+    {'name': 'Locomotive Type DH'},
+    {'name': 'Locomotive Type DSC'},
+    {'name': 'Locomotive Type DXB'},
+    {'name': 'Locomotive Type EF'},
+    {'name': 'Electrical Substation'},
+  ];
 
-  List roomTemplates =
-  [
+  List roomTemplates = [
     {
       "name": "Blank Rows",
       "buildingmaterials": [
@@ -297,9 +400,7 @@ class DataManager {
     return _dm;
   }
 
-  DataManager._internal(){
-
-  }
+  DataManager._internal() {}
 
 //  Future<void> loadJob(String firePath) async {
 //    print ('Fire pPath: ' + firePath);

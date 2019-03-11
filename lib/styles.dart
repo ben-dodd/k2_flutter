@@ -29,9 +29,7 @@ class Styles {
     fontSize: 16.0,
   );
 
-  static TextStyle loading = new TextStyle(
-    fontSize: 16.0, color: Colors.black
-  );
+  static TextStyle loading = new TextStyle(fontSize: 16.0, color: Colors.black);
 
   static TextStyle comment = new TextStyle(
     color: Colors.black38,
@@ -58,5 +56,4 @@ class Styles {
   static TextStyle logButton = new TextStyle(
     fontSize: 16.0,
   );
-
 }

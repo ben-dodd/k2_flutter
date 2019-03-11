@@ -2,20 +2,20 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:k2e/data/datamanager.dart';
+import 'package:k2e/pages/my_jobs/tasks/acm/acm_card.dart';
 import 'package:k2e/pages/my_jobs/tasks/acm/edit_acm.dart';
 import 'package:k2e/pages/my_jobs/tasks/acm/edit_sample_asbestos_air.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
-import 'package:k2e/pages/my_jobs/tasks/acm/acm_card.dart';
 import 'package:k2e/widgets/custom_auto_complete.dart';
 import 'package:k2e/widgets/custom_typeahead.dart';
 import 'package:k2e/widgets/dialogs.dart';
 import 'package:k2e/widgets/loading.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
 
 class EditRoom extends StatefulWidget {
@@ -29,7 +29,7 @@ class _EditRoomState extends State<EditRoom> {
   String _title = "Edit Room";
   bool isLoading = true;
   String initRoomGroup;
-  Map<String,dynamic> roomObj = new Map<String,dynamic>();
+  Map<String, dynamic> roomObj = new Map<String, dynamic>();
 
   // images
   String room;
@@ -45,7 +45,7 @@ class _EditRoomState extends State<EditRoom> {
   List rooms;
   List items;
   List materials;
-  
+
   var _formKey = GlobalKey<FormState>();
 //  GlobalKey formFieldKey = new GlobalKey<AutoCompleteFormFieldState<String>>();
 
@@ -73,87 +73,101 @@ class _EditRoomState extends State<EditRoom> {
   Widget build(BuildContext context) {
     return new Scaffold(
 //        resizeToAvoidBottomPadding: false,
-        appBar:
-        new AppBar(title: Text(_title),
-            leading: new IconButton(
-              icon: new Icon(Icons.clear),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            actions: <Widget>[
-              new IconButton(icon: const Icon(Icons.check), onPressed: () {
-                if (_formKey.currentState.validate()){
-                  _formKey.currentState.save();
-                  // Update room group map if new room has been added or if room's room group has changed
-                  Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(roomObj['path']).setData(roomObj);
-                  if (roomObj['roomgrouppath'] == null || roomObj['roomgrouppath'] != initRoomGroup) {
-                    updateRoomGroups(initRoomGroup, roomObj, widget.room);
-                  } else {
-                    updateRoomCard(roomObj['roomgrouppath'], roomObj);
+      appBar: new AppBar(
+          title: Text(_title),
+          leading: new IconButton(
+            icon: new Icon(Icons.clear),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          actions: <Widget>[
+            new IconButton(
+                icon: const Icon(Icons.check),
+                onPressed: () {
+                  if (_formKey.currentState.validate()) {
+                    _formKey.currentState.save();
+                    // Update room group map if new room has been added or if room's room group has changed
+                    Firestore.instance
+                        .document(DataManager.get().currentJobPath)
+                        .collection('rooms')
+                        .document(roomObj['path'])
+                        .setData(roomObj);
+                    if (roomObj['roomgrouppath'] == null ||
+                        roomObj['roomgrouppath'] != initRoomGroup) {
+                      updateRoomGroups(initRoomGroup, roomObj, widget.room);
+                    } else {
+                      updateRoomCard(roomObj['roomgrouppath'], roomObj);
+                    }
+                    Navigator.pop(context);
                   }
-                  Navigator.pop(context);
-                }
-              })
-            ]
-        ),
-        body: isLoading ?
-        loadingPage(loadingText: 'Loading room info...')
-        : GestureDetector(
-            onTap: () {
-              FocusScope.of(context).requestFocus(new FocusNode());
-            },
-            child: Form(
-              key: _formKey,
-              child: ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                  controller: _scrollController,
-                  padding: new EdgeInsets.all(8.0),
+                })
+          ]),
+      body: isLoading
+          ? loadingPage(loadingText: 'Loading room info...')
+          : GestureDetector(
+              onTap: () {
+                FocusScope.of(context).requestFocus(new FocusNode());
+              },
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    controller: _scrollController,
+                    padding: new EdgeInsets.all(8.0),
 //                  padding: new EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 200.0),
-                  children: <Widget>[
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                      new Container(
-                        alignment: Alignment.center,
-                        height: 312.0,
-                        width: 240.0,
-                        decoration: BoxDecoration(border: new Border.all(color: Colors.black)),
-                        child: GestureDetector(
-                            onTap: () {
-                              ImagePicker.pickImage(source: ImageSource.camera).then((image) {
+                    children: <Widget>[
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          new Container(
+                            alignment: Alignment.center,
+                            height: 312.0,
+                            width: 240.0,
+                            decoration: BoxDecoration(
+                                border: new Border.all(color: Colors.black)),
+                            child: GestureDetector(
+                                onTap: () {
+                                  ImagePicker.pickImage(
+                                          source: ImageSource.camera)
+                                      .then((image) {
 //                                          _imageFile = image;
-                                if (image != null) {
-                                  localPhoto = true;
-                                  _handleImageUpload(image);
-                                }
-                              });
-                            },
+                                    if (image != null) {
+                                      localPhoto = true;
+                                      _handleImageUpload(image);
+                                    }
+                                  });
+                                },
 //                                    child: (_imageFile != null)
 //                                        ? Image.file(_imageFile)
-                            child: localPhoto ?
-                            new Image.file(new File(roomObj['path_local']))
-                                : (roomObj['path_remote'] != null) ?
-                            new CachedNetworkImage(
-                              imageUrl: roomObj['path_remote'],
-                              placeholder: new CircularProgressIndicator(),
-                              errorWidget: new Icon(Icons.error),
-                              fadeInDuration: new Duration(seconds: 1),
-                            )
-                                :  new Icon(
-                              Icons.camera, color: CompanyColors.accentRippled,
-                              size: 48.0,)
-                          ),
-                        )],
+                                child: localPhoto
+                                    ? new Image.file(
+                                        new File(roomObj['path_local']))
+                                    : (roomObj['path_remote'] != null)
+                                        ? new CachedNetworkImage(
+                                            imageUrl: roomObj['path_remote'],
+                                            placeholder:
+                                                new CircularProgressIndicator(),
+                                            errorWidget: new Icon(Icons.error),
+                                            fadeInDuration:
+                                                new Duration(seconds: 1),
+                                          )
+                                        : new Icon(
+                                            Icons.camera,
+                                            color: CompanyColors.accentRippled,
+                                            size: 48.0,
+                                          )),
+                          )
+                        ],
                       ),
                       CustomTypeAhead(
                         controller: _roomNameController,
-  //                            initialValue: acmObj['materialrisk_surfacedesc'],
+                        //                            initialValue: acmObj['materialrisk_surfacedesc'],
                         capitalization: TextCapitalization.words,
                         textInputAction: TextInputAction.done,
                         label: 'Room Name',
                         suggestions: rooms,
                         onSaved: (value) => roomObj['name'] = value.trim(),
-                        validator: (value) { },
+                        validator: (value) {},
                         focusNode: _focusNodes[0],
                         nextFocus: _focusNodes[1],
                         onSuggestionSelected: (suggestion) {
@@ -162,261 +176,340 @@ class _EditRoomState extends State<EditRoom> {
                             _roomCodeController.text = suggestion['code'];
                           }
                         },
-                        onSubmitted: (v) { },
+                        onSubmitted: (v) {},
                       ),
                       new Container(
                         child: TextFormField(
-                            decoration: const InputDecoration(
-                                labelText: "Room Code",
-                                hintText: "e.g. B1 (use for large surveys with many similar rooms)",
-                            ),
-                            controller: _roomCodeController,
-                            autocorrect: false,
-                            onSaved: (String value) => roomObj["roomcode"] = value.trim(),
-                            focusNode: _focusNodes[1],
-                            textCapitalization: TextCapitalization.characters,
+                          decoration: const InputDecoration(
+                            labelText: "Room Code",
+                            hintText:
+                                "e.g. B1 (use for large surveys with many similar rooms)",
                           ),
+                          controller: _roomCodeController,
+                          autocorrect: false,
+                          onSaved: (String value) =>
+                              roomObj["roomcode"] = value.trim(),
+                          focusNode: _focusNodes[1],
+                          textCapitalization: TextCapitalization.characters,
                         ),
-                    new Container(
-                      alignment: Alignment.topLeft,
-                      padding: EdgeInsets.only(top: 14.0,),
-                      child: new Text("Room Group/Building/Level", style: Styles.label,),
-                    ),
-                    new Container(
-                      alignment: Alignment.topLeft,
-                      child: DropdownButton<String>(
-                        value: (roomObj['roomgrouppath'] == null) ? null : roomObj['roomgrouppath'],
-                        iconSize: 24.0,
-                        items: roomgrouplist.map((Map<String,String> roomgroup) {
-                          print(roomgroup.toString());
-                          String val = "Untitled";
-                          if (roomgroup['name'] != null) val = roomgroup['name'];
-                          return new DropdownMenuItem<String>(
-                            value: roomgroup["path"],
-                            child: new Text(val),
-                          );
-                        }).toList(),
-                        hint: Text("-"),
-                        onChanged: (value) {
-                          setState(() {
-//                            _roomgroup = roomgrouplist.firstWhere((e) => e['path'] == value);
-                            if (value == '') {
-                              roomObj['roomtype'] = 'orphan';
-                            } else roomObj['roomtype'] = null;
-                            roomObj["roomgroupname"] = roomgrouplist.firstWhere((e) => e['path'] == value)['name'];;
-                            roomObj["roomgrouppath"] = value;
-                            DataManager.get().currentRoomGroup = value;
-//                              acm.setData({"room": _room}, merge: true);
-                          });
-                        },
-                      ),
-                    ),
-              ExpansionTile(
-                initiallyExpanded: true,
-                title: new Text("Presumed and Sampled Materials", style: Styles.h2,),
-                children: <Widget>[
-                    new Row(children: <Widget> [
-                      new Container(
-                          alignment: Alignment.topLeft,
-                          child: Checkbox(value: roomObj['presume'] != null ? roomObj['presume'] : false,
-                              onChanged: (value) => setState(() {
-                                roomObj['presume'] = roomObj['presume'] != null ? !roomObj['presume'] : true;
-                              }))
                       ),
                       new Container(
                         alignment: Alignment.topLeft,
-                        child: new Text("Presume Entire Room (Inaccessible)", style: Styles.label,),
+                        padding: EdgeInsets.only(
+                          top: 14.0,
+                        ),
+                        child: new Text(
+                          "Room Group/Building/Level",
+                          style: Styles.label,
+                        ),
                       ),
-                    ]),
-                    widget.room != null ? new StreamBuilder(
-                        stream: Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').where("roompath", isEqualTo: widget.room).snapshots(),
-                        builder: (context, snapshot) {
-                          print("Room object : " + widget.room.toString());
-                          if (!snapshot.hasData) return
-                            Container(
-                                padding: EdgeInsets.only(top: 16.0),
-                                alignment: Alignment.center,
-                                color: Colors.white,
-
-                                child: Column(
-                                    mainAxisAlignment: MainAxisAlignment
-                                        .center,
-                                    children: <Widget>[
-                                      new CircularProgressIndicator(),
-                                      Container(
-                                          alignment: Alignment.center,
-                                          height: 64.0,
-                                          child:
-                                          Text("Loading ACM items...")
-                                      )
-                                    ]));
-                          if (snapshot.data.documents.length == 0) return
-                            Center(
-                                child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Icon(Icons.not_interested, size: 64.0),
-                                      Container(
-                                          alignment: Alignment.center,
-                                          height: 64.0,
-                                          child:
-                                          Text('This job has no ACM items.')
-                                      )
-                                    ]
-                                )
+                      new Container(
+                        alignment: Alignment.topLeft,
+                        child: DropdownButton<String>(
+                          value: (roomObj['roomgrouppath'] == null)
+                              ? null
+                              : roomObj['roomgrouppath'],
+                          iconSize: 24.0,
+                          items: roomgrouplist
+                              .map((Map<String, String> roomgroup) {
+                            print(roomgroup.toString());
+                            String val = "Untitled";
+                            if (roomgroup['name'] != null)
+                              val = roomgroup['name'];
+                            return new DropdownMenuItem<String>(
+                              value: roomgroup["path"],
+                              child: new Text(val),
                             );
-                          return ListView.builder(
-                              shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
-                              itemCount: snapshot.data.documents.length,
-                              itemBuilder: (context, index) {
-                                var doc = snapshot.data.documents[index].data;
-                                doc['path'] = snapshot.data.documents[index].documentID;
-                                return AcmCard(
-                                  doc: snapshot.data.documents[index],
-                                  onCardClick: () async {
-                                    if (snapshot.data.documents[index]['sampletype'] == 'air'){
-                                      Navigator.of(context).push(
-                                        new MaterialPageRoute(builder: (context) =>
-                                            EditSampleAsbestosAir(
-                                                sample: snapshot.data.documents[index]
-                                                    .documentID)),
-                                      );
-                                    } else {
-                                      Navigator.of(context).push(
-                                        new MaterialPageRoute(builder: (context) =>
-                                            EditACM(
-                                                acm: snapshot.data.documents[index]
-                                                    .documentID)),
-                                      );
-                                    }
-                                  },
-                                  onCardLongPress: () {
-                                    // Delete
-                                    // Bulk add /clone etc.
-                                  },
-                                );
-                              }
-                          );
-                        }
-                    )
-                    :
-
-                    new Center(
-                    child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Icon(Icons.not_interested, size: 64.0),
-                      Container(
-                          alignment: Alignment.center,
-                          height: 64.0,
-                          child:
-                          Text('This job has no ACM items.')
-                        )
-                      ]
-                    )
-                    ),]),
+                          }).toList(),
+                          hint: Text("-"),
+                          onChanged: (value) {
+                            setState(() {
+//                            _roomgroup = roomgrouplist.firstWhere((e) => e['path'] == value);
+                              if (value == '') {
+                                roomObj['roomtype'] = 'orphan';
+                              } else
+                                roomObj['roomtype'] = null;
+                              roomObj["roomgroupname"] =
+                                  roomgrouplist.firstWhere(
+                                      (e) => e['path'] == value)['name'];
+                              ;
+                              roomObj["roomgrouppath"] = value;
+                              DataManager.get().currentRoomGroup = value;
+//                              acm.setData({"room": _room}, merge: true);
+                            });
+                          },
+                        ),
+                      ),
+                      ExpansionTile(
+                          initiallyExpanded: true,
+                          title: new Text(
+                            "Presumed and Sampled Materials",
+                            style: Styles.h2,
+                          ),
+                          children: <Widget>[
+                            new Row(children: <Widget>[
+                              new Container(
+                                  alignment: Alignment.topLeft,
+                                  child: Checkbox(
+                                      value: roomObj['presume'] != null
+                                          ? roomObj['presume']
+                                          : false,
+                                      onChanged: (value) => setState(() {
+                                            roomObj['presume'] =
+                                                roomObj['presume'] != null
+                                                    ? !roomObj['presume']
+                                                    : true;
+                                          }))),
+                              new Container(
+                                alignment: Alignment.topLeft,
+                                child: new Text(
+                                  "Presume Entire Room (Inaccessible)",
+                                  style: Styles.label,
+                                ),
+                              ),
+                            ]),
+                            widget.room != null
+                                ? new StreamBuilder(
+                                    stream: Firestore.instance
+                                        .document(
+                                            DataManager.get().currentJobPath)
+                                        .collection('acm')
+                                        .where("roompath",
+                                            isEqualTo: widget.room)
+                                        .snapshots(),
+                                    builder: (context, snapshot) {
+                                      print("Room object : " +
+                                          widget.room.toString());
+                                      if (!snapshot.hasData)
+                                        return Container(
+                                            padding: EdgeInsets.only(top: 16.0),
+                                            alignment: Alignment.center,
+                                            color: Colors.white,
+                                            child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: <Widget>[
+                                                  new CircularProgressIndicator(),
+                                                  Container(
+                                                      alignment:
+                                                          Alignment.center,
+                                                      height: 64.0,
+                                                      child: Text(
+                                                          "Loading ACM items..."))
+                                                ]));
+                                      if (snapshot.data.documents.length == 0)
+                                        return Center(
+                                            child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: <Widget>[
+                                              Icon(Icons.not_interested,
+                                                  size: 64.0),
+                                              Container(
+                                                  alignment: Alignment.center,
+                                                  height: 64.0,
+                                                  child: Text(
+                                                      'This job has no ACM items.'))
+                                            ]));
+                                      return ListView.builder(
+                                          shrinkWrap: true,
+                                          physics:
+                                              NeverScrollableScrollPhysics(),
+                                          itemCount:
+                                              snapshot.data.documents.length,
+                                          itemBuilder: (context, index) {
+                                            var doc = snapshot
+                                                .data.documents[index].data;
+                                            doc['path'] = snapshot.data
+                                                .documents[index].documentID;
+                                            return AcmCard(
+                                              doc: snapshot
+                                                  .data.documents[index],
+                                              onCardClick: () async {
+                                                if (snapshot.data
+                                                            .documents[index]
+                                                        ['sampletype'] ==
+                                                    'air') {
+                                                  Navigator.of(context).push(
+                                                    new MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            EditSampleAsbestosAir(
+                                                                sample: snapshot
+                                                                    .data
+                                                                    .documents[
+                                                                        index]
+                                                                    .documentID)),
+                                                  );
+                                                } else {
+                                                  Navigator.of(context).push(
+                                                    new MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            EditACM(
+                                                                acm: snapshot
+                                                                    .data
+                                                                    .documents[
+                                                                        index]
+                                                                    .documentID)),
+                                                  );
+                                                }
+                                              },
+                                              onCardLongPress: () {
+                                                // Delete
+                                                // Bulk add /clone etc.
+                                              },
+                                            );
+                                          });
+                                    })
+                                : new Center(
+                                    child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: <Widget>[
+                                        Icon(Icons.not_interested, size: 64.0),
+                                        Container(
+                                            alignment: Alignment.center,
+                                            height: 64.0,
+                                            child: Text(
+                                                'This job has no ACM items.'))
+                                      ])),
+                          ]),
 //                    new Container(padding: EdgeInsets.only(top: 14.0)),
 //                    new Divider(),
-              ExpansionTile(
-                initiallyExpanded: true,
-                title: new Text("Building Materials", style: Styles.h2,),
-                children: <Widget>[
-                    new Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        new Container(
-                          alignment: Alignment.center,
-                          padding: EdgeInsets.fromLTRB(2.0,8.0,4.0, 8.0,),
-                          child: new OutlineButton(
-                              child: const Text("Load New Template"),
-                              color: Colors.white,
-                              onPressed: () {
-                                showRoomTemplateDialog(context, roomObj, applyTemplate,);
-                              },
-                              shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
-                          ),
+                      ExpansionTile(
+                        initiallyExpanded: true,
+                        title: new Text(
+                          "Building Materials",
+                          style: Styles.h2,
                         ),
-                        new Container(
-                          alignment: Alignment.center,
-                          padding: EdgeInsets.fromLTRB(4.0,8.0,2.0, 8.0,),
-                          child: new OutlineButton(
-                              child: const Text("Clear Empty Rows"),
-                              color: Colors.white,
-                              onPressed: () {
-                                if (roomObj["buildingmaterials"] != null && roomObj["buildingmaterials"].length > 0) {
-                                  this.setState(() {
-                                    roomObj["buildingmaterials"] = roomObj["buildingmaterials"].where((bm) => bm["material"] == null || bm["material"].trim().length > 0).toList();
-                                  });
-                                }
-                              },
-                            shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0),),
+                        children: <Widget>[
+                          new Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              new Container(
+                                alignment: Alignment.center,
+                                padding: EdgeInsets.fromLTRB(
+                                  2.0,
+                                  8.0,
+                                  4.0,
+                                  8.0,
+                                ),
+                                child: new OutlineButton(
+                                  child: const Text("Load New Template"),
+                                  color: Colors.white,
+                                  onPressed: () {
+                                    showRoomTemplateDialog(
+                                      context,
+                                      roomObj,
+                                      applyTemplate,
+                                    );
+                                  },
+                                  shape: new RoundedRectangleBorder(
+                                      borderRadius:
+                                          new BorderRadius.circular(30.0)),
+                                ),
+                              ),
+                              new Container(
+                                alignment: Alignment.center,
+                                padding: EdgeInsets.fromLTRB(
+                                  4.0,
+                                  8.0,
+                                  2.0,
+                                  8.0,
+                                ),
+                                child: new OutlineButton(
+                                  child: const Text("Clear Empty Rows"),
+                                  color: Colors.white,
+                                  onPressed: () {
+                                    if (roomObj["buildingmaterials"] != null &&
+                                        roomObj["buildingmaterials"].length >
+                                            0) {
+                                      this.setState(() {
+                                        roomObj["buildingmaterials"] =
+                                            roomObj["buildingmaterials"]
+                                                .where((bm) =>
+                                                    bm["material"] == null ||
+                                                    bm["material"]
+                                                            .trim()
+                                                            .length >
+                                                        0)
+                                                .toList();
+                                      });
+                                    }
+                                  },
+                                  shape: new RoundedRectangleBorder(
+                                    borderRadius:
+                                        new BorderRadius.circular(30.0),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),],
-                    ),
-                    (roomObj['buildingmaterials'] != null && roomObj['buildingmaterials'].length > 0) ?
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: roomObj['buildingmaterials'].length,
-                        itemBuilder: (context, index) {
-                        return buildBuildingMaterials(index);
-                      })
-                        :
-                      new Container(),
+                          (roomObj['buildingmaterials'] != null &&
+                                  roomObj['buildingmaterials'].length > 0)
+                              ? ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  itemCount:
+                                      roomObj['buildingmaterials'].length,
+                                  itemBuilder: (context, index) {
+                                    return buildBuildingMaterials(index);
+                                  })
+                              : new Container(),
 //                    buildBuildingMaterials(),
-                    ],
-                ),
-                widget.room != null ?
-                new Container(
-                  alignment: Alignment.center,
-                  padding: EdgeInsets.only(top: 14.0,),
-                  child: new OutlineButton(
-                      shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
-                      child: Text("Delete Room",
-                          style: new TextStyle(color: Theme.of(context).accentColor, fontWeight: FontWeight.bold
-                          )
+                        ],
                       ),
-                      //                          color: Colors.white,
-                      onPressed: () {
-                        _deleteDialog();
-                      }
-                  ),
-                )
-                    :
-                new Container(),
-            ]
-          ),
-        ),
-      ),
+                      widget.room != null
+                          ? new Container(
+                              alignment: Alignment.center,
+                              padding: EdgeInsets.only(
+                                top: 14.0,
+                              ),
+                              child: new OutlineButton(
+                                  shape: new RoundedRectangleBorder(
+                                      borderRadius:
+                                          new BorderRadius.circular(30.0)),
+                                  child: Text("Delete Room",
+                                      style: new TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontWeight: FontWeight.bold)),
+                                  //                          color: Colors.white,
+                                  onPressed: () {
+                                    _deleteDialog();
+                                  }),
+                            )
+                          : new Container(),
+                    ]),
+              ),
+            ),
     );
   }
 
   void _deleteDialog() {
     showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: new Text('Delete Room'),
-          content: new Text('Are you sure you wish to delete this room (' + roomObj['name'] + ')?\nNote: This will not delete any ACM linked to this room.'),
-          actions: <Widget>[
-            new FlatButton(
-              child: new Text('Cancel', style: new TextStyle(color: Colors.black)),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            new FlatButton(
-              child: new Text('Delete'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _deleteRoom();
-              }
-            ),
-          ],
-        );
-      }
-    );
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: new Text('Delete Room'),
+            content: new Text('Are you sure you wish to delete this room (' +
+                roomObj['name'] +
+                ')?\nNote: This will not delete any ACM linked to this room.'),
+            actions: <Widget>[
+              new FlatButton(
+                child: new Text('Cancel',
+                    style: new TextStyle(color: Colors.black)),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              new FlatButton(
+                  child: new Text('Delete'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _deleteRoom();
+                  }),
+            ],
+          );
+        });
   }
 
   void _deleteRoom() {
@@ -426,9 +519,21 @@ class _EditRoomState extends State<EditRoom> {
     updateRoomGroups(initRoomGroup, roomObj, room);
 
     // Remove ACM references
-    Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').where('roompath', isEqualTo: widget.room).getDocuments().then((doc) {
+    Firestore.instance
+        .document(DataManager.get().currentJobPath)
+        .collection('acm')
+        .where('roompath', isEqualTo: widget.room)
+        .getDocuments()
+        .then((doc) {
       doc.documents.forEach((doc) {
-        Firestore.instance.document(DataManager.get().currentJobPath).collection('acm').document(doc.documentID).setData({'roomname': null, 'roompath': null,}, merge: true);
+        Firestore.instance
+            .document(DataManager.get().currentJobPath)
+            .collection('acm')
+            .document(doc.documentID)
+            .setData({
+          'roomname': null,
+          'roompath': null,
+        }, merge: true);
       });
     });
 
@@ -438,23 +543,30 @@ class _EditRoomState extends State<EditRoom> {
     }
 
     // Remove room
-    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(widget.room).delete();
+    Firestore.instance
+        .document(DataManager.get().currentJobPath)
+        .collection('rooms')
+        .document(widget.room)
+        .delete();
 
     // Pop
     Navigator.pop(context);
   }
 
-  buildBuildingMaterials (index) {
+  buildBuildingMaterials(index) {
 //      print("Building item: " + item.toString());
     var item = roomObj['buildingmaterials'][index];
-    TextEditingController labelController = TextEditingController(text: item['label']);
-    TextEditingController materialController = TextEditingController(text: item['material']);
-    Widget widget = new Row(
-      children: <Widget>[
-        new Container(
-          width: 150.0,
-          alignment: Alignment.topLeft,
-          padding: EdgeInsets.only(right: 14.0,),
+    TextEditingController labelController =
+        TextEditingController(text: item['label']);
+    TextEditingController materialController =
+        TextEditingController(text: item['material']);
+    Widget widget = new Row(children: <Widget>[
+      new Container(
+        width: 150.0,
+        alignment: Alignment.topLeft,
+        padding: EdgeInsets.only(
+          right: 14.0,
+        ),
 //          child: new Text(item["label"], style: Styles.label,),
         child: CustomTypeAhead(
           controller: labelController,
@@ -462,8 +574,9 @@ class _EditRoomState extends State<EditRoom> {
           textInputAction: TextInputAction.next,
 //          label: 'Item',
           suggestions: items,
-          onSaved: (value) => roomObj['buildingmaterials'][index]["label"] = value.trim(),
-          validator: (value) { },
+          onSaved: (value) =>
+              roomObj['buildingmaterials'][index]["label"] = value.trim(),
+          validator: (value) {},
           focusNode: _focusNodes[(index * 2) + 2],
           nextFocus: _focusNodes[(index * 2) + 3],
         ),
@@ -491,20 +604,27 @@ class _EditRoomState extends State<EditRoom> {
 //            },
 //            textCapitalization: TextCapitalization.sentences,
 //          )
-        ),
-        new Flexible(
-          child: CustomTypeAhead(
-            controller: materialController,
-            capitalization: TextCapitalization.none,
-            textInputAction: TextInputAction.next,
+      ),
+      new Flexible(
+        child: CustomTypeAhead(
+          controller: materialController,
+          capitalization: TextCapitalization.none,
+          textInputAction: TextInputAction.next,
 //            label: 'Material',
-            suggestions: materials,
-            onSaved: (value) => roomObj['buildingmaterials'][index]["material"] = value.trim(),
-            validator: (value) { },
-            focusNode: _focusNodes[(index * 2) + 3],
-            nextFocus: (roomObj['buildingmaterials'].length - 1 != index && roomObj['buildingmaterials'][index+1] != null && roomObj['buildingmaterials'][index+1]["label"].trim().length > 0)
-            ? _focusNodes[((index + 1) * 2) + 3] : _focusNodes[((index + 1) * 2) + 2],
-          ),
+          suggestions: materials,
+          onSaved: (value) =>
+              roomObj['buildingmaterials'][index]["material"] = value.trim(),
+          validator: (value) {},
+          focusNode: _focusNodes[(index * 2) + 3],
+          nextFocus: (roomObj['buildingmaterials'].length - 1 != index &&
+                  roomObj['buildingmaterials'][index + 1] != null &&
+                  roomObj['buildingmaterials'][index + 1]["label"]
+                          .trim()
+                          .length >
+                      0)
+              ? _focusNodes[((index + 1) * 2) + 3]
+              : _focusNodes[((index + 1) * 2) + 2],
+        ),
 //          child: TextFormField(
 //            initialValue: item["material"],
 //            autocorrect: false,
@@ -537,9 +657,8 @@ class _EditRoomState extends State<EditRoom> {
 //            },
 //            textCapitalization: TextCapitalization.none,
 //          ),
-        )
-      ]
-    );
+      )
+    ]);
     return widget;
   }
 
@@ -552,9 +671,19 @@ class _EditRoomState extends State<EditRoom> {
   void _loadRoom() async {
 //    print('room is ' + room.toString());
     // Load roomgroups from job
-    roomgrouplist = [{"name": '-', "path": '',}];
-    QuerySnapshot roomSnapshot = await Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').where('roomtype', isEqualTo: 'group').getDocuments();
-    roomSnapshot.documents.forEach((doc) => roomgrouplist.add({"name": doc.data['name'],"path": doc.documentID}));
+    roomgrouplist = [
+      {
+        "name": '-',
+        "path": '',
+      }
+    ];
+    QuerySnapshot roomSnapshot = await Firestore.instance
+        .document(DataManager.get().currentJobPath)
+        .collection('rooms')
+        .where('roomtype', isEqualTo: 'group')
+        .getDocuments();
+    roomSnapshot.documents.forEach((doc) =>
+        roomgrouplist.add({"name": doc.data['name'], "path": doc.documentID}));
 //    print('ROOMGROUPLIST ' + roomgrouplist.toString());
 
 //    print("Loading room");
@@ -573,27 +702,30 @@ class _EditRoomState extends State<EditRoom> {
       setState(() {
         isLoading = false;
       });
-
     } else {
 //      print('Edit room is ' + room.toString());
       _title = "Edit Room";
-      Firestore.instance.document(DataManager.get().currentJobPath)
-          .collection('rooms').document(room).get().then((doc) {
-            // image
-            if (doc.data['path_remote'] == null && doc.data['path_local'] != null){
-              // only local image available (e.g. when taking photos with no internet)
-              localPhoto = true;
-              _handleImageUpload(File(doc.data['path_local']));
-            } else if (doc.data['path_remote'] != null) {
-              localPhoto = false;
-            }
-            setState(() {
-              roomObj = doc.data;
-              _roomNameController.text = roomObj['name'];
-              _roomCodeController.text = roomObj['roomcode'];
-              initRoomGroup = doc.data['roomgrouppath'];
-              isLoading = false;
-            });
+      Firestore.instance
+          .document(DataManager.get().currentJobPath)
+          .collection('rooms')
+          .document(room)
+          .get()
+          .then((doc) {
+        // image
+        if (doc.data['path_remote'] == null && doc.data['path_local'] != null) {
+          // only local image available (e.g. when taking photos with no internet)
+          localPhoto = true;
+          _handleImageUpload(File(doc.data['path_local']));
+        } else if (doc.data['path_remote'] != null) {
+          localPhoto = false;
+        }
+        setState(() {
+          roomObj = doc.data;
+          _roomNameController.text = roomObj['name'];
+          _roomCodeController.text = roomObj['roomcode'];
+          initRoomGroup = doc.data['roomgrouppath'];
+          isLoading = false;
+        });
       });
     }
 //    print(_title.toString());
@@ -604,7 +736,8 @@ class _EditRoomState extends State<EditRoom> {
     String roomgrouppath = roomObj['roomgrouppath'];
     String storageRef = roomObj['storage_ref'];
 
-    updateRoomCard(roomgrouppath, {'path_local': image.path, 'path': roomObj['path']});
+    updateRoomCard(
+        roomgrouppath, {'path_local': image.path, 'path': roomObj['path']});
     setState(() {
       roomObj["path_local"] = image.path;
     });
@@ -619,75 +752,121 @@ class _EditRoomState extends State<EditRoom> {
     if (name == null) name = "Untitled";
     if (roomcode == null) roomcode = "RG-U";
     ImageSync(
-        image,
-        50,
-        roomgroup + name + "(" + roomcode + ")-" + roomObj['path'],
-        "jobs/" + DataManager.get().currentJobNumber,
-        Firestore.instance.document(DataManager.get().currentJobPath)
-            .collection('rooms').document(room)
-    ).then((refs) {
+            image,
+            50,
+            roomgroup + name + "(" + roomcode + ")-" + roomObj['path'],
+            "jobs/" + DataManager.get().currentJobNumber,
+            Firestore.instance
+                .document(DataManager.get().currentJobPath)
+                .collection('rooms')
+                .document(room))
+        .then((refs) {
       // Delete old photo
-      if (storageRef != null) FirebaseStorage.instance.ref().child(storageRef).delete();
+      if (storageRef != null)
+        FirebaseStorage.instance.ref().child(storageRef).delete();
 
-      updateRoomCard(roomgrouppath, {'path_remote': refs['downloadURL'], 'storage_ref': refs['storageRef'], 'path': roomObj['path']});
+      updateRoomCard(roomgrouppath, {
+        'path_remote': refs['downloadURL'],
+        'storage_ref': refs['storageRef'],
+        'path': roomObj['path']
+      });
       if (this.mounted) {
-        setState((){
+        setState(() {
           roomObj["path_remote"] = refs['downloadURL'];
           roomObj['storage_ref'] = refs['storageRef'];
           localPhoto = false;
         });
       } else {
         // User has left the page, upload url straight to firestore
-        Firestore.instance.document(DataManager
-            .get()
-            .currentJobPath).collection('rooms')
+        Firestore.instance
+            .document(DataManager.get().currentJobPath)
+            .collection('rooms')
             .document(path)
-            .setData(
-            {"path_remote": refs['downloadURL'], "storage_ref": refs['storageRef'], }, merge: true);
+            .setData({
+          "path_remote": refs['downloadURL'],
+          "storage_ref": refs['storageRef'],
+        }, merge: true);
       }
     });
   }
 }
 
-void updateRoomGroups(String initRoomGroup, Map<String, dynamic> roomObj, String room) {
+void updateRoomGroups(
+    String initRoomGroup, Map<String, dynamic> roomObj, String room) {
   print("Update room groups " + initRoomGroup.toString());
-  if (roomObj['roomgrouppath'] != null) Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(roomObj['roomgrouppath']).get().then((doc) {
-    var initChildren = new List.from(doc.data['children']);
-    print("Adding to room group: " + initChildren.toString());
-    initChildren..addAll([{
-      "name": roomObj['name'],
-      "path": roomObj['path'],
-      "path_local": roomObj['path_local'],
-      "path_remote": roomObj['path_remote'],
-    }]);
-    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(roomObj['roomgrouppath']).setData({"children": initChildren}, merge: true);
-  });
+  if (roomObj['roomgrouppath'] != null)
+    Firestore.instance
+        .document(DataManager.get().currentJobPath)
+        .collection('rooms')
+        .document(roomObj['roomgrouppath'])
+        .get()
+        .then((doc) {
+      var initChildren = new List.from(doc.data['children']);
+      print("Adding to room group: " + initChildren.toString());
+      initChildren
+        ..addAll([
+          {
+            "name": roomObj['name'],
+            "path": roomObj['path'],
+            "path_local": roomObj['path_local'],
+            "path_remote": roomObj['path_remote'],
+          }
+        ]);
+      Firestore.instance
+          .document(DataManager.get().currentJobPath)
+          .collection('rooms')
+          .document(roomObj['roomgrouppath'])
+          .setData({"children": initChildren}, merge: true);
+    });
   if (initRoomGroup != null) {
     // Remove from previous room group
-    Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(initRoomGroup).get().then((doc) {
-      var initChildren = doc.data['children'].where((child) => child['path'] != roomObj['path']).toList();
+    Firestore.instance
+        .document(DataManager.get().currentJobPath)
+        .collection('rooms')
+        .document(initRoomGroup)
+        .get()
+        .then((doc) {
+      var initChildren = doc.data['children']
+          .where((child) => child['path'] != roomObj['path'])
+          .toList();
       print("Removing from room group " + initChildren.toString());
-      Firestore.instance.document(DataManager.get().currentJobPath).collection('rooms').document(initRoomGroup).setData({"children": initChildren}, merge: true);
+      Firestore.instance
+          .document(DataManager.get().currentJobPath)
+          .collection('rooms')
+          .document(initRoomGroup)
+          .setData({"children": initChildren}, merge: true);
     });
   }
 }
 
 void updateRoomCard(String roomgrouppath, Map<String, dynamic> updateObj) {
-  if (roomgrouppath != null) Firestore.instance.document(DataManager.get().currentJobPath)
-      .collection('rooms').document(roomgrouppath).get().then((doc) {
-    var list = new List.from(doc.data['children']).map((doc) {
-      if (doc['path'] == updateObj['path']) {
-        return {
-          "name": updateObj['name'] != null ? updateObj['name'] : doc['name'],
-          "path": updateObj['path'] != null ? updateObj['path'] : doc['path'],
-          "path_remote": updateObj['path_remote'] != null ? updateObj['path_remote'] : doc['path_remote'],
-          "path_local": updateObj['path_local'] != null ? updateObj['path_local'] : doc['path_local'],
-        };
-      } else {
-        return doc;
-      }
-    }).toList();
-    Firestore.instance.document(DataManager.get().currentJobPath)
-        .collection('rooms').document(roomgrouppath).setData({"children": list}, merge: true);
-  });
+  if (roomgrouppath != null)
+    Firestore.instance
+        .document(DataManager.get().currentJobPath)
+        .collection('rooms')
+        .document(roomgrouppath)
+        .get()
+        .then((doc) {
+      var list = new List.from(doc.data['children']).map((doc) {
+        if (doc['path'] == updateObj['path']) {
+          return {
+            "name": updateObj['name'] != null ? updateObj['name'] : doc['name'],
+            "path": updateObj['path'] != null ? updateObj['path'] : doc['path'],
+            "path_remote": updateObj['path_remote'] != null
+                ? updateObj['path_remote']
+                : doc['path_remote'],
+            "path_local": updateObj['path_local'] != null
+                ? updateObj['path_local']
+                : doc['path_local'],
+          };
+        } else {
+          return doc;
+        }
+      }).toList();
+      Firestore.instance
+          .document(DataManager.get().currentJobPath)
+          .collection('rooms')
+          .document(roomgrouppath)
+          .setData({"children": list}, merge: true);
+    });
 }

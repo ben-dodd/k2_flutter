@@ -1,15 +1,14 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/styles.dart';
-
-import 'package:image_picker/image_picker.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:k2e/widgets/loading.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
@@ -46,8 +45,7 @@ class _DetailsTabState extends State<DetailsTab> {
   }
 
   _updateAddress() {
-    details.setData(
-        {"address": controllerAddress.text}, merge: true);
+    details.setData({"address": controllerAddress.text}, merge: true);
     if (_debounce?.isActive ?? false) _debounce.cancel();
     _debounce = Timer(const Duration(milliseconds: 3000), () {
       print('Sending address update to WFM');
@@ -57,8 +55,7 @@ class _DetailsTabState extends State<DetailsTab> {
 
   _updateDescription() {
     // TODO: Send update to WFM debounced
-    details.setData(
-        {"description": controllerDescription.text}, merge: true);
+    details.setData({"description": controllerDescription.text}, merge: true);
     if (_debounce?.isActive ?? false) _debounce.cancel();
     _debounce = Timer(const Duration(milliseconds: 3000), () {
       print('Sending details update to WFM');
@@ -77,100 +74,114 @@ class _DetailsTabState extends State<DetailsTab> {
             stream: detailsStream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.active) {
-                if (!snapshot.hasData) return
-                  loadingPage(loadingText: 'Loading job info...');
+                if (!snapshot.hasData)
+                  return loadingPage(loadingText: 'Loading job info...');
                 if (snapshot.hasData) {
                   if (controllerAddress.text == '') {
                     controllerAddress.text = snapshot.data['address'];
                     controllerDescription.text = snapshot.data['description'];
                   }
-                  if (snapshot.data['path_local'] != null) print ('local path: ' + snapshot.data['path_local']);
-                  if (snapshot.data['path_remote'] != null) print ('remote path: ' + snapshot.data['path_remote']);
+                  if (snapshot.data['path_local'] != null)
+                    print('local path: ' + snapshot.data['path_local']);
+                  if (snapshot.data['path_remote'] != null)
+                    print('remote path: ' + snapshot.data['path_remote']);
                   return GestureDetector(
-                      onTap: () {
-                        FocusScope.of(context).requestFocus(new FocusNode());
-                      },
-                      child: Container(
-                        padding: new EdgeInsets.all(8.0),
-                        child: SingleChildScrollView(
-                          padding: EdgeInsets.all(8.0),
-                          child: Column(
-                            children: <Widget>[
-                              Container(
-                                  alignment: Alignment.topLeft,
-                                  child: Text(snapshot.data['clientname']
-                                      , style: Styles.h1)
-                              ),
-
-                              Container(
-                                alignment: Alignment.topLeft,
-                                child: TextField(
-                                    decoration: const InputDecoration(
-                                        labelText: "Address"),
-                                    autocorrect: false,
-                                    controller: controllerAddress,
-                                    keyboardType: TextInputType.multiline,
-                                    maxLines: null
-                                ),
-                              ),
-                              Container(
-                                alignment: Alignment.topLeft,
-                                child: TextField(
-                                    decoration: const InputDecoration(
-                                        labelText: "Description"),
-                                    autocorrect: false,
-                                    controller: controllerDescription,
-                                    keyboardType: TextInputType.multiline,
-                                    maxLines: null
-                                ),
-                              ),
-                              Container(
-                                height: 40.0,
-                                alignment: Alignment.bottomCenter,
-                                child: Text("Main Site Photo", style: Styles.h2,)
-                              ),
-                        Row(
+                    onTap: () {
+                      FocusScope.of(context).requestFocus(new FocusNode());
+                    },
+                    child: Container(
+                      padding: new EdgeInsets.all(8.0),
+                      child: SingleChildScrollView(
+                        padding: EdgeInsets.all(8.0),
+                        child: Column(children: <Widget>[
+                          Container(
+                              alignment: Alignment.topLeft,
+                              child: Text(snapshot.data['clientname'],
+                                  style: Styles.h1)),
+                          Container(
+                            alignment: Alignment.topLeft,
+                            child: TextField(
+                                decoration:
+                                    const InputDecoration(labelText: "Address"),
+                                autocorrect: false,
+                                controller: controllerAddress,
+                                keyboardType: TextInputType.multiline,
+                                maxLines: null),
+                          ),
+                          Container(
+                            alignment: Alignment.topLeft,
+                            child: TextField(
+                                decoration: const InputDecoration(
+                                    labelText: "Description"),
+                                autocorrect: false,
+                                controller: controllerDescription,
+                                keyboardType: TextInputType.multiline,
+                                maxLines: null),
+                          ),
+                          Container(
+                              height: 40.0,
+                              alignment: Alignment.bottomCenter,
+                              child: Text(
+                                "Main Site Photo",
+                                style: Styles.h2,
+                              )),
+                          Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[Container(
-                                alignment: Alignment.center,
-                                height: 195.0,
-                                width: 257.5,
-                                margin: EdgeInsets.symmetric(vertical: 4.0),
-                                padding: EdgeInsets.fromLTRB(4.0,0.0,4.0,0.0),
-                                decoration: new BoxDecoration(
-                                  color: Colors.white,
-                                  border: new Border.all(color: Colors.black38, width: 1.0),
-                                  borderRadius: new BorderRadius.circular(4.0),
-                                ), child: GestureDetector(
-                                    onTap: () {
-                                        ImagePicker.pickImage(source: ImageSource.camera).then((image) {
+                              children: <Widget>[
+                                Container(
+                                  alignment: Alignment.center,
+                                  height: 195.0,
+                                  width: 257.5,
+                                  margin: EdgeInsets.symmetric(vertical: 4.0),
+                                  padding:
+                                      EdgeInsets.fromLTRB(4.0, 0.0, 4.0, 0.0),
+                                  decoration: new BoxDecoration(
+                                    color: Colors.white,
+                                    border: new Border.all(
+                                        color: Colors.black38, width: 1.0),
+                                    borderRadius:
+                                        new BorderRadius.circular(4.0),
+                                  ),
+                                  child: GestureDetector(
+                                      onTap: () {
+                                        ImagePicker.pickImage(
+                                                source: ImageSource.camera)
+                                            .then((image) {
 //                                          _imageFile = image;
                                           localPhoto = true;
                                           _handleImageUpload(image);
                                         });
-                                    },
+                                      },
 //                                    child: (_imageFile != null)
 //                                        ? Image.file(_imageFile)
-                                  child: localPhoto ?
-                                  new Image.file(new File(snapshot.data['path_local']))
-                                  : (snapshot.data['path_remote'] != null) ?
-                                  new CachedNetworkImage(
-                                    imageUrl: snapshot.data['path_remote'],
-                                    placeholder: new CircularProgressIndicator(),
-                                    errorWidget: new Icon(Icons.error),
-                                    fadeInDuration: new Duration(seconds: 1),
-                                  )
-                                  :  new Icon(
-                                    Icons.camera, color: CompanyColors.accentRippled,
-                                    size: 48.0,)
-                              ),
-                              )]),
+                                      child: localPhoto
+                                          ? new Image.file(new File(
+                                              snapshot.data['path_local']))
+                                          : (snapshot.data['path_remote'] !=
+                                                  null)
+                                              ? new CachedNetworkImage(
+                                                  imageUrl: snapshot
+                                                      .data['path_remote'],
+                                                  placeholder:
+                                                      new CircularProgressIndicator(),
+                                                  errorWidget:
+                                                      new Icon(Icons.error),
+                                                  fadeInDuration:
+                                                      new Duration(seconds: 1),
+                                                )
+                                              : new Icon(
+                                                  Icons.camera,
+                                                  color: CompanyColors
+                                                      .accentRippled,
+                                                  size: 48.0,
+                                                )),
+                                )
+                              ]),
                           new Divider(),
                           new Container(
-                            child: new Text("Documents", style: Styles.h2 ),
+                            child: new Text("Documents", style: Styles.h2),
                           ),
-                        ]
-                        ),
+                        ]),
                       ),
                     ),
                   );
@@ -180,16 +191,14 @@ class _DetailsTabState extends State<DetailsTab> {
               } else {
                 return errorPage();
               }
-            }
-        )
-    );
+            }));
   }
 
   void _loadDetails() async {
     details = Firestore.instance.document(DataManager.get().currentJobPath);
     detailsStream = details.snapshots();
     DocumentSnapshot doc = await details.get();
-    if (doc.data['path_local'] != null && doc.data['path_remote'] == null){
+    if (doc.data['path_local'] != null && doc.data['path_remote'] == null) {
       // only local image available (e.g. when taking photos with no internet)
       localPhoto = true;
       // try to upload
@@ -203,21 +212,20 @@ class _DetailsTabState extends State<DetailsTab> {
   }
 
   void _handleImageUpload(File image) async {
-    details.setData({"path_local": image.path},merge: true).then((_) {
-      setState((){});
+    details.setData({"path_local": image.path}, merge: true).then((_) {
+      setState(() {});
     });
-    ImageSync(
-        image,
-        50,
-        "sitephoto",
-        "jobs/" + DataManager.get().currentJobNumber,
-        details
-    ).then((refs) {
+    ImageSync(image, 50, "sitephoto",
+            "jobs/" + DataManager.get().currentJobNumber, details)
+        .then((refs) {
       // Delete old photo if it doesn't overwrite
-      details.setData({'path_remote': refs['downloadURL'], 'storage_ref': refs['storageRef']}, merge: true);
+      details.setData({
+        'path_remote': refs['downloadURL'],
+        'storage_ref': refs['storageRef']
+      }, merge: true);
 
       if (this.mounted) {
-        setState((){
+        setState(() {
           localPhoto = false;
         });
       }

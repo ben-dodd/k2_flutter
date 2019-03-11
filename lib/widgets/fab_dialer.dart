@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:k2e/theme.dart';
 
 /// Button tailored to using with [SpeedDialer].
@@ -14,12 +13,12 @@ class SpeedDialerButton {
 
   SpeedDialerButton(
       {this.icon,
-        this.text,
-        this.index,
-        this.controller,
-        this.foregroundColor,
-        this.backgroundColor,
-        this.onPressed});
+      this.text,
+      this.index,
+      this.controller,
+      this.foregroundColor,
+      this.backgroundColor,
+      this.onPressed});
 
 //  @override
 //  build(BuildContext context) {
@@ -117,11 +116,11 @@ class SpeedDialer extends StatefulWidget {
 
   SpeedDialer(
       {this.children,
-        this.opened,
-        this.closed,
-        this.backgroundColor,
-        this.closeOnSelect = true,
-        this.duration = const Duration(milliseconds: 380)});
+      this.opened,
+      this.closed,
+      this.backgroundColor,
+      this.closeOnSelect = true,
+      this.duration = const Duration(milliseconds: 380)});
 
   @override
   State createState() => new _SpeedDialerState();
@@ -175,92 +174,98 @@ class _SpeedDialerState extends State<SpeedDialer>
     });
   }
 
-    Widget build(BuildContext context) {
-      Color backgroundColor = CompanyColors.accentRippled;
-      return new Container(
-        alignment: Alignment.bottomRight,
-        margin: new EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
-        child: new Column(
-            mainAxisAlignment: MainAxisAlignment.end,
+  Widget build(BuildContext context) {
+    Color backgroundColor = CompanyColors.accentRippled;
+    return new Container(
+      alignment: Alignment.bottomRight,
+      margin: new EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
+      child: new Column(
+          mainAxisAlignment: MainAxisAlignment.end,
 //            mainAxisSize: MainAxisSize.min,
-            children: new List.generate(widget.children.length, (int index) {
-              Widget child = new Container(
-                height: 60.0,
+          children: new List.generate(widget.children.length, (int index) {
+            Widget child = new Container(
+              height: 60.0,
 //          width: 56.0,
 //                margin: new EdgeInsets.symmetric(horizontal: 8.0),
-                // TODO Make children not interfere with screen when invisible
-                child: new ScaleTransition(
-                  scale: new CurvedAnimation(
-                    parent: _controller,
+              // TODO Make children not interfere with screen when invisible
+              child: new ScaleTransition(
+                scale: new CurvedAnimation(
+                  parent: _controller,
 //                    curve: new Interval(((index + 1) / 10), 1.0,
 //                        curve: Curves.linear),
-                    curve: new Interval(
-                        0.0, 1.0 - index / widget.children.length / 2.0,
-                        curve: Curves.easeOut),
-                  ),
-                  child: new Container(
-                      alignment: FractionalOffset.topCenter,
-                      margin: new EdgeInsets.symmetric(vertical: 5.0, horizontal: 4.0),
-                      child: new Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: <Widget>[
-                          new Container(
-                              margin: new EdgeInsets.symmetric(horizontal: 8.0),
-                              child: new ScaleTransition(
-                                  scale: new CurvedAnimation(
-                                    parent: _controller,
-                                    curve: new Interval(((index + 1) / 10), 1.0,
-                                        curve: Curves.linear),
-                                  ),
-                                  child: backgroundColor!=null
-                                      ?new Chip(
-                                    label: new Text(
-                                      widget.children[index].text,
-                                      textAlign: TextAlign.center,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: new TextStyle(
-                                          color: Colors.white, fontWeight: FontWeight.bold),
-                                    ),
-                                    backgroundColor: backgroundColor,
-                                  ):null)),
-                          new ScaleTransition(
-                            scale: new CurvedAnimation(
-                              parent: _controller,
-                              curve:
-                              new Interval(((index + 1) / 10), 1.0, curve: Curves.linear),
-                            ),
-                            child: new FloatingActionButton(
+                  curve: new Interval(
+                      0.0, 1.0 - index / widget.children.length / 2.0,
+                      curve: Curves.easeOut),
+                ),
+                child: new Container(
+                    alignment: FractionalOffset.topCenter,
+                    margin: new EdgeInsets.symmetric(
+                        vertical: 5.0, horizontal: 4.0),
+                    child: new Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        new Container(
+                            margin: new EdgeInsets.symmetric(horizontal: 8.0),
+                            child: new ScaleTransition(
+                                scale: new CurvedAnimation(
+                                  parent: _controller,
+                                  curve: new Interval(((index + 1) / 10), 1.0,
+                                      curve: Curves.linear),
+                                ),
+                                child: backgroundColor != null
+                                    ? new Chip(
+                                        label: new Text(
+                                          widget.children[index].text,
+                                          textAlign: TextAlign.center,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: new TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        backgroundColor: backgroundColor,
+                                      )
+                                    : null)),
+                        new ScaleTransition(
+                          scale: new CurvedAnimation(
+                            parent: _controller,
+                            curve: new Interval(((index + 1) / 10), 1.0,
+                                curve: Curves.linear),
+                          ),
+                          child: new FloatingActionButton(
                               heroTag: null,
 //                  elevation: elevation,
-                                mini: true,
-                                backgroundColor: CompanyColors.accentRippled,
+                              mini: true,
+                              backgroundColor: CompanyColors.accentRippled,
 //                  tooltip: text,
-                                child: new Icon(widget.children[index].icon, color: Colors.white),
+                              child: new Icon(widget.children[index].icon,
+                                  color: Colors.white),
 //                  heroTag: "$index",
-                                onPressed: closingWrap(widget.children[index].onPressed)),
-                          )
-                        ],
-                      )),
-                ),
-              );
-              return child;
-            }).toList()
-              ..add(
+                              onPressed: closingWrap(
+                                  widget.children[index].onPressed)),
+                        )
+                      ],
+                    )),
+              ),
+            );
+            return child;
+          }).toList()
+            ..add(
                 // TODO: Support customization of this button.
-                  new Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: <Widget>[
-                      new FloatingActionButton(
-                          heroTag: null,
-                          backgroundColor: backgroundColor,
-                          onPressed: _rotate,
-                          child: new RotationTransition(
-                            turns: new AlwaysStoppedAnimation(_angle / 360),
-                            child: Icon(Icons.add,),)
+                new Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                new FloatingActionButton(
+                    heroTag: null,
+                    backgroundColor: backgroundColor,
+                    onPressed: _rotate,
+                    child: new RotationTransition(
+                      turns: new AlwaysStoppedAnimation(_angle / 360),
+                      child: Icon(
+                        Icons.add,
                       ),
-                    ],
-                  ))
-        ),
-      );
-    }
+                    )),
+              ],
+            ))),
+    );
+  }
 }

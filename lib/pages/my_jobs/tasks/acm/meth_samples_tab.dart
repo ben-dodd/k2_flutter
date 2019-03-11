@@ -10,25 +10,21 @@ class MethSamplesTab extends StatefulWidget {
 }
 
 class _MethSamplesTabState extends State<MethSamplesTab> {
-
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
 
     return new Scaffold(
-        body:
-        new Container(
+        body: new Container(
             padding: new EdgeInsets.all(24.0),
             alignment: Alignment.center,
-            child: Column(
-                children: <Widget> [
-                  Text('Meth Samples', style: Styles.h1,),
-                  Text('Meth samples list!',
-                      style: Styles.comment),
-                ]
-            )
-        )
-    );
+            child: Column(children: <Widget>[
+              Text(
+                'Meth Samples',
+                style: Styles.h1,
+              ),
+              Text('Meth samples list!', style: Styles.comment),
+            ])));
   }
 }

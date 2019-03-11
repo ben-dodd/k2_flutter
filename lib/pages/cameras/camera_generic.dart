@@ -24,42 +24,37 @@ class _CameraGenericState extends State<CameraGeneric> {
     controller = new CameraController(cameraDescription, ResolutionPreset.high);
   }
 
-
-
 //  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      // no app bar
-      body: new Column(
-        children: <Widget>[
-          new Expanded(
-            child: new Container(
-              child: new Padding(
-                padding: const EdgeInsets.all(1.0),
-                child: new Center(
-                  child: _cameraPreviewWidget(controller),
-                ),
-              ),
-              decoration: new BoxDecoration(
-                color: Colors.black,
-                border: new Border.all(
-                  color: controller != null && controller.value.isRecordingVideo
-                      ? Colors.redAccent
-                      : Colors.grey,
-                  width: 3.0,
-                ),
-              ),
+        // no app bar
+        body: new Column(children: <Widget>[
+      new Expanded(
+        child: new Container(
+          child: new Padding(
+            padding: const EdgeInsets.all(1.0),
+            child: new Center(
+              child: _cameraPreviewWidget(controller),
             ),
           ),
-          GestureDetector(
+          decoration: new BoxDecoration(
+            color: Colors.black,
+            border: new Border.all(
+              color: controller != null && controller.value.isRecordingVideo
+                  ? Colors.redAccent
+                  : Colors.grey,
+              width: 3.0,
+            ),
+          ),
+        ),
+      ),
+      GestureDetector(
 //            onTap: onTakePictureButtonPressed,
-            child: new Icon(Icons.camera, size: 40.0),)
-          ]
-        )
-    );
-
+        child: new Icon(Icons.camera, size: 40.0),
+      )
+    ]));
   }
 //
 //  void onTakePictureButtonPressed() {

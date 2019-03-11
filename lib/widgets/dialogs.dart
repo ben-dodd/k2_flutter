@@ -46,13 +46,16 @@ class _DuplicateRoomsDialogState extends State<DuplicateRoomsDialog> {
               CheckboxListTile(
                   title: Text("Duplicate presumed ACM"),
                   value: _duplicatePresumedMaterials,
-                  onChanged: _handleDuplicatePresumedMaterialsCheck
-              ),
+                  onChanged: _handleDuplicatePresumedMaterialsCheck),
             ],
-          ),),
+          ),
+        ),
         actions: <Widget>[
           new FlatButton(
-            child: new Text("Cancel", style: new TextStyle(color: Colors.black),),
+            child: new Text(
+              "Cancel",
+              style: new TextStyle(color: Colors.black),
+            ),
             onPressed: () {
               Navigator.of(context).pop();
               Navigator.of(context).pop();
@@ -67,11 +70,9 @@ class _DuplicateRoomsDialogState extends State<DuplicateRoomsDialog> {
               Navigator.of(context).pop();
             },
           ),
-        ]
-    );
+        ]);
   }
 }
-
 
 void showValidationAlertDialog(context, title, content) {
   showDialog(
@@ -144,28 +145,33 @@ class _RoomTemplateDialogState extends State<RoomTemplateDialog> {
               selected = value;
               print(selected.toString());
             });
-          }
-      ),
+          }),
       actions: <Widget>[
         new FlatButton(
-          child: new Text("Cancel", style: new TextStyle(color: Colors.black),),
+          child: new Text(
+            "Cancel",
+            style: new TextStyle(color: Colors.black),
+          ),
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
         new FlatButton(
-          child: new Text("Apply",),
+          child: new Text(
+            "Apply",
+          ),
           onPressed: () {
-            List<Map<String,String>> buildingmaterials = templates.firstWhere((item) => item["name"] == selected)["buildingmaterials"];
+            List<Map<String, String>> buildingmaterials = templates.firstWhere(
+                (item) => item["name"] == selected)["buildingmaterials"];
             print(widget.roomObj.toString());
             if (widget.roomObj['buildingmaterials'] != null) {
-              buildingmaterials.forEach((item) =>
-              widget.roomObj['buildingmaterials'] =
-              new List<dynamic>.from(widget.roomObj['buildingmaterials'])
-                ..addAll([item]));
+              buildingmaterials.forEach((item) => widget
+                      .roomObj['buildingmaterials'] =
+                  new List<dynamic>.from(widget.roomObj['buildingmaterials'])
+                    ..addAll([item]));
             } else {
               widget.roomObj['buildingmaterials'] =
-              new List<dynamic>.from(buildingmaterials);
+                  new List<dynamic>.from(buildingmaterials);
             }
             widget.applyTemplate(widget.roomObj);
             Navigator.of(context).pop();
@@ -180,7 +186,8 @@ void showDeleteRoomGroupDialog(context, roomObj, deleteRoomGroup) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
-      return DeleteRoomGroupDialog(roomObj: roomObj, deleteRoomGroup: deleteRoomGroup);
+      return DeleteRoomGroupDialog(
+          roomObj: roomObj, deleteRoomGroup: deleteRoomGroup);
     },
   );
 }
@@ -195,11 +202,11 @@ class DeleteRoomGroupDialog extends StatefulWidget {
   final deleteRoomGroup;
 
   @override
-  _DeleteRoomGroupDialogState createState() => new _DeleteRoomGroupDialogState();
+  _DeleteRoomGroupDialogState createState() =>
+      new _DeleteRoomGroupDialogState();
 }
 
 class _DeleteRoomGroupDialogState extends State<DeleteRoomGroupDialog> {
-
   bool deleteRooms = false;
   bool deleteAcm = false;
 
@@ -215,36 +222,49 @@ class _DeleteRoomGroupDialogState extends State<DeleteRoomGroupDialog> {
       title: new Text('Delete Room'),
       content: new Column(
         mainAxisSize: MainAxisSize.min,
-        children: <Widget> [
-          new Text('Are you sure you wish to delete this room group (' + widget.roomObj['name'] + ')?'),
-          new Row(children: <Widget> [
+        children: <Widget>[
+          new Text('Are you sure you wish to delete this room group (' +
+              widget.roomObj['name'] +
+              ')?'),
+          new Row(children: <Widget>[
             new Container(
               alignment: Alignment.topLeft,
-              child: Checkbox(value: deleteRooms,
+              child: Checkbox(
+                  value: deleteRooms,
                   onChanged: (value) => setState(() {
-                    deleteRooms = value;
-                  })),
+                        deleteRooms = value;
+                      })),
             ),
             new Container(
               alignment: Alignment.topLeft,
-              child: new Text("Delete Rooms in Group", style: Styles.label,),
+              child: new Text(
+                "Delete Rooms in Group",
+                style: Styles.label,
+              ),
             ),
           ]),
-          new Row(children: <Widget> [
+          new Row(children: <Widget>[
             new Container(
               alignment: Alignment.topLeft,
-              child: Checkbox(value: deleteAcm,
-                onChanged: (value) => deleteRooms ? setState(() {
-                  deleteAcm = !deleteAcm;
-                }) : null,
+              child: Checkbox(
+                value: deleteAcm,
+                onChanged: (value) => deleteRooms
+                    ? setState(() {
+                        deleteAcm = !deleteAcm;
+                      })
+                    : null,
               ),
             ),
             new Container(
               alignment: Alignment.topLeft,
-              child: new Text("Delete ACM in Rooms", style: Styles.label,),
+              child: new Text(
+                "Delete ACM in Rooms",
+                style: Styles.label,
+              ),
             ),
           ]),
-        ],),
+        ],
+      ),
       actions: <Widget>[
         new FlatButton(
           child: new Text('Cancel', style: new TextStyle(color: Colors.black)),
@@ -257,8 +277,7 @@ class _DeleteRoomGroupDialogState extends State<DeleteRoomGroupDialog> {
             onPressed: () {
               Navigator.of(context).pop();
               widget.deleteRoomGroup(deleteRooms, deleteAcm);
-            }
-        ),
+            }),
       ],
     );
   }

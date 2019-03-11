@@ -13,10 +13,11 @@ class SampleAsbestosAirCard extends StatefulWidget {
   final VoidCallback onCardLongPress;
 
   @override
-  _SampleAsbestosAirCardState createState() => new _SampleAsbestosAirCardState();
+  _SampleAsbestosAirCardState createState() =>
+      new _SampleAsbestosAirCardState();
 }
 
-class _SampleAsbestosAirCardState extends State<SampleAsbestosAirCard>{
+class _SampleAsbestosAirCardState extends State<SampleAsbestosAirCard> {
   String jobnumber;
   String sampleNumber;
   String location;
@@ -48,7 +49,7 @@ class _SampleAsbestosAirCardState extends State<SampleAsbestosAirCard>{
     } else {
       pumpID = widget.doc['material'];
     }
-    if (widget.doc['starttime'] != null && widget.doc['endtime'] == null){
+    if (widget.doc['starttime'] != null && widget.doc['endtime'] == null) {
       isRunning = true;
     }
     if (widget.doc['endtime'] != null) {
@@ -69,9 +70,10 @@ class _SampleAsbestosAirCardState extends State<SampleAsbestosAirCard>{
         contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
         dense: true,
         leading: new RawMaterialButton(
-          onPressed: () {widget.onCardClick;},
-          child: new Text(sampleNumber
-          ),
+          onPressed: () {
+            widget.onCardClick;
+          },
+          child: new Text(sampleNumber),
           shape: new CircleBorder(),
           elevation: 2.0,
 //        fillColor: CompanyColors.accentRippled,
@@ -88,18 +90,19 @@ class _SampleAsbestosAirCardState extends State<SampleAsbestosAirCard>{
         // Long tap -> add options to sync or delete
         onLongPress: widget.onCardLongPress,
         // TODO: Icons display whether sample has photo or not
-        trailing:
-        Container(width: 100.0,
+        trailing: Container(
+            width: 100.0,
             alignment: Alignment.centerRight,
-            child:
-            Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
                 //TODO: Add icons for assessments done
-                isRunning ? Icon(Icons.directions_run, color: Colors.red)
-                : Container(),
-                isComplete ? Icon(Icons.done, color: Colors.green)
-                : Container(),
+                isRunning
+                    ? Icon(Icons.directions_run, color: Colors.red)
+                    : Container(),
+                isComplete
+                    ? Icon(Icons.done, color: Colors.green)
+                    : Container(),
 //           new InkWell(
 //            child: new Container(
 //              height: 30.0,
@@ -130,11 +133,15 @@ class _SampleAsbestosAirCardState extends State<SampleAsbestosAirCard>{
 //               ),
 //             ),
 //           ),
-                hasPhoto ? photoSynced ? Icon(Icons.camera_alt, color: Colors.green,)
-                    : Icon(Icons.camera_alt, color: Colors.orange)
+                hasPhoto
+                    ? photoSynced
+                        ? Icon(
+                            Icons.camera_alt,
+                            color: Colors.green,
+                          )
+                        : Icon(Icons.camera_alt, color: Colors.orange)
                     : Container(),
-              ],)
-        )
-    );
+              ],
+            )));
   }
 }

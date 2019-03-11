@@ -1,4 +1,3 @@
-
 /// A class similar to http.Response but instead of a String describing the body
 /// it already contains the parsed Dart-Object
 class ParsedResponse<T> {

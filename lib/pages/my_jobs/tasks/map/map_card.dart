@@ -1,9 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:k2e/theme.dart';
 
 class MapCard extends StatefulWidget {
-
   MapCard({
     this.map,
     @required this.onCardClick,
@@ -16,10 +14,9 @@ class MapCard extends StatefulWidget {
 
   @override
   _MapCardState createState() => new _MapCardState();
-
 }
 
-class _MapCardState extends State<MapCard>{
+class _MapCardState extends State<MapCard> {
   String title;
   String map;
 
@@ -52,19 +49,26 @@ class _MapCardState extends State<MapCard>{
 
     return Container(
 //      margin: EdgeInsets.symmetric(vertical: 4.0),
-      padding: EdgeInsets.fromLTRB(8.0,0.0,4.0,0.0),
+      padding: EdgeInsets.fromLTRB(8.0, 0.0, 4.0, 0.0),
       decoration: new BoxDecoration(
         color: Colors.white,
       ),
-      child:
-      new ListTile(
+      child: new ListTile(
         dense: true,
         contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-        leading: new Container(width: 40.0, padding: EdgeInsets.all(0.0), margin: EdgeInsets.all(0.0),
+        leading: new Container(
+          width: 40.0,
+          padding: EdgeInsets.all(0.0),
+          margin: EdgeInsets.all(0.0),
           alignment: Alignment.center,
-          child: Icon(Icons.map),),
+          child: Icon(Icons.map),
+        ),
         title: Text(title),
-        subtitle: Text(map, overflow: TextOverflow.ellipsis, maxLines: 3,),
+        subtitle: Text(
+          map,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 3,
+        ),
 
         // Tap -> go through to job task
         onTap: widget.onCardClick,

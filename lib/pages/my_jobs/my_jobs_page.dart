@@ -3,11 +3,11 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
+import 'package:k2e/pages/my_jobs/job_card.dart';
 import 'package:k2e/pages/my_jobs/tasks/job_page.dart';
 import 'package:k2e/pages/my_jobs/wfm_fragment.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/widgets/fab_dialer.dart';
-import 'package:k2e/pages/my_jobs/job_card.dart';
 import 'package:k2e/widgets/loading.dart';
 import 'package:uuid/uuid.dart';
 
@@ -27,71 +27,90 @@ class _MyJobsPageState extends State<MyJobsPage> {
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
 
-  List<SpeedDialerButton> modeButtons = [
-    new SpeedDialerButton(backgroundColor: CompanyColors.accentRippled, icon: Icons.add, onPressed: () { _createNewJob(); }, text: "Create New Job"),
-    new SpeedDialerButton(backgroundColor: CompanyColors.accentRippled, icon: Icons.cloud_download, onPressed: () { _addWfmJob(); }, text: "Add Job from WFM"),
-  ];
+    List<SpeedDialerButton> modeButtons = [
+      new SpeedDialerButton(
+          backgroundColor: CompanyColors.accentRippled,
+          icon: Icons.add,
+          onPressed: () {
+            _createNewJob();
+          },
+          text: "Create New Job"),
+      new SpeedDialerButton(
+          backgroundColor: CompanyColors.accentRippled,
+          icon: Icons.cloud_download,
+          onPressed: () {
+            _addWfmJob();
+          },
+          text: "Add Job from WFM"),
+    ];
 
 //    FabDialer _fabDialer = new FabDialer(_fabMiniMenuItemList, CompanyColors.accent, Icon(Icons.add),);
 
     return new Scaffold(
       body: new Container(
-              padding: new EdgeInsets.all(8.0),
-                        child: StreamBuilder(
-                          // ignore: ambiguous_import
-                          stream: Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').snapshots(),
-                          builder: (context, snapshot) {
-                            if (!snapshot.hasData) return
-                              loadingPage(loadingText: 'Loading your jobs...');
-                            if (snapshot.data.documents.length == 0) return
-                              Center(
-                                  child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: <Widget>[
-                                        Icon(Icons.not_interested, size: 64.0),
-                                        Container(
-                                            alignment: Alignment.center,
-                                            height: 64.0,
-                                            child:
-                                            Text('You have no jobs loaded.')
-                                        )
-                                      ]
-                                  )
-                              );
-                            return ListView.builder(
-                                itemCount: snapshot.data.documents.length,
-                                itemBuilder: (context, index) {
+        padding: new EdgeInsets.all(8.0),
+        child: StreamBuilder(
+            // ignore: ambiguous_import
+            stream: Firestore.instance
+                .collection('users')
+                .document(DataManager.get().user)
+                .collection('myjobs')
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData)
+                return loadingPage(loadingText: 'Loading your jobs...');
+              if (snapshot.data.documents.length == 0)
+                return Center(
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                      Icon(Icons.not_interested, size: 64.0),
+                      Container(
+                          alignment: Alignment.center,
+                          height: 64.0,
+                          child: Text('You have no jobs loaded.'))
+                    ]));
+              return ListView.builder(
+                  itemCount: snapshot.data.documents.length,
+                  itemBuilder: (context, index) {
 //                                  print(snapshot.data.documents[index]['path']);
-                                  return Dismissible(
-                                    key: new Key(snapshot.data.documents[index]['path']),
-                                    onDismissed: (direction) async {
-                                      await Firestore.instance.collection('users')
-                                          .document(DataManager.get().user).collection('myjobs')
-                                          .document(snapshot.data.documents[index].documentID).delete();
-                                      setState(() {
-                                        //
-                                      });
-                                      Scaffold.of(context)
-                                          .showSnackBar(SnackBar(content: Text("Job deleted")));
-                                    },
-                                    child: JobCard(
-                                        doc: snapshot.data.documents[index],
-                                        onCardClick: () async {
-                                          DataManager.get().currentJobPath = 'jobs/' + snapshot.data.documents[index]['path'];
-                                          DataManager.get().currentJobNumber = snapshot.data.documents[index]['jobnumber'];
-                                          Navigator.push(context, MaterialPageRoute(
-                                              builder: (context) => JobPage(path: 'jobs/' + snapshot.data.documents[index]['path'],)
-                                          )
-                                          );
-                                        },
-                                    )
-                                  );
-                                }
-                              );
-                          }
-              ),
-          ),
-          floatingActionButton: new SpeedDialer(children: modeButtons),
+                    return Dismissible(
+                        key: new Key(snapshot.data.documents[index]['path']),
+                        onDismissed: (direction) async {
+                          await Firestore.instance
+                              .collection('users')
+                              .document(DataManager.get().user)
+                              .collection('myjobs')
+                              .document(
+                                  snapshot.data.documents[index].documentID)
+                              .delete();
+                          setState(() {
+                            //
+                          });
+                          Scaffold.of(context).showSnackBar(
+                              SnackBar(content: Text("Job deleted")));
+                        },
+                        child: JobCard(
+                          doc: snapshot.data.documents[index],
+                          onCardClick: () async {
+                            DataManager.get().currentJobPath = 'jobs/' +
+                                snapshot.data.documents[index]['path'];
+                            DataManager.get().currentJobNumber =
+                                snapshot.data.documents[index]['jobnumber'];
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => JobPage(
+                                          path: 'jobs/' +
+                                              snapshot.data.documents[index]
+                                                  ['path'],
+                                        )));
+                          },
+                        ));
+                  });
+            }),
+      ),
+      floatingActionButton: new SpeedDialer(children: modeButtons),
     );
   }
 
@@ -104,12 +123,20 @@ class _MyJobsPageState extends State<MyJobsPage> {
       'address': 'Not specified',
       'clientname': 'Client Not Assigned',
     };
-    Firestore.instance.collection('jobs').document(newJob['path']).setData(newJob);
-    Firestore.instance.collection('users').document(DataManager.get().user).collection('myjobs').document(newJob['path']).setData(newJob).then((doc) {
+    Firestore.instance
+        .collection('jobs')
+        .document(newJob['path'])
+        .setData(newJob);
+    Firestore.instance
+        .collection('users')
+        .document(DataManager.get().user)
+        .collection('myjobs')
+        .document(newJob['path'])
+        .setData(newJob)
+        .then((doc) {
       setState(() {
         Scaffold.of(context).showSnackBar(
-            new SnackBar(
-                content: new Text('New blank job added.')));
+            new SnackBar(content: new Text('New blank job added.')));
       });
     });
   }
@@ -120,9 +147,8 @@ class _MyJobsPageState extends State<MyJobsPage> {
     );
     setState(() {
       if (result != null) {
-      Scaffold.of(context).showSnackBar(
-          new SnackBar(
-              content: new Text(result)));
+        Scaffold.of(context)
+            .showSnackBar(new SnackBar(content: new Text(result)));
       }
     });
   }
