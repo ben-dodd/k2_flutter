@@ -219,7 +219,7 @@ _addNewCoC() {
     Map<String, dynamic> newCoC = {
       'dates': [new DateTime.now()],
       'samples': {},
-      'personnel': [DataManager.get().user],
+      'personnel': [],
       'type': 'Asbestos - Bulk ID',
       'jobNumber': DataManager.get().currentJobNumber,
       'uid': docID,

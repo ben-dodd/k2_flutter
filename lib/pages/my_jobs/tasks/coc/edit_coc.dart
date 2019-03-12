@@ -1,4 +1,4 @@
-import 'package:calendarro/calendarro.dart';
+import 'package:calendarro/date_utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
@@ -7,6 +7,9 @@ import 'package:k2e/widgets/custom_auto_complete.dart';
 import 'package:k2e/widgets/custom_typeahead.dart';
 import 'package:k2e/widgets/dialogs.dart';
 import 'package:k2e/widgets/loading.dart';
+import 'package:flutter_calendar/flutter_calendar.dart';
+import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart';
+import 'package:calendarro/calendarro.dart';
 import 'package:uuid/uuid.dart';
 
 class EditCoc extends StatefulWidget {
@@ -23,6 +26,7 @@ class _EditCocState extends State<EditCoc> {
 
   // images
   String coc;
+  String version;
   bool localPhoto = false;
   List<Map<String, String>> roomgrouplist = new List();
   final Map constants = DataManager.get().constants;
@@ -38,6 +42,7 @@ class _EditCocState extends State<EditCoc> {
   List staff;
   final List<String> personnelSelected = <String>[];
   final List<DateTime> datesSelected = <DateTime>[];
+  Map<String, dynamic> samples = new Map<String, dynamic>();
 
   var _formKey = GlobalKey<FormState>();
 
@@ -69,6 +74,16 @@ class _EditCocState extends State<EditCoc> {
     } else {
       staff = DataManager.get().staff;
     }
+
+    Firestore.instance
+        .collection('samplesasbestos')
+        .where('jobNumber', isEqualTo: cocObj['jobNumber'])
+        .getDocuments()
+        .then((docList) {
+      docList.documents.forEach(
+          (doc) => samples[doc.data['samplenumber'].toString()] = doc.data);
+    });
+
     coc = widget.coc;
 //    controllerRoomCode.addListener(_updateRoomCode);
     _loadCoc();
@@ -81,7 +96,13 @@ class _EditCocState extends State<EditCoc> {
   }
 
   Widget build(BuildContext context) {
-    print(staff.toString());
+    print(samples.toString());
+    if (cocObj['currentVersion'] == null)
+      version = 'Not yet issued';
+    else {
+      version = 'Latest version: ' + cocObj['currentVersion'].toString();
+      if (!cocObj['versionUpToDate']) version = version + ' (needs reissue)';
+    }
     print(personnelSelected.toString());
     print(datesSelected.toString());
     return new Scaffold(
@@ -133,11 +154,7 @@ class _EditCocState extends State<EditCoc> {
                         cocObj['address'],
                         style: Styles.h3,
                       ),
-                      Text(
-                          cocObj['currentVersion'] == null
-                              ? 'Not issued'
-                              : 'Latest version: ' + cocObj['currentVersion'],
-                          style: Styles.comment),
+                      Text(version, style: Styles.comment),
                       new Container(
                         alignment: Alignment.topLeft,
                         padding: EdgeInsets.only(top: 14.0, bottom: 16.0),
@@ -238,17 +255,15 @@ class _EditCocState extends State<EditCoc> {
                               ),
                             ],
                           ),
-                          (cocObj['samples'] != null &&
-                                  cocObj['samples'].length > 0)
+                          (samples != null && samples.length > 0)
                               ? ListView.builder(
                                   shrinkWrap: true,
                                   physics: NeverScrollableScrollPhysics(),
-                                  itemCount: cocObj['samples'].length,
+                                  itemCount: samples.length,
                                   itemBuilder: (context, index) {
-                                    return buildSamples(index);
+                                    return buildSamples(index + 1);
                                   })
                               : new Container(),
-//                    buildBuildingMaterials(),
                         ],
                       ),
                     ]),
@@ -259,12 +274,32 @@ class _EditCocState extends State<EditCoc> {
 
   buildSamples(index) {
 //      print("Building item: " + item.toString());
-    var item = cocObj['samples'][index];
+    var i = index.toString();
+    var item = samples[i];
+    if (item == null)
+      samples[i] = {
+        'description': '',
+        'material': '',
+      };
+    if (samples[(index + 1).toString()] == null)
+      samples[(index + 1).toString()] = {
+        'description': '',
+        'material': '',
+      };
+
     TextEditingController labelController =
-        TextEditingController(text: item['label']);
+        TextEditingController(text: item == null ? '' : item['description']);
     TextEditingController materialController =
-        TextEditingController(text: item['material']);
+        TextEditingController(text: item == null ? '' : item['material']);
     Widget widget = new Row(children: <Widget>[
+      new Container(
+          width: 30.0,
+          alignment: Alignment.topLeft,
+          padding: EdgeInsets.only(
+            right: 14.0,
+          ),
+//          child: new Text(item["label"], style: Styles.label,),
+          child: Text((index).toString())),
       new Container(
         width: 150.0,
         alignment: Alignment.topLeft,
@@ -278,7 +313,7 @@ class _EditCocState extends State<EditCoc> {
           textInputAction: TextInputAction.next,
 //          label: 'Item',
           suggestions: items,
-          onSaved: (value) => cocObj['samples'][index]["label"] = value.trim(),
+          onSaved: (value) => samples[i]["description"] = value.trim(),
           validator: (value) {},
           focusNode: _focusNodes[(index * 2) + 2],
           nextFocus: _focusNodes[(index * 2) + 3],
@@ -291,13 +326,13 @@ class _EditCocState extends State<EditCoc> {
           textInputAction: TextInputAction.next,
 //            label: 'Material',
           suggestions: materials,
-          onSaved: (value) =>
-              cocObj['samples'][index]["material"] = value.trim(),
+          onSaved: (value) => samples[i]["material"] = value.trim(),
           validator: (value) {},
           focusNode: _focusNodes[(index * 2) + 3],
-          nextFocus: (cocObj['samples'].length - 1 != index &&
-                  cocObj['samples'][index + 1] != null &&
-                  cocObj['samples'][index + 1]["label"].trim().length > 0)
+          nextFocus: (samples.length - 1 != index &&
+                  samples[(index + 1).toString()] != null &&
+                  samples[(index + 1).toString()]["description"].trim().length >
+                      0)
               ? _focusNodes[((index + 1) * 2) + 3]
               : _focusNodes[((index + 1) * 2) + 2],
         ),
