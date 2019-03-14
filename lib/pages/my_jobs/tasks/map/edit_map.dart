@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_jobs/tasks/map/map_painter.dart';
 import 'package:k2e/utils/camera.dart';
+import 'package:location/location.dart';
 import 'package:k2e/utils/firebase_conversion_functions.dart';
 import 'package:k2e/widgets/loading.dart';
 import 'package:uuid/uuid.dart';
@@ -31,6 +32,11 @@ class _EditMapState extends State<EditMap> {
   List<List<Offset>> paths = new List<List<Offset>>();
   List<Offset> offsetPoints; //List of points in one Tap or ery point o
 
+  // Location
+  var currentLocation = <LocationData>[];
+  var location = new Location();
+
+
   final controllerMapCode = TextEditingController();
 
   var _formKey = GlobalKey<FormState>();
@@ -44,6 +50,16 @@ class _EditMapState extends State<EditMap> {
   }
 
   Widget build(BuildContext context) {
+
+    location.onLocationChanged().listen((LocationData currentLocation) {
+      print(currentLocation.toString());
+//      print(currentLocation["latitude"]);
+//      print(currentLocation["longitude"]);
+//      print(currentLocation["accuracy"]);
+//      print(currentLocation["altitude"]);
+//      print(currentLocation["speed"]);
+//      print(currentLocation["speed_accuracy"]); // Will always be 0 on iOS
+    });
     return new Scaffold(
 //        resizeToAvoidBottomPadding: false,
       appBar: new AppBar(

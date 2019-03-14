@@ -3,24 +3,11 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
+        <compositeConfiguration>
+          <compositeBuild compositeDefinitionSource="SCRIPT" />
+        </compositeConfiguration>
         <option name="distributionType" value="DEFAULT_WRAPPED" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="modules">
-          <set>
-            <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/app" />
-            <option value="C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/camera-0.2.3/android" />
-            <option value="C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/cloud_firestore-0.7.4/android" />
-            <option value="C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_auth-0.5.19/android" />
-            <option value="C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core-0.2.5/android" />
-            <option value="C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_storage-1.0.2/android" />
-            <option value="C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/google_sign_in-3.0.5/android" />
-            <option value="C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/image_picker-0.4.7/android" />
-            <option value="C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/path_provider-0.3.1/android" />
-            <option value="C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/sqflite-0.8.2/android" />
-            <option value="C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/video_player-0.6.4/android" />
-          </set>
-        </option>
         <option name="resolveModulePerSourceSet" value="false" />
       </GradleProjectSettings>
     </option>
