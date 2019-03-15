@@ -152,9 +152,8 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
                                                           imageUrl: snapshot
                                                                   .data[
                                                               'path_remote'],
-                                                          placeholder:
-                                                              new CircularProgressIndicator(),
-                                                          errorWidget: new Icon(
+                                                          placeholder: (context, url) => new CircularProgressIndicator(),
+                                                          errorWidget: (context, url, error) => new Icon(
                                                               Icons.error),
                                                           fadeInDuration:
                                                               new Duration(

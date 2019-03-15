@@ -452,9 +452,9 @@ class _EditACMState extends State<EditACM> {
                               : (acmObj['path_remote'] != null)
                                   ? new CachedNetworkImage(
                                       imageUrl: acmObj['path_remote'],
-                                      placeholder:
+                                      placeholder: (context, url) =>
                                           new CircularProgressIndicator(),
-                                      errorWidget: new Column(
+                                      errorWidget: (context, url, error) => new Column(
                                           children: <Widget>[
                                             Icon(Icons.error),
                                             Text('Image Not Found')

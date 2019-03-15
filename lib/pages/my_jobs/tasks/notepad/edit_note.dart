@@ -100,9 +100,8 @@ class _EditNoteState extends State<EditNote> {
                                   : (noteObj['path_remote'] != null)
                                       ? new CachedNetworkImage(
                                           imageUrl: noteObj['path_remote'],
-                                          placeholder:
-                                              new CircularProgressIndicator(),
-                                          errorWidget: new Icon(Icons.error),
+                                          placeholder: (context, url) =>  new CircularProgressIndicator(),
+                                          errorWidget:  (context, url, error) => new Icon(Icons.error),
                                           fadeInDuration:
                                               new Duration(seconds: 1),
                                         )
