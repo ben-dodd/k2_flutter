@@ -145,8 +145,11 @@ class _EditRoomState extends State<EditRoom> {
                                     : (roomObj['path_remote'] != null)
                                         ? new CachedNetworkImage(
                                             imageUrl: roomObj['path_remote'],
-                                            placeholder: (context, url) => new CircularProgressIndicator(),
-                                            errorWidget:  (context, url, error) => new Icon(Icons.error),
+                                            placeholder: (context, url) =>
+                                                new CircularProgressIndicator(),
+                                            errorWidget:
+                                                (context, url, error) =>
+                                                    new Icon(Icons.error),
                                             fadeInDuration:
                                                 new Duration(seconds: 1),
                                           )
@@ -553,7 +556,6 @@ class _EditRoomState extends State<EditRoom> {
   }
 
   buildBuildingMaterials(index) {
-//      print("Building item: " + item.toString());
     var item = roomObj['buildingmaterials'][index];
     TextEditingController labelController =
         TextEditingController(text: item['label']);
@@ -579,36 +581,12 @@ class _EditRoomState extends State<EditRoom> {
           focusNode: _focusNodes[(index * 2) + 2],
           nextFocus: _focusNodes[(index * 2) + 3],
         ),
-//          child: TextFormField(
-//            style: new TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-//            initialValue: item["label"],
-//            autocorrect: false,
-//            focusNode: _focusNodes[(index * 2) + 2],
-//            autovalidate: true,
-//            textInputAction: TextInputAction.next,
-//            onFieldSubmitted: (text) {
-//              print(text.toString());
-//              setState(() {
-//                roomObj['buildingmaterials'][index]["label"] = text.trim();
-//              });
-//              FocusScope.of(context).requestFocus(_focusNodes[(index * 2) + 3]);
-//            },
-//            validator: (String value) {
-////              return value.contains('@') ? 'Do not use the @ character' : null;
-//            },
-//            onSaved: (text) {
-//              setState(() {
-//                roomObj['buildingmaterials'][index]["label"] = text.trim();
-//              });
-//            },
-//            textCapitalization: TextCapitalization.sentences,
-//          )
       ),
       new Flexible(
         child: CustomTypeAhead(
           controller: materialController,
           capitalization: TextCapitalization.none,
-          textInputAction: TextInputAction.next,
+          textInputAction: roomObj['buildingmaterials'].length - 1 != index ? TextInputAction.next : TextInputAction.done,
 //            label: 'Material',
           suggestions: materials,
           onSaved: (value) =>
@@ -624,38 +602,6 @@ class _EditRoomState extends State<EditRoom> {
               ? _focusNodes[((index + 1) * 2) + 3]
               : _focusNodes[((index + 1) * 2) + 2],
         ),
-//          child: TextFormField(
-//            initialValue: item["material"],
-//            autocorrect: false,
-//            focusNode: _focusNodes[(index * 2) + 3],
-//            autovalidate: true,
-//            textInputAction: TextInputAction.next,
-//            onFieldSubmitted: (text) {
-//              setState(() {
-//                roomObj['buildingmaterials'][index]["material"] = text.trim();
-//              });
-//              if (roomObj['buildingmaterials'][index+1] != null && roomObj['buildingmaterials'][index+1]["label"].trim().length > 0) {
-//                FocusScope.of(context).requestFocus(_focusNodes[((index + 1) * 2) + 3]);
-//              } else {
-//                // If label field isn't filled in, go to it on Keyboard Next otherwise go to the next material
-//                FocusScope.of(context).requestFocus(_focusNodes[((index + 1) * 2) + 2]);
-//              }
-//              if (roomObj['buildingmaterials'].length < index + 2) {
-//                roomObj['buildingmaterials'] =
-//                new List<dynamic>.from(roomObj['buildingmaterials'])
-//                  ..addAll([{"label": "", "material": "",}]);
-//              }
-//            },
-//            validator: (String value) {
-////              return value.contains('@') ? 'Do not use the @ character' : null;
-//            },
-//            onSaved: (text) {
-//              setState(() {
-//                roomObj['buildingmaterials'][index]["material"] = text.trim();
-//              });
-//            },
-//            textCapitalization: TextCapitalization.none,
-//          ),
       )
     ]);
     return widget;
@@ -731,12 +677,14 @@ class _EditRoomState extends State<EditRoom> {
   }
 
   void _handleImageUpload(File image) async {
-    String path = widget.room;
-    String roomgrouppath = roomObj['roomgrouppath'];
+    String path = roomObj['path'];
+    String roomGroupPath = roomObj['roomgrouppath'];
     String storageRef = roomObj['storage_ref'];
 
+    print(image.path);
+
     updateRoomCard(
-        roomgrouppath, {'path_local': image.path, 'path': roomObj['path']});
+        roomGroupPath, {'path_local': image.path, 'path': roomObj['path']});
     setState(() {
       roomObj["path_local"] = image.path;
     });
@@ -744,16 +692,16 @@ class _EditRoomState extends State<EditRoom> {
 //        .collection('rooms').document(room).setData({"path_local": image.path},merge: true).then((_) {
 //      setState((){});
 //    });
-    String roomgroup = roomObj["roomgroupname"];
+    String roomGroup = roomObj["roomgroupname"];
     String name = roomObj["name"];
-    String roomcode = roomObj["roomcode"];
-    if (roomgroup == null) roomgroup = 'RoomGroup';
+    String roomCode = roomObj["roomcode"];
+    if (roomGroup == null) roomGroup = 'RoomGroup';
     if (name == null) name = "Untitled";
-    if (roomcode == null) roomcode = "RG-U";
+    if (roomCode == null) roomCode = "RG-U";
     ImageSync(
             image,
             50,
-            roomgroup + name + "(" + roomcode + ")-" + roomObj['path'],
+            roomGroup + name + "(" + roomCode + ")-" + roomObj['path'],
             "jobs/" + DataManager.get().currentJobNumber,
             Firestore.instance
                 .document(DataManager.get().currentJobPath)
@@ -761,10 +709,13 @@ class _EditRoomState extends State<EditRoom> {
                 .document(room))
         .then((refs) {
       // Delete old photo
+      print('Printing refs');
+      print(refs['downloadURL']);
+      print(refs['storageRef']);
       if (storageRef != null)
         FirebaseStorage.instance.ref().child(storageRef).delete();
 
-      updateRoomCard(roomgrouppath, {
+      updateRoomCard(roomGroupPath, {
         'path_remote': refs['downloadURL'],
         'storage_ref': refs['storageRef'],
         'path': roomObj['path']
@@ -776,6 +727,7 @@ class _EditRoomState extends State<EditRoom> {
           localPhoto = false;
         });
       } else {
+        print('Path after leaving page: ' + path);
         // User has left the page, upload url straight to firestore
         Firestore.instance
             .document(DataManager.get().currentJobPath)
@@ -838,12 +790,12 @@ void updateRoomGroups(
   }
 }
 
-void updateRoomCard(String roomgrouppath, Map<String, dynamic> updateObj) {
-  if (roomgrouppath != null)
+void updateRoomCard(String roomGroupPath, Map<String, dynamic> updateObj) {
+  if (roomGroupPath != null)
     Firestore.instance
         .document(DataManager.get().currentJobPath)
         .collection('rooms')
-        .document(roomgrouppath)
+        .document(roomGroupPath)
         .get()
         .then((doc) {
       var list = new List.from(doc.data['children']).map((doc) {
@@ -865,7 +817,7 @@ void updateRoomCard(String roomgrouppath, Map<String, dynamic> updateObj) {
       Firestore.instance
           .document(DataManager.get().currentJobPath)
           .collection('rooms')
-          .document(roomgrouppath)
+          .document(roomGroupPath)
           .setData({"children": list}, merge: true);
     });
 }

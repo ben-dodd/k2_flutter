@@ -2865,7 +2865,7 @@ class _EditACMState extends State<EditACM> {
     String room_name;
     String item_name;
     String storageRef = acmObj['storage_ref'];
-    String path = widget.acm;
+    String path = acmObj['path'];
     print(image.path.toString());
     if (_room == null) {
       room_name = 'room';

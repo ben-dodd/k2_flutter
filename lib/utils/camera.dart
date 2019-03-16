@@ -31,7 +31,6 @@ Future<Map<String, String>> ImageSync(File image, int compressionFactor,
     String fileName, String folder, DocumentReference ref) async {
   print('compressing image');
   File compImage;
-  UploadTaskSnapshot uploadSnapshot;
 
   compImage = await FlutterNativeImage.compressImage(
     image.path,
@@ -45,16 +44,18 @@ Future<Map<String, String>> ImageSync(File image, int compressionFactor,
   var uid = new Uuid().v1().toString();
   var ref = "$folder/$fileName-$uid.jpg";
 
-  StorageUploadTask putFile =
+  StorageUploadTask uploadTask =
       FirebaseStorage.instance.ref().child(ref).putFile(compImage);
   //                          putFile.future.catchError(onError);
 
-  uploadSnapshot = await putFile.future;
-  print('Image path: ' + uploadSnapshot.downloadUrl.toString());
+  StorageTaskSnapshot storageTaskSnapshot = await uploadTask.onComplete;
+  String downloadURL = await storageTaskSnapshot.ref.getDownloadURL();
 //      ref.setData({"path_remote": uploadSnapshot.downloadUrl.toString()}, merge: true);
+  print (downloadURL);
   print("image uploaded");
+
   return {
-    'downloadURL': uploadSnapshot.downloadUrl.toString(),
+    'downloadURL': downloadURL,
     'storageRef': ref.toString(),
   };
 }

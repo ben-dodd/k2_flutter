@@ -275,7 +275,8 @@ class MyPainter extends CustomPainter {
     }
     // Storing image
     ui.Picture picture = recorder.endRecording();
-    ui.Image imagen = picture.toImage(canvasWidth, canvasWidth);
+    ui.Image imagen;
+    picture.toImage(canvasWidth, canvasWidth).then((image) => imagen = image);
     _capturePng(imagen);
     canvasFinal.drawPicture(picture);
   }
