@@ -162,8 +162,11 @@ class _DetailsTabState extends State<DetailsTab> {
                                               ? new CachedNetworkImage(
                                                   imageUrl: snapshot
                                                       .data['path_remote'],
-                                                  placeholder: (context, url) => new CircularProgressIndicator(),
-                                                  errorWidget: (context, url, error) => new Icon(Icons.error),
+                                                  placeholder: (context, url) =>
+                                                      new CircularProgressIndicator(),
+                                                  errorWidget:
+                                                      (context, url, error) =>
+                                                          new Icon(Icons.error),
                                                   fadeInDuration:
                                                       new Duration(seconds: 1),
                                                 )

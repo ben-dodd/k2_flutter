@@ -57,6 +57,11 @@ class _EditRoomState extends State<EditRoom> {
     (i) => FocusNode(),
   );
 
+//  final _bmControllers = List<TextEditingController>.generate(
+//      200,
+//      (i) => TextEditingController(),
+//    );
+
   @override
   void initState() {
     room = widget.room;
@@ -557,6 +562,14 @@ class _EditRoomState extends State<EditRoom> {
 
   buildBuildingMaterials(index) {
     var item = roomObj['buildingmaterials'][index];
+    var label = items.firstWhere((i) { print(i.toString()); print(item.toString()); print(i['label'] == item['label']); return i["label"] == item['label']; },
+        orElse: () => print('No hint'));
+    var hint = '';
+    print(label.toString());
+    if (label != null && label['hint'] != null) {
+      hint = label['hint'];
+      print(hint);
+    }
     TextEditingController labelController =
         TextEditingController(text: item['label']);
     TextEditingController materialController =
@@ -586,9 +599,12 @@ class _EditRoomState extends State<EditRoom> {
         child: CustomTypeAhead(
           controller: materialController,
           capitalization: TextCapitalization.none,
-          textInputAction: roomObj['buildingmaterials'].length - 1 != index ? TextInputAction.next : TextInputAction.done,
+          textInputAction: roomObj['buildingmaterials'].length - 1 != index
+              ? TextInputAction.next
+              : TextInputAction.done,
 //            label: 'Material',
           suggestions: materials,
+          hint: hint,
           onSaved: (value) =>
               roomObj['buildingmaterials'][index]["material"] = value.trim(),
           validator: (value) {},

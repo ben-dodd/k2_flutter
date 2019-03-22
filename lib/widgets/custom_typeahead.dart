@@ -6,6 +6,7 @@ class CustomTypeAhead extends StatelessWidget {
 //  String initialValue;
   TextCapitalization capitalization;
   String label;
+  String hint;
   FocusNode focusNode;
   FocusNode nextFocus;
   List suggestions;
@@ -24,6 +25,7 @@ class CustomTypeAhead extends StatelessWidget {
     this.capitalization,
     this.textInputAction,
     this.label,
+    this.hint,
     this.suggestions,
     this.onSaved,
     this.validator,
@@ -38,20 +40,21 @@ class CustomTypeAhead extends StatelessWidget {
         textCapitalization: capitalization,
         controller: controller,
         focusNode: focusNode,
+        onChanged: (text) {
+          onSaved(controller.text);
+        },
         textInputAction: textInputAction,
         onSubmitted: (v) {
-          nextFocus != null
-              ? FocusScope.of(context).requestFocus(nextFocus)
-              : null;
+          onSaved(controller.text);
+          nextFocus.hasListeners ? FocusScope.of(context).requestFocus(nextFocus) : null;
         },
-        decoration: InputDecoration(labelText: label),
+        decoration: InputDecoration(labelText: label, hintText: hint, hintMaxLines: 3),
       ),
       suggestionsCallback: (pattern) {
         List itemList = suggestions
             .where((item) =>
-                item['label'].toLowerCase().startsWith(pattern.toLowerCase()))
+                item['label'].toLowerCase().contains(pattern.toLowerCase()))
             .toList();
-        print(itemList.toString());
         return itemList;
 //          return suggestions.where((item) => item['label'].toLowerCase().startsWith(pattern.toLowerCase())).toList();
       },
@@ -67,9 +70,8 @@ class CustomTypeAhead extends StatelessWidget {
           ? onSuggestionSelected
           : (suggestion) {
               controller.text = suggestion['label'];
-              nextFocus != null
-                  ? FocusScope.of(context).requestFocus(nextFocus)
-                  : null;
+              onSaved(controller.text);
+              nextFocus.hasListeners ? FocusScope.of(context).requestFocus(nextFocus) : null;
             },
       transitionBuilder: (context, suggestionsBox, controller) {
         return suggestionsBox;

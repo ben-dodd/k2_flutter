@@ -51,7 +51,7 @@ Future<Map<String, String>> ImageSync(File image, int compressionFactor,
   StorageTaskSnapshot storageTaskSnapshot = await uploadTask.onComplete;
   String downloadURL = await storageTaskSnapshot.ref.getDownloadURL();
 //      ref.setData({"path_remote": uploadSnapshot.downloadUrl.toString()}, merge: true);
-  print (downloadURL);
+  print(downloadURL);
   print("image uploaded");
 
   return {

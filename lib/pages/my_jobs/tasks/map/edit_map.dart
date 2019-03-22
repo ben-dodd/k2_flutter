@@ -33,9 +33,11 @@ class _EditMapState extends State<EditMap> {
   List<Offset> offsetPoints; //List of points in one Tap or ery point o
 
   // Location
-  var currentLocation = <LocationData>[];
   var location = new Location();
-
+  double latitude;
+  double longitude;
+  double initLatitude;
+  double initLongitude;
 
   final controllerMapCode = TextEditingController();
 
@@ -46,20 +48,23 @@ class _EditMapState extends State<EditMap> {
     map = widget.map;
 //    controllerMapCode.addListener(_updateMapCode);
     _loadMap();
+    location.getLocation().then((location) {
+      setState(() {
+        initLatitude = location.latitude;
+        initLongitude = location.longitude;
+      });
+    });
+    location.onLocationChanged().listen((LocationData currentLocation) {
+      setState(() {
+        latitude = currentLocation.latitude;
+        longitude = currentLocation.longitude;
+      });
+    });
     super.initState();
   }
 
   Widget build(BuildContext context) {
 
-    location.onLocationChanged().listen((LocationData currentLocation) {
-      print(currentLocation.toString());
-//      print(currentLocation["latitude"]);
-//      print(currentLocation["longitude"]);
-//      print(currentLocation["accuracy"]);
-//      print(currentLocation["altitude"]);
-//      print(currentLocation["speed"]);
-//      print(currentLocation["speed_accuracy"]); // Will always be 0 on iOS
-    });
     return new Scaffold(
 //        resizeToAvoidBottomPadding: false,
       appBar: new AppBar(
@@ -91,11 +96,17 @@ class _EditMapState extends State<EditMap> {
           ]),
       body: isLoading
           ? loadingPage(loadingText: 'Loading map info...')
-          : new Container(
+          : Container(
               child: MapPainter(
               pathColour: Colors.black,
               paths: paths,
               photo: null,
+              surveyorPos: {
+                'latitude': latitude,
+                'longitude': longitude,
+                'initLatitude': initLatitude,
+                'initLongitude': initLongitude,
+              },
               updatePaths: (List<Offset> points) {
                 setState(() {
                   offsetPoints = points;

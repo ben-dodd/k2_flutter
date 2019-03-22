@@ -454,8 +454,8 @@ class _EditACMState extends State<EditACM> {
                                       imageUrl: acmObj['path_remote'],
                                       placeholder: (context, url) =>
                                           new CircularProgressIndicator(),
-                                      errorWidget: (context, url, error) => new Column(
-                                          children: <Widget>[
+                                      errorWidget: (context, url, error) =>
+                                          new Column(children: <Widget>[
                                             Icon(Icons.error),
                                             Text('Image Not Found')
                                           ]),

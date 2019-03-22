@@ -7,6 +7,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:k2e/pages/my_jobs/tasks/map/map_helper_functions.dart';
+import 'package:k2e/theme.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 // Class to get an image from other object
@@ -20,6 +21,7 @@ class MapPainter extends StatefulWidget {
     @required this.photo,
     @required this.paths,
     @required this.pathColour,
+    this.surveyorPos,
     @required this.updatePaths,
     @required this.updatePoints,
 //    @required
@@ -31,6 +33,7 @@ class MapPainter extends StatefulWidget {
   bool arrowOn;
   Color pathColour;
   List<List<Offset>> paths;
+  Map<dynamic, dynamic> surveyorPos;
   Function updatePaths;
   Function updatePoints;
 
@@ -61,7 +64,7 @@ class _MapPainterState extends State<MapPainter> {
   // image: Add image from photo or file, or add other map to be displayed below (semi-transparent)
   int layer = 1;
 
-  double scale = 1.0;
+  double scale = 2.0;
   double rotation = 0.0;
   double translateX = 0.0;
   double translateY = 0.0;
@@ -76,7 +79,7 @@ class _MapPainterState extends State<MapPainter> {
   bool gestureTranslationEnabled = true;
   bool gestureScaleEnabled = true;
 
-  int intervals = 10;
+  int intervals = 20;
   int divisions = 4;
   int subdivisions = 2;
   double angleLimit = 15;
@@ -101,8 +104,8 @@ class _MapPainterState extends State<MapPainter> {
     if (q != null) {
       // Limit angle to be multiple of the angleLimit
 
-      print(p.toString());
-      print(q.toString());
+//      print(p.toString());
+//      print(q.toString());
 //    return point;
       double angle = atan2(q.dy - t.dy, q.dx - t.dx) * 180 / pi;
 //    double snapAngle = angleLimit * (angle ~/ angleLimit);
@@ -115,9 +118,9 @@ class _MapPainterState extends State<MapPainter> {
 
       double distance =
           sqrt((t.dx - q.dx) * (t.dx - q.dx) + (t.dy - q.dy) * (t.dy - q.dy));
-      print('Distance between points: ' + distance.toString());
-      print('Angle in degrees: ' + snapAngle.toString());
-      print('Angle in radians; ' + snapAngleRad.toString());
+//      print('Distance between points: ' + distance.toString());
+//      print('Angle in degrees: ' + snapAngle.toString());
+//      print('Angle in radians; ' + snapAngleRad.toString());
 
 //      print (movePoint(p, snapAngleRad, distance).toString());
 //      return movePoint(p, snapAngleRad, distance);
@@ -316,6 +319,7 @@ class _MapPainterState extends State<MapPainter> {
   }
 
   double _w, _h;
+  double surveyorLat, surveyorLong;
   BuildContext contexto;
 
   @override
@@ -323,6 +327,14 @@ class _MapPainterState extends State<MapPainter> {
     contexto = context;
     _w = MediaQuery.of(context).size.width;
     _h = MediaQuery.of(context).size.height;
+    surveyorLat = (widget.surveyorPos['latitude'] -
+            widget.surveyorPos['initLatitude']) * 200000 +
+        (_w / 2);
+    print('Lat: ' + surveyorLat.toString());
+    surveyorLong = (widget.surveyorPos['longitude'] -
+            widget.surveyorPos['initLongitude']) * 200000 +
+        (_h / 2);
+    print('Long: ' + surveyorLong.toString());
 
 //    print('Scale is: ' + scale.toString());
 //    print('Height is: ' + _h.toString());
@@ -383,6 +395,7 @@ class _MapPainterState extends State<MapPainter> {
           child: new Container(
             alignment: Alignment.center,
             child: Stack(children: <Widget>[
+              // Background
               widget.photo != null
                   ? widget.photo
                   : new Container(
@@ -396,11 +409,12 @@ class _MapPainterState extends State<MapPainter> {
                         color: Color(0x7F003080),
                       ),
                     ),
+              // Walls
               new CustomPaint(
                 foregroundPainter: new MyPainter(
                   lineColor: widget.pathColour,
                   aImg: widget.image,
-                  width: 1.0,
+                  width: 0.5,
                   canvasWidth: _w.toInt(),
                   canvasHeight: _h.toInt(),
                   paths: widget.paths,
@@ -408,6 +422,14 @@ class _MapPainterState extends State<MapPainter> {
                   scale: scale,
                 ),
               ),
+              // Surveyor's Position
+              new Transform(
+                  transform:
+                      Matrix4.translationValues(surveyorLat, surveyorLong, 0.0),
+                  child: CircleAvatar(
+                    radius: 1.0,
+                    backgroundColor: CompanyColors.accent,
+                  )),
             ]),
           ),
         ),
@@ -485,11 +507,9 @@ class MyPainter extends CustomPainter {
     }
     // Storing image
     ui.Picture picture = recorder.endRecording();
-    ui.Image imagen;
-    picture.toImage(canvasWidth, canvasWidth).then((image) => {
-      imagen = image
+    picture.toImage(canvasWidth, canvasWidth).then((image) {
+      _capturePng(image);
     });
-    _capturePng(imagen);
     canvasFinal.drawPicture(picture);
   }
 

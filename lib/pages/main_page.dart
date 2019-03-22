@@ -61,9 +61,11 @@ class _MainPageState extends State<MainPage> {
       _isLoading = true;
     });
     final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
-    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
 
-    final AuthCredential credential = GoogleAuthProvider.getCredential(idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
+    final AuthCredential credential = GoogleAuthProvider.getCredential(
+        idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
     // Load cameras
     getCameras().then((cameras) => DataManager.get().cameras = cameras);
     final FirebaseUser user = await _auth.signInWithCredential(credential);

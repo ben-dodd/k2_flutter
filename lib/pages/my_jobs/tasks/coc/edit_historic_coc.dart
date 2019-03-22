@@ -456,9 +456,10 @@ class _EditHistoricCocState extends State<EditHistoricCoc> {
                               : (acmObj['path_remote'] != null)
                                   ? new CachedNetworkImage(
                                       imageUrl: acmObj['path_remote'],
-                                      placeholder: (context, url) => new CircularProgressIndicator(),
-                                      errorWidget: (context, url, error) => new Column(
-                                          children: <Widget>[
+                                      placeholder: (context, url) =>
+                                          new CircularProgressIndicator(),
+                                      errorWidget: (context, url, error) =>
+                                          new Column(children: <Widget>[
                                             Icon(Icons.error),
                                             Text('Image Not Found')
                                           ]),
