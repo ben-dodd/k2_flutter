@@ -80,7 +80,7 @@ class _CocCardState extends State<CocCard> {
                 "\n" +
                 widget.doc['dates'].map((d) {
                   if (d != null) {
-                    return DateFormat("d MMM y").format(d);
+                    return DateFormat("d MMM y").format(d.toDate());
                   } else {
                     return d;
                   }

@@ -33,7 +33,7 @@ dependencies:
   shared_preferences: ^0.5.1+1
   firebase_storage: ^2.1.0+1
   image: ^2.0.4
-  cloud_firestore: ^0.9.5+2
+  cloud_firestore: ^0.9.13+1
   dropdown_menu: ^1.1.0
   intl: ^0.15.7
   xml: ^3.2.1

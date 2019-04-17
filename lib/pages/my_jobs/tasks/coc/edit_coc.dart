@@ -364,19 +364,22 @@ class _EditCocState extends State<EditCoc> {
       _title = "Edit Chain of Custody";
       Firestore.instance.collection('cocs').document(coc).get().then((doc) {
         // image
+        print('Edit coc');
         setState(() {
           cocObj = doc.data;
           print(cocObj['samples'].toString());
-          if (cocObj['personnel'] != null)
+          if (cocObj['personnel'] != null) {
             cocObj['personnel'].forEach((p) {
               personnelSelected.add(p);
             });
-          if (cocObj['dates'] != null)
+          }
+          if (cocObj['dates'] != null) {
             cocObj['dates'].forEach((d) {
-              datesSelected.add(d);
+              datesSelected.add(d.toDate());
             });
-          else
+          } else {
             datesSelected.add(new DateTime.now());
+          }
           _roomNameController.text = cocObj['name'];
           _roomCodeController.text = cocObj['roomcode'];
           isLoading = false;
