@@ -75,15 +75,6 @@ class _EditCocState extends State<EditCoc> {
       staff = DataManager.get().staff;
     }
 
-    Firestore.instance
-        .collection('samplesasbestos')
-        .where('jobNumber', isEqualTo: cocObj['jobNumber'])
-        .getDocuments()
-        .then((docList) {
-      docList.documents.forEach(
-          (doc) => samples[doc.data['samplenumber'].toString()] = doc.data);
-    });
-
     coc = widget.coc;
 //    controllerRoomCode.addListener(_updateRoomCode);
     _loadCoc();
@@ -92,6 +83,8 @@ class _EditCocState extends State<EditCoc> {
     rooms = constants['roomsuggestions'];
     items = constants['buildingitems'];
     materials = constants['buildingmaterials'];
+    print('Job number');
+    print(cocObj['jobNumber']);
     super.initState();
   }
 
@@ -273,19 +266,21 @@ class _EditCocState extends State<EditCoc> {
   }
 
   buildSamples(index) {
-//      print("Building item: " + item.toString());
     var i = index.toString();
     var item = samples[i];
-    if (item == null)
+    print(item.toString());
+    if (item == null) {
       samples[i] = {
         'description': '',
         'material': '',
       };
-    if (samples[(index + 1).toString()] == null)
+    }
+    if (samples[(index + 1).toString()] == null) {
       samples[(index + 1).toString()] = {
         'description': '',
         'material': '',
       };
+    }
 
     TextEditingController labelController =
         TextEditingController(text: item == null ? '' : item['description']);
@@ -362,28 +357,40 @@ class _EditCocState extends State<EditCoc> {
     } else {
 //      print('Edit room is ' + room.toString());
       _title = "Edit Chain of Custody";
+      Map<String, dynamic> sample_temp = new Map<String, dynamic>();
       Firestore.instance.collection('cocs').document(coc).get().then((doc) {
-        // image
-        print('Edit coc');
-        setState(() {
-          cocObj = doc.data;
-          print(cocObj['samples'].toString());
-          if (cocObj['personnel'] != null) {
-            cocObj['personnel'].forEach((p) {
-              personnelSelected.add(p);
-            });
-          }
-          if (cocObj['dates'] != null) {
-            cocObj['dates'].forEach((d) {
-              datesSelected.add(d.toDate());
-            });
-          } else {
-            datesSelected.add(new DateTime.now());
-          }
-          _roomNameController.text = cocObj['name'];
-          _roomCodeController.text = cocObj['roomcode'];
-          isLoading = false;
+        Firestore.instance
+            .collection('samplesasbestos')
+            .where('jobNumber', isEqualTo: doc.data['jobNumber'])
+            .getDocuments()
+            .then((docList) {
+          docList.documents.forEach(
+                  (doc) => sample_temp[doc.data['samplenumber'].toString()] = doc.data);
+
+          print('Edit coc');
+          setState(() {
+            cocObj = doc.data;
+            samples = sample_temp;
+            print(cocObj['samples'].toString());
+            if (cocObj['personnel'] != null) {
+              cocObj['personnel'].forEach((p) {
+                personnelSelected.add(p);
+              });
+            }
+            if (cocObj['dates'] != null) {
+              cocObj['dates'].forEach((d) {
+                datesSelected.add(d.toDate());
+              });
+            } else {
+              datesSelected.add(new DateTime.now());
+            }
+            _roomNameController.text = cocObj['name'];
+            _roomCodeController.text = cocObj['roomcode'];
+            isLoading = false;
+          });
+          print(samples);
         });
+        // image
       });
     }
 //    print(_title.toString());
