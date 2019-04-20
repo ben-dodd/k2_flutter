@@ -8,7 +8,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
-import 'package:k2e/widgets/loading.dart';
+import 'package:k2e/widgets/buttons.dart';
+import 'package:k2e/widgets/common_widgets.dart';
 import 'package:uuid/uuid.dart';
 
 class EditNote extends StatefulWidget {
@@ -61,7 +62,7 @@ class _EditNoteState extends State<EditNote> {
                 })
           ]),
       body: isLoading
-          ? loadingPage(loadingText: 'Loading note...')
+          ? LoadingPage(loadingText: 'Loading note...')
           : GestureDetector(
               onTap: () {
                 FocusScope.of(context).requestFocus(new FocusNode());
@@ -153,25 +154,10 @@ class _EditNoteState extends State<EditNote> {
                       ),
                     ),
                     widget.note != null
-                        ? new Container(
-                            alignment: Alignment.center,
-                            padding: EdgeInsets.only(
-                              top: 14.0,
-                            ),
-                            child: new OutlineButton(
-                                shape: new RoundedRectangleBorder(
-                                    borderRadius:
-                                        new BorderRadius.circular(30.0)),
-                                child: Text("Delete Note",
-                                    style: new TextStyle(
-                                        color: Theme.of(context).accentColor,
-                                        fontWeight: FontWeight.bold)),
-//                          color: Colors.white,
-                                onPressed: () {
-                                  _deleteDialog();
-                                }),
-                          )
-                        : new Container(),
+                        ? FunctionButton(
+                      text: "Delete Note",
+                      onClick: _deleteDialog
+                    ) : new Container(),
                   ],
                 ),
               ),

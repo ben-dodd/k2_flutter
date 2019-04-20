@@ -8,7 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
-import 'package:k2e/widgets/loading.dart';
+import 'package:k2e/widgets/common_widgets.dart';
 
 class EditSampleAsbestosAir extends StatefulWidget {
   EditSampleAsbestosAir({Key key, this.sample}) : super(key: key);
@@ -99,12 +99,12 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
               })
         ]),
         body: isLoading
-            ? loadingPage(loadingText: 'Loading sample info...')
+            ? LoadingPage(loadingText: 'Loading sample info...')
             : new StreamBuilder(
                 stream: sample.snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData)
-                    return loadingPage(loadingText: 'Loading sample info...');
+                    return LoadingPage(loadingText: 'Loading sample info...');
                   else {
                     return GestureDetector(
                         onTap: () {

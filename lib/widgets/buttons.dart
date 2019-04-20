@@ -31,8 +31,6 @@ class ScoreButton extends StatelessWidget {
 
   Color scoreColor;
 
-  // TODO OnLongPress show tooltip e.g. what the score means
-
   @override
   Widget build(BuildContext context) {
     if (textcolor == null) textcolor = Colors.white;
@@ -73,12 +71,11 @@ class ScoreButton extends StatelessWidget {
           break;
       }
     }
-    return new Container(
+    return
+      Container(
         padding: EdgeInsets.symmetric(horizontal: 6.0),
         child: InkWell(
-            onTap: () {
-              onClick();
-            },
+            onTap: onClick,
             onLongPress: () {
               if (tooltip != null) {
                 showDialog<Null>(
@@ -130,7 +127,143 @@ class ScoreButton extends StatelessWidget {
                         style: new TextStyle(fontSize: 16.0, color: textcolor),
                       ),
               ),
-            )));
+            )
+          ),
+    );
+  }
+}
+
+class AsbestosScoreButton extends StatelessWidget {
+  AsbestosScoreButton({
+    @required this.score,
+    @required this.onClick,
+    this.showHint,
+    this.val,
+    this.text,
+    this.tooltip,
+    this.bordercolor,
+    this.radius,
+    this.textcolor,
+    this.dialogHeight,
+  });
+
+  final int score;
+  final ValueChanged onClick;
+  final VoidCallback showHint;
+  final int val;
+  final String text;
+  final ToolTip tooltip;
+  final Color bordercolor;
+  final double radius;
+  final double dialogHeight;
+  Color textcolor;
+
+  Color scoreColor;
+
+  @override
+  Widget build(BuildContext context) {
+    bool selected = val == score;
+    if (textcolor == null) textcolor = Colors.white;
+    if (selected) {
+      switch (score) {
+        case -1:
+          scoreColor = Colors.white;
+          break;
+        case 0:
+          scoreColor = CompanyColors.score0;
+          break;
+        case 1:
+          scoreColor = CompanyColors.score1;
+          break;
+        case 2:
+          scoreColor = CompanyColors.score2;
+          break;
+        case 3:
+          scoreColor = CompanyColors.score3;
+          break;
+      }
+    } else {
+      switch (score) {
+        case -1:
+          scoreColor = Colors.white;
+          break;
+        case 0:
+          scoreColor = CompanyColors.score0no;
+          break;
+        case 1:
+          scoreColor = CompanyColors.score1no;
+          break;
+        case 2:
+          scoreColor = CompanyColors.score2no;
+          break;
+        case 3:
+          scoreColor = CompanyColors.score3no;
+          break;
+      }
+    }
+    return
+      Expanded(
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 6.0),
+          child: InkWell(
+              onTap: () {
+                (val == score) ? onClick(null) : onClick(score);
+              },
+              onLongPress: () {
+                if (tooltip != null) {
+                  showDialog<Null>(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return new CustomAlertDialog(
+                          title: new Text(tooltip.title, style: Styles.h2),
+                          content: new Container(
+                              decoration: new BoxDecoration(
+                                  shape: BoxShape.rectangle,
+                                  color: Colors.white,
+                                  borderRadius: new BorderRadius.all(
+                                      new Radius.circular(200.0))),
+                              height: dialogHeight != null ? dialogHeight : 200.0,
+                              child: Column(children: <Widget>[
+                                Container(
+                                  child: Text(tooltip.tip, style: Styles.body),
+                                  alignment: Alignment.bottomLeft,
+                                ),
+                                Container(
+                                  child:
+                                  Text(tooltip.subtip, style: Styles.comment),
+                                  alignment: Alignment.bottomLeft,
+                                ),
+                              ])),
+                        );
+                      });
+                }
+              },
+              child: new Container(
+                height: 40.0,
+                decoration: new BoxDecoration(
+                  color: scoreColor,
+                  border: new Border.all(
+                      color: (bordercolor != null) ? bordercolor : Colors.black12,
+                      width: 2.0),
+                  borderRadius: (radius != null)
+                      ? new BorderRadius.circular(radius)
+                      : new BorderRadius.circular(50.0),
+                ),
+                child: new Center(
+                  child: (text == null)
+                      ? new Text(
+                    score.toString(),
+                    style: new TextStyle(fontSize: 16.0, color: textcolor),
+                  )
+                      : new Text(
+                    text,
+                    style: new TextStyle(fontSize: 16.0, color: textcolor),
+                  ),
+                ),
+              )
+          ),
+        ),
+      );
   }
 }
 
@@ -300,5 +433,36 @@ class SelectButton extends StatelessWidget {
                       ),
               ),
             )));
+  }
+}
+
+class FunctionButton extends StatelessWidget {
+  FunctionButton(
+      {@required this.onClick,
+        @required this.text,
+        this.padding,
+      });
+
+  final VoidCallback onClick;
+  final String text;
+  final EdgeInsets padding;
+
+  @override
+  Widget build(BuildContext context) {
+    return new Container(
+      alignment: Alignment.center,
+      padding: padding != null ? padding : EdgeInsets.fromLTRB(
+        8.0,
+        16.0,
+        8.0,
+        8.0,
+      ),
+      child: OutlineButton(
+        shape: new RoundedRectangleBorder(
+            borderRadius: new BorderRadius.circular(30.0)),
+        child: Text(text),
+        color: Colors.white,
+        onPressed: onClick),
+      );
   }
 }

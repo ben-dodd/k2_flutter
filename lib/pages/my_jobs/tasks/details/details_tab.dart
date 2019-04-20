@@ -9,7 +9,7 @@ import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
-import 'package:k2e/widgets/loading.dart';
+import 'package:k2e/widgets/common_widgets.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
 
@@ -75,7 +75,7 @@ class _DetailsTabState extends State<DetailsTab> {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.active) {
                 if (!snapshot.hasData)
-                  return loadingPage(loadingText: 'Loading job info...');
+                  return LoadingPage(loadingText: 'Loading job info...');
                 if (snapshot.hasData) {
                   if (controllerAddress.text == '') {
                     controllerAddress.text = snapshot.data['address'];
@@ -190,7 +190,7 @@ class _DetailsTabState extends State<DetailsTab> {
               } else if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
               } else {
-                return errorPage();
+                return ErrorPage();
               }
             }));
   }

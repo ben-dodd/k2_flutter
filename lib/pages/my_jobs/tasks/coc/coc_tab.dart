@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
+import 'package:k2e/pages/my_jobs/tasks/coc/coc_functions.dart';
 import 'package:k2e/pages/my_jobs/tasks/coc/coc_card.dart';
 import 'package:k2e/pages/my_jobs/tasks/coc/edit_coc.dart';
 import 'package:k2e/styles.dart';
+import 'package:k2e/widgets/buttons.dart';
+import 'package:k2e/widgets/common_widgets.dart';
 
 class CocTab extends StatefulWidget {
   CocTab() : super();
@@ -52,16 +55,9 @@ class _CocTabState extends State<CocTab> {
                                 child: Text(_loadingText))
                           ]));
                 if (snapshot.data.documents.length == 0)
-                  return Center(
-                      child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                        Icon(Icons.not_interested, size: 64.0),
-                        Container(
-                            alignment: Alignment.center,
-                            height: 64.0,
-                            child: Text('This job has no asbestos samples.'))
-                      ]));
+                  return EmptyList(
+                    text: 'This job has no asbestos samples.'
+                  );
                 return ListView.builder(
                     itemCount: snapshot.data.documents.length,
                     shrinkWrap: true,
@@ -85,6 +81,14 @@ class _CocTabState extends State<CocTab> {
                       );
                     });
               }),
+          FunctionButton(
+            text: "Add New Chain of Custody",
+            onClick: () { addNewCoc(context); },
+          ),
+          FunctionButton(
+            text: "Add Historic Chain of Custody",
+            onClick: () { addHistoricCoc(context); },
+          ),
         ],
       ),
     ));

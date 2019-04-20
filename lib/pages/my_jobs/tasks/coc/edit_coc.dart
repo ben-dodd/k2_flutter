@@ -3,16 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/styles.dart';
+import 'package:k2e/widgets/buttons.dart';
+import 'package:k2e/widgets/common_widgets.dart';
 import 'package:k2e/widgets/custom_auto_complete.dart';
 import 'package:k2e/widgets/custom_typeahead.dart';
 import 'package:k2e/widgets/date_picker.dart';
-import 'package:k2e/widgets/dialogs.dart';
-import 'package:k2e/widgets/loading.dart';
 import 'package:uuid/uuid.dart';
 
 class EditCoc extends StatefulWidget {
-  EditCoc({Key key, this.coc}) : super(key: key);
+  EditCoc({Key key, this.coc, this.cocObj}) : super(key: key);
   final String coc;
+  Map<String, dynamic> cocObj;
   @override
   _EditCocState createState() => new _EditCocState();
 }
@@ -38,9 +39,10 @@ class _EditCocState extends State<EditCoc> {
   List items;
   List materials;
   List staff;
-  final List<String> personnelSelected = <String>[];
-  final List<DateTime> datesSelected = <DateTime>[];
+  List<String> personnelSelected = <String>[];
+  List<DateTime> datesSelected = <DateTime>[];
   Map<String, dynamic> samples = new Map<String, dynamic>();
+  int samplesLength = 10;
 
   var _formKey = GlobalKey<FormState>();
 
@@ -87,14 +89,15 @@ class _EditCocState extends State<EditCoc> {
   }
 
   Future<Null> _selectDate(BuildContext context) async {
-    final DateTime picked = await showMultiDatePicker(
+    final List<DateTime> picked = await showMultiDatePicker(
         context: context,
         initialDates: datesSelected,
-        firstDate: DateTime(2015, 8),
-        lastDate: DateTime(2101));
+        firstDate: DateTime(2000),
+        lastDate: DateTime.now().add(new Duration(days: 365)));
     if (picked != null)
+      picked.sort();
       setState(() {
-        cocObj['dates'] = picked;
+        datesSelected = picked;
       });
   }
 
@@ -133,7 +136,7 @@ class _EditCocState extends State<EditCoc> {
                 })
           ]),
       body: isLoading
-          ? loadingPage(loadingText: 'Loading Chain of Custody...')
+          ? LoadingPage(loadingText: 'Loading Chain of Custody...')
           : GestureDetector(
               onTap: () {
                 FocusScope.of(context).requestFocus(new FocusNode());
@@ -160,27 +163,17 @@ class _EditCocState extends State<EditCoc> {
                       Text(version, style: Styles.comment),
                       new Container(
                         alignment: Alignment.topLeft,
-                        padding: EdgeInsets.only(top: 14.0, bottom: 16.0),
+                        padding: EdgeInsets.only(top: 14.0, bottom: 8.0),
                         child: new Text(
                           "Sample Date(s)",
                           style: Styles.label,
                         ),
                       ),
-                      new Text(datesSelected != null ? datesSelected.map((date) => new DateFormat.yMMMMd().format(date)).join(", ") : 'No dates selected'),
-                      SizedBox(height: 20.0),
-                      RaisedButton(
-                        onPressed: () => _selectDate(context),
-                        child: Text('Select date'),
+                      Text(datesSelected.length > 0 ? datesSelected.map((date) => new DateFormat('d MMMM yyyy').format(date)).join("\n") : 'No dates selected'),
+                      FunctionButton(
+                        text: "Select Dates",
+                        onClick: () => _selectDate(context)
                       ),
-//                      Calendarro(
-////                  startDate: DateUtils.getFirstDayOfMonth(new DateTime.now().month - 2),
-////                  endDate: DateUtils.getLastDayOfNextMonth(),
-//                        selectionMode: SelectionMode.MULTI,
-//                        displayMode: DisplayMode.WEEKS,
-////                  dayTileBuilder: ,
-//                        selectedDates: datesSelected,
-////                  selectedDates: cocObj['dates'].map((date) { return new DateTime(date); } ).toList(),
-//                      ),
                       new Container(
                         alignment: Alignment.topLeft,
                         padding: EdgeInsets.only(
@@ -236,43 +229,17 @@ class _EditCocState extends State<EditCoc> {
                           style: Styles.h2,
                         ),
                         children: <Widget>[
-                          new Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              new Container(
-                                alignment: Alignment.center,
-                                padding: EdgeInsets.fromLTRB(
-                                  2.0,
-                                  8.0,
-                                  4.0,
-                                  8.0,
-                                ),
-                                child: new OutlineButton(
-                                  child: const Text("Add 10 More Rows"),
-                                  color: Colors.white,
-                                  onPressed: () {
-                                    showRoomTemplateDialog(
-                                      context,
-                                      cocObj,
-                                      applyTemplate,
-                                    );
-                                  },
-                                  shape: new RoundedRectangleBorder(
-                                      borderRadius:
-                                          new BorderRadius.circular(30.0)),
-                                ),
-                              ),
-                            ],
+                          FunctionButton(
+                            text: "Add 10 More Rows",
+                            onClick: () => setState(() { samplesLength = samplesLength + 10; }),
                           ),
-                          (samples != null && samples.length > 0)
-                              ? ListView.builder(
-                                  shrinkWrap: true,
-                                  physics: NeverScrollableScrollPhysics(),
-                                  itemCount: samples.length,
-                                  itemBuilder: (context, index) {
-                                    return buildSamples(index + 1);
-                                  })
-                              : new Container(),
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount: samplesLength,
+                            itemBuilder: (context, index) {
+                              return buildSamples(index + 1);
+                            }),
                         ],
                       ),
                     ]),
@@ -362,16 +329,13 @@ class _EditCocState extends State<EditCoc> {
 //    print("Loading room");
     if (coc == null) {
       _title = "Add New Chain of Custody";
-      cocObj['deleted'] = false;
-      if (cocObj['dates'] != null) {
-        cocObj['dates'].forEach((d) {
-          datesSelected.add(d.toDate());
-        });
+      if (widget.cocObj == null) {
+        cocObj['deleted'] = false;
+        // New room requires us to create a path so it doesn't need internet to get one from Firestore
+        cocObj['path'] = new Uuid().v1();
       } else {
-        datesSelected.add(new DateTime.now());
+        cocObj = widget.cocObj;
       }
-      // New room requires us to create a path so it doesn't need internet to get one from Firestore
-      cocObj['path'] = new Uuid().v1();
 
       setState(() {
         isLoading = false;
@@ -404,8 +368,8 @@ class _EditCocState extends State<EditCoc> {
               cocObj['dates'].forEach((d) {
                 datesSelected.add(d.toDate());
               });
-            } else {
-              datesSelected.add(new DateTime.now());
+//            } else {
+//              datesSelected.add(new DateTime.now());
             }
             _roomNameController.text = cocObj['name'];
             _roomCodeController.text = cocObj['roomcode'];

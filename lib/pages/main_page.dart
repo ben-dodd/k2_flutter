@@ -9,6 +9,7 @@ import 'package:k2e/pages/my_details/general_details_tab.dart';
 import 'package:k2e/pages/my_jobs/my_jobs_page.dart';
 import 'package:k2e/pages/under_construction_page.dart';
 import 'package:k2e/utils/camera.dart';
+import 'package:k2e/widgets/common_widgets.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 final GoogleSignIn _googleSignIn = new GoogleSignIn();
@@ -209,18 +210,7 @@ class _MainPageState extends State<MainPage> {
                 key: _signInKey,
                 appBar: new AppBar(title: new Text('K2 Sign In')),
                 body: _isLoading
-                    ? new Container(
-                        alignment: Alignment.center,
-                        color: Colors.white,
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              new CircularProgressIndicator(),
-                              Container(
-                                  alignment: Alignment.center,
-                                  height: 64.0,
-                                  child: Text('Signing In...'))
-                            ]))
+                    ? LoadingPage(loadingText: 'Signing In...')
                     : new Center(
                         child: new Column(
                             mainAxisAlignment: MainAxisAlignment.center,

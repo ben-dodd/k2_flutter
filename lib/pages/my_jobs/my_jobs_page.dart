@@ -7,8 +7,8 @@ import 'package:k2e/pages/my_jobs/job_card.dart';
 import 'package:k2e/pages/my_jobs/tasks/job_page.dart';
 import 'package:k2e/pages/my_jobs/wfm_fragment.dart';
 import 'package:k2e/theme.dart';
+import 'package:k2e/widgets/common_widgets.dart';
 import 'package:k2e/widgets/fab_dialer.dart';
-import 'package:k2e/widgets/loading.dart';
 import 'package:uuid/uuid.dart';
 
 // This page lists all your current jobs
@@ -58,18 +58,9 @@ class _MyJobsPageState extends State<MyJobsPage> {
                 .snapshots(),
             builder: (context, snapshot) {
               if (!snapshot.hasData)
-                return loadingPage(loadingText: 'Loading your jobs...');
+                return LoadingPage(loadingText: 'Loading your jobs...');
               if (snapshot.data.documents.length == 0)
-                return Center(
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                      Icon(Icons.not_interested, size: 64.0),
-                      Container(
-                          alignment: Alignment.center,
-                          height: 64.0,
-                          child: Text('You have no jobs loaded.'))
-                    ]));
+                return EmptyList(text: 'You have no jobs loaded.');
               return ListView.builder(
                   itemCount: snapshot.data.documents.length,
                   itemBuilder: (context, index) {

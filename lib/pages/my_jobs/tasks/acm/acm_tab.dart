@@ -5,6 +5,7 @@ import 'package:k2e/pages/my_jobs/tasks/acm/acm_card.dart';
 import 'package:k2e/pages/my_jobs/tasks/acm/edit_acm.dart';
 import 'package:k2e/pages/my_jobs/tasks/acm/edit_sample_asbestos_air.dart';
 import 'package:k2e/styles.dart';
+import 'package:k2e/widgets/common_widgets.dart';
 
 class AcmTab extends StatefulWidget {
   AcmTab() : super();
@@ -58,16 +59,7 @@ class _AcmTabState extends State<AcmTab> {
                                 child: Text(_loadingText))
                           ]));
                 if (snapshot.data.documents.length == 0)
-                  return Center(
-                      child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                        Icon(Icons.not_interested, size: 64.0),
-                        Container(
-                            alignment: Alignment.center,
-                            height: 64.0,
-                            child: Text('This job has no ACM items.'))
-                      ]));
+                  return EmptyList(text: 'This job has no ACM items.');
                 return ListView.builder(
                     shrinkWrap: true,
                     physics: NeverScrollableScrollPhysics(),

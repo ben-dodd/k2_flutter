@@ -4,6 +4,7 @@ import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_jobs/tasks/notepad/edit_note.dart';
 import 'package:k2e/pages/my_jobs/tasks/notepad/note_card.dart';
 import 'package:k2e/styles.dart';
+import 'package:k2e/widgets/common_widgets.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
 
@@ -39,30 +40,9 @@ class _NotepadTabState extends State<NotepadTab> {
                     .snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData)
-                    return Container(
-                        padding: EdgeInsets.only(top: 16.0),
-                        alignment: Alignment.center,
-                        color: Colors.white,
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              new CircularProgressIndicator(),
-                              Container(
-                                  alignment: Alignment.center,
-                                  height: 64.0,
-                                  child: Text(_loadingText))
-                            ]));
+                    LoadingPage(loadingText: _loadingText);
                   if (snapshot.data.documents.length == 0)
-                    return Center(
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                          Icon(Icons.not_interested, size: 64.0),
-                          Container(
-                              alignment: Alignment.center,
-                              height: 64.0,
-                              child: Text('This job has no notes.'))
-                        ]));
+                    return EmptyList(text: 'This job has no notes.');
                   return ListView.builder(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),

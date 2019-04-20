@@ -4,6 +4,7 @@ import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_jobs/tasks/map/edit_map.dart';
 import 'package:k2e/pages/my_jobs/tasks/map/map_card.dart';
 import 'package:k2e/styles.dart';
+import 'package:k2e/widgets/common_widgets.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
 
@@ -39,30 +40,11 @@ class _MapsTabState extends State<MapsTab> {
                     .snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData)
-                    return Container(
-                        padding: EdgeInsets.only(top: 16.0),
-                        alignment: Alignment.center,
-                        color: Colors.white,
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              new CircularProgressIndicator(),
-                              Container(
-                                  alignment: Alignment.center,
-                                  height: 64.0,
-                                  child: Text(_loadingText))
-                            ]));
+                    LoadingPage(loadingText: _loadingText);
                   if (snapshot.data.documents.length == 0)
-                    return Center(
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                          Icon(Icons.not_interested, size: 64.0),
-                          Container(
-                              alignment: Alignment.center,
-                              height: 64.0,
-                              child: Text('This job has no maps.'))
-                        ]));
+                    return EmptyList(
+                      text: 'This job has no maps.'
+                    );
                   return ListView.builder(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),

@@ -18,8 +18,8 @@ import 'package:k2e/pages/my_jobs/tasks/rooms/edit_room_group.dart';
 import 'package:k2e/pages/my_jobs/tasks/rooms/rooms_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/timelog/log_time_tab.dart';
 import 'package:k2e/theme.dart';
+import 'package:k2e/widgets/common_widgets.dart';
 import 'package:k2e/widgets/fab_dialer.dart';
-import 'package:k2e/widgets/loading.dart';
 
 // This is a base page for jobs, this will be used for any jobs that are not currently supported
 // Have full functionality for editing WFM information though
@@ -148,7 +148,7 @@ class _JobPageState extends State<JobPage> {
         stream: Firestore.instance.document(widget.path).snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData)
-            return loadingPage(
+            return LoadingPage(
                 loadingText: 'Loading ' + DataManager.get().currentJobNumber);
 
           bool _isAsbestos = false;

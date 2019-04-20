@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:k2e/data/datamanager.dart';
-import 'package:k2e/widgets/loading.dart';
+import 'package:k2e/widgets/common_widgets.dart';
 
 class GeneralDetailsTab extends StatefulWidget {
   @override
@@ -76,7 +76,7 @@ class _GeneralDetailsTabState extends State<GeneralDetailsTab> {
               print(
                   'details = ${snapshot.data['displayName']} ${snapshot.data['email']} ${snapshot.data['phone']}');
               if (!snapshot.hasData)
-                return loadingPage(loadingText: 'Loading user data...');
+                return LoadingPage(loadingText: 'Loading user data...');
               if (controllerDisplayName.text == '') {
                 controllerDisplayName.text = snapshot.data['displayName'];
                 controllerEmail.text = snapshot.data['email'];
@@ -115,7 +115,7 @@ class _GeneralDetailsTabState extends State<GeneralDetailsTab> {
             } else if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
             } else {
-              return errorPage();
+              return ErrorPage();
             }
           }),
     );

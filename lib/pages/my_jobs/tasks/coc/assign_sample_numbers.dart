@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
+import 'package:k2e/pages/my_jobs/tasks/coc/coc_functions.dart';
 import 'package:k2e/pages/my_jobs/tasks/coc/coc_card.dart';
 import 'package:k2e/pages/my_jobs/tasks/coc/edit_coc.dart';
 import 'package:k2e/styles.dart';
-import 'package:uuid/uuid.dart';
+import 'package:k2e/widgets/buttons.dart';
+import 'package:k2e/widgets/common_widgets.dart';
 
 class AssignSampleNumbers extends StatefulWidget {
   AssignSampleNumbers({Key key, this.acm}) : super(key: key);
@@ -54,31 +56,9 @@ class _AssignSampleNumbersState extends State<AssignSampleNumbers> {
                       .snapshots(),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData)
-                      return Container(
-                          padding: EdgeInsets.only(top: 16.0),
-                          alignment: Alignment.center,
-                          color: Colors.white,
-                          child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                new CircularProgressIndicator(),
-                                Container(
-                                    alignment: Alignment.center,
-                                    height: 64.0,
-                                    child: Text('Loading Chains of Custody'))
-                              ]));
+                      return LoadingPage(loadingText: 'Loading Chains of Custody');
                     if (snapshot.data.documents.length == 0)
-                      return Center(
-                          child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-//                                Icon(Icons.not_interested, size: 64.0),
-                            Container(
-                                alignment: Alignment.center,
-                                height: 64.0,
-                                child:
-                                    Text('This job has no Chains of Custody.')),
-                          ]));
+                      return EmptyList(text: 'This job has no Chains of Custody.');
                     return ListView.builder(
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
@@ -96,22 +76,9 @@ class _AssignSampleNumbersState extends State<AssignSampleNumbers> {
                           );
                         });
                   }),
-              new Container(
-                alignment: Alignment.center,
-                padding: EdgeInsets.only(
-                  top: 14.0,
-                ),
-                child: new OutlineButton(
-                    shape: new RoundedRectangleBorder(
-                        borderRadius: new BorderRadius.circular(30.0)),
-                    child: Text("Add New Chain of Custody",
-                        style: new TextStyle(
-                            color: Theme.of(context).accentColor,
-                            fontWeight: FontWeight.bold)),
-                    //                          color: Colors.white,
-                    onPressed: () {
-                      _addNewCoC();
-                    }),
+              FunctionButton(
+                text: "Add New Chain of Custody",
+                onClick: () { addNewCoc(context); },
               ),
               Divider(),
               Container(
@@ -140,17 +107,7 @@ class _AssignSampleNumbersState extends State<AssignSampleNumbers> {
                                     child: Text('Loading Historic Samples'))
                               ]));
                     if (snapshot.data.documents.length == 0)
-                      return Center(
-                          child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-//                                Icon(Icons.not_interested, size: 64.0),
-                            Container(
-                                alignment: Alignment.center,
-                                height: 64.0,
-                                child:
-                                    Text('This job has no historic samples.')),
-                          ]));
+                      return EmptyList(text: 'This job has no historic samples.');
                     return ListView.builder(
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
@@ -160,22 +117,9 @@ class _AssignSampleNumbersState extends State<AssignSampleNumbers> {
                               snapshot.data.documents[index]['jobNumber']);
                         });
                   }),
-              new Container(
-                alignment: Alignment.center,
-                padding: EdgeInsets.only(
-                  top: 14.0,
-                ),
-                child: new OutlineButton(
-                    shape: new RoundedRectangleBorder(
-                        borderRadius: new BorderRadius.circular(30.0)),
-                    child: Text("Add Historic Chain of Custody",
-                        style: new TextStyle(
-                            color: Theme.of(context).accentColor,
-                            fontWeight: FontWeight.bold)),
-                    //                          color: Colors.white,
-                    onPressed: () {
-                      _addHistoricSample();
-                    }),
+              FunctionButton(
+                text: "Add Historic Chain of Custody",
+                onClick: () { addHistoricCoc(context); },
               ),
             ],
           ),
@@ -199,34 +143,4 @@ class _AssignSampleNumbersState extends State<AssignSampleNumbers> {
       }
     });
   }
-}
-
-void _addHistoricSample() {
-  // Add sample from other K2 Job or other company
-}
-
-_addNewCoC() {
-  String docID =
-      DataManager.get().currentJobNumber + '-' + Uuid().v1().toString();
-  Map<String, dynamic> currentJob;
-  Firestore.instance
-      .document(DataManager.get().currentJobPath)
-      .get()
-      .then((doc) {
-    // Might pay to keep job in DataManager
-    // and User Name
-    currentJob = doc.data;
-    Map<String, dynamic> newCoC = {
-      'dates': [new DateTime.now()],
-      'samples': {},
-      'personnel': [],
-      'type': 'Asbestos - Bulk ID',
-      'jobNumber': DataManager.get().currentJobNumber,
-      'uid': docID,
-      'address': currentJob['address'],
-      'client': currentJob['clientname'],
-    };
-    Firestore.instance.collection('cocs').document(docID).setData(newCoC);
-  });
-  // Create new CoC in this job
 }

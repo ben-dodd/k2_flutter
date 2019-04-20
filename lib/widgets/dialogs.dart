@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/styles.dart';
+import 'package:k2e/widgets/common_widgets.dart';
 import 'package:k2e/widgets/customdialog.dart';
 
 class DuplicateRoomsDialog extends StatefulWidget {
@@ -226,43 +227,22 @@ class _DeleteRoomGroupDialogState extends State<DeleteRoomGroupDialog> {
           new Text('Are you sure you wish to delete this room group (' +
               widget.roomObj['name'] +
               ')?'),
-          new Row(children: <Widget>[
-            new Container(
-              alignment: Alignment.topLeft,
-              child: Checkbox(
-                  value: deleteRooms,
-                  onChanged: (value) => setState(() {
-                        deleteRooms = value;
-                      })),
-            ),
-            new Container(
-              alignment: Alignment.topLeft,
-              child: new Text(
-                "Delete Rooms in Group",
-                style: Styles.label,
-              ),
-            ),
-          ]),
-          new Row(children: <Widget>[
-            new Container(
-              alignment: Alignment.topLeft,
-              child: Checkbox(
-                value: deleteAcm,
-                onChanged: (value) => deleteRooms
-                    ? setState(() {
-                        deleteAcm = !deleteAcm;
-                      })
-                    : null,
-              ),
-            ),
-            new Container(
-              alignment: Alignment.topLeft,
-              child: new Text(
-                "Delete ACM in Rooms",
-                style: Styles.label,
-              ),
-            ),
-          ]),
+          CheckLabel(
+            text: "Delete Rooms in Group",
+            value: deleteRooms,
+            onClick: (value) => setState(() {
+              deleteRooms = value;
+            }),
+          ),
+          CheckLabel(
+            text: "Delete ACM in Rooms",
+            value: deleteAcm,
+            onClick: (value) => deleteRooms
+                ? setState(() {
+              deleteAcm = !deleteAcm;
+            })
+                : null,
+          ),
         ],
       ),
       actions: <Widget>[

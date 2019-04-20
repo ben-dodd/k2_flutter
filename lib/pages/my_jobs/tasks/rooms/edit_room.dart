@@ -12,10 +12,11 @@ import 'package:k2e/pages/my_jobs/tasks/acm/edit_sample_asbestos_air.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
+import 'package:k2e/widgets/buttons.dart';
+import 'package:k2e/widgets/common_widgets.dart';
 import 'package:k2e/widgets/custom_auto_complete.dart';
 import 'package:k2e/widgets/custom_typeahead.dart';
 import 'package:k2e/widgets/dialogs.dart';
-import 'package:k2e/widgets/loading.dart';
 import 'package:uuid/uuid.dart';
 
 class EditRoom extends StatefulWidget {
@@ -107,7 +108,7 @@ class _EditRoomState extends State<EditRoom> {
                 })
           ]),
       body: isLoading
-          ? loadingPage(loadingText: 'Loading room info...')
+          ? LoadingPage(loadingText: 'Loading room info...')
           : GestureDetector(
               onTap: () {
                 FocusScope.of(context).requestFocus(new FocusNode());
@@ -254,27 +255,16 @@ class _EditRoomState extends State<EditRoom> {
                             style: Styles.h2,
                           ),
                           children: <Widget>[
-                            new Row(children: <Widget>[
-                              new Container(
-                                  alignment: Alignment.topLeft,
-                                  child: Checkbox(
-                                      value: roomObj['presume'] != null
-                                          ? roomObj['presume']
-                                          : false,
-                                      onChanged: (value) => setState(() {
-                                            roomObj['presume'] =
-                                                roomObj['presume'] != null
-                                                    ? !roomObj['presume']
-                                                    : true;
-                                          }))),
-                              new Container(
-                                alignment: Alignment.topLeft,
-                                child: new Text(
-                                  "Presume Entire Room (Inaccessible)",
-                                  style: Styles.label,
-                                ),
-                              ),
-                            ]),
+                            CheckLabel(
+                              value: roomObj['presume'],
+                              onClick: (value) => setState(() {
+                                roomObj['presume'] =
+                                roomObj['presume'] != null
+                                    ? !roomObj['presume']
+                                    : true;
+                              }),
+                              text: "Presume Entire Room (Inaccessible)",
+                            ),
                             widget.room != null
                                 ? new StreamBuilder(
                                     stream: Firestore.instance
@@ -305,19 +295,9 @@ class _EditRoomState extends State<EditRoom> {
                                                           "Loading ACM items..."))
                                                 ]));
                                       if (snapshot.data.documents.length == 0)
-                                        return Center(
-                                            child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: <Widget>[
-                                              Icon(Icons.not_interested,
-                                                  size: 64.0),
-                                              Container(
-                                                  alignment: Alignment.center,
-                                                  height: 64.0,
-                                                  child: Text(
-                                                      'This job has no ACM items.'))
-                                            ]));
+                                        return EmptyList(
+                                          text: 'This job has no ACM items.'
+                                        );
                                       return ListView.builder(
                                           shrinkWrap: true,
                                           physics:
@@ -367,18 +347,7 @@ class _EditRoomState extends State<EditRoom> {
                                             );
                                           });
                                     })
-                                : new Center(
-                                    child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: <Widget>[
-                                        Icon(Icons.not_interested, size: 64.0),
-                                        Container(
-                                            alignment: Alignment.center,
-                                            height: 64.0,
-                                            child: Text(
-                                                'This job has no ACM items.'))
-                                      ])),
+                                : EmptyList(text: 'This job has no ACM items.')
                           ]),
 //                    new Container(padding: EdgeInsets.only(top: 14.0)),
 //                    new Divider(),
@@ -392,62 +361,34 @@ class _EditRoomState extends State<EditRoom> {
                           new Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
-                              new Container(
-                                alignment: Alignment.center,
-                                padding: EdgeInsets.fromLTRB(
-                                  2.0,
-                                  8.0,
-                                  4.0,
-                                  8.0,
-                                ),
-                                child: new OutlineButton(
-                                  child: const Text("Load New Template"),
-                                  color: Colors.white,
-                                  onPressed: () {
-                                    showRoomTemplateDialog(
-                                      context,
-                                      roomObj,
-                                      applyTemplate,
-                                    );
-                                  },
-                                  shape: new RoundedRectangleBorder(
-                                      borderRadius:
-                                          new BorderRadius.circular(30.0)),
-                                ),
-                              ),
-                              new Container(
-                                alignment: Alignment.center,
-                                padding: EdgeInsets.fromLTRB(
-                                  4.0,
-                                  8.0,
-                                  2.0,
-                                  8.0,
-                                ),
-                                child: new OutlineButton(
-                                  child: const Text("Clear Empty Rows"),
-                                  color: Colors.white,
-                                  onPressed: () {
-                                    if (roomObj["buildingmaterials"] != null &&
-                                        roomObj["buildingmaterials"].length >
-                                            0) {
-                                      this.setState(() {
-                                        roomObj["buildingmaterials"] =
-                                            roomObj["buildingmaterials"]
-                                                .where((bm) =>
-                                                    bm["material"] == null ||
-                                                    bm["material"]
-                                                            .trim()
-                                                            .length >
-                                                        0)
-                                                .toList();
-                                      });
-                                    }
-                                  },
-                                  shape: new RoundedRectangleBorder(
-                                    borderRadius:
-                                        new BorderRadius.circular(30.0),
-                                  ),
-                                ),
+                              FunctionButton(
+                                text: "Load New Template",
+                                onClick: () {
+                                  showRoomTemplateDialog(
+                                    context,
+                                    roomObj,
+                                    applyTemplate,
+                                  );
+                                }),
+                              FunctionButton(
+                                text: "Clear Empty Rows",
+                                onClick: () {
+                                  if (roomObj["buildingmaterials"] != null &&
+                                      roomObj["buildingmaterials"].length >
+                                          0) {
+                                    this.setState(() {
+                                      roomObj["buildingmaterials"] =
+                                          roomObj["buildingmaterials"]
+                                              .where((bm) =>
+                                          bm["material"] == null ||
+                                              bm["material"]
+                                                  .trim()
+                                                  .length >
+                                                  0)
+                                              .toList();
+                                    });
+                                  }
+                                },
                               ),
                             ],
                           ),
@@ -466,25 +407,10 @@ class _EditRoomState extends State<EditRoom> {
                         ],
                       ),
                       widget.room != null
-                          ? new Container(
-                              alignment: Alignment.center,
-                              padding: EdgeInsets.only(
-                                top: 14.0,
-                              ),
-                              child: new OutlineButton(
-                                  shape: new RoundedRectangleBorder(
-                                      borderRadius:
-                                          new BorderRadius.circular(30.0)),
-                                  child: Text("Delete Room",
-                                      style: new TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontWeight: FontWeight.bold)),
-                                  //                          color: Colors.white,
-                                  onPressed: () {
-                                    _deleteDialog();
-                                  }),
-                            )
-                          : new Container(),
+                          ? FunctionButton(
+                        text: "Delete Room",
+                        onClick: _deleteDialog
+                      ) : new Container(),
                     ]),
               ),
             ),

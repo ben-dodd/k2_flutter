@@ -2,8 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/styles.dart';
+import 'package:k2e/widgets/buttons.dart';
+import 'package:k2e/widgets/common_widgets.dart';
 import 'package:k2e/widgets/dialogs.dart';
-import 'package:k2e/widgets/loading.dart';
 import 'package:uuid/uuid.dart';
 
 class EditRoomGroup extends StatefulWidget {
@@ -76,7 +77,7 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
                 })
           ]),
       body: isLoading
-          ? loadingPage(loadingText: 'Loading room group info...')
+          ? LoadingPage(loadingText: 'Loading room group info...')
           : GestureDetector(
               onTap: () {
                 FocusScope.of(context).requestFocus(new FocusNode());
@@ -123,27 +124,16 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
                         textCapitalization: TextCapitalization.characters,
                       ),
                     ),
-                    new Row(children: <Widget>[
-                      new Container(
-                          alignment: Alignment.topLeft,
-                          child: Checkbox(
-                              value: roomObj['presume'] != null
-                                  ? roomObj['presume']
-                                  : false,
-                              onChanged: (value) => setState(() {
-                                    roomObj['presume'] =
-                                        roomObj['presume'] != null
-                                            ? !roomObj['presume']
-                                            : true;
-                                  }))),
-                      new Container(
-                        alignment: Alignment.topLeft,
-                        child: new Text(
-                          "Presume Entire Room Group (Inaccessible)",
-                          style: Styles.label,
-                        ),
-                      ),
-                    ]),
+                    CheckLabel(
+                      text: "Presume Entire Room Group (Inaccessible)",
+                      value: roomObj['presume'],
+                      onClick: (value) => setState(() {
+                        roomObj['presume'] =
+                        roomObj['presume'] != null
+                            ? !roomObj['presume']
+                            : true;
+                      }),
+                    ),
                     new Container(
                       child: TextFormField(
                         decoration: const InputDecoration(
@@ -159,22 +149,13 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
                         textCapitalization: TextCapitalization.sentences,
                       ),
                     ),
-                    new Row(children: <Widget>[
-                      new Container(
-                          alignment: Alignment.topLeft,
-                          child: Checkbox(
-                              value: addAllOrphans,
-                              onChanged: (value) => setState(() {
-                                    addAllOrphans = value;
-                                  }))),
-                      new Container(
-                        alignment: Alignment.topLeft,
-                        child: new Text(
-                          "Add All Ungrouped Rooms",
-                          style: Styles.label,
-                        ),
-                      ),
-                    ]),
+                    CheckLabel(
+                      text: "Add All Ungrouped Rooms",
+                      value: addAllOrphans,
+                      onClick: (value) => setState(() {
+                        addAllOrphans = value;
+                      }),
+                    ),
                     new Container(
                       alignment: Alignment.topLeft,
                       padding: EdgeInsets.only(
@@ -200,29 +181,16 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
                           });
                         }),
                     widget.roomgroup != null
-                        ? new Container(
-                            alignment: Alignment.center,
-                            padding: EdgeInsets.only(
-                              top: 14.0,
-                            ),
-                            child: new OutlineButton(
-                                shape: new RoundedRectangleBorder(
-                                    borderRadius:
-                                        new BorderRadius.circular(30.0)),
-                                child: Text("Delete Room Group",
-                                    style: new TextStyle(
-                                        color: Theme.of(context).accentColor,
-                                        fontWeight: FontWeight.bold)),
-//                          color: Colors.white,
-                                onPressed: () {
-                                  showDeleteRoomGroupDialog(
-                                    context,
-                                    roomObj,
-                                    _deleteRoomGroup,
-                                  );
-                                }),
-                          )
-                        : new Container(),
+                        ? FunctionButton(
+                            text: "Delete Room Group",
+                            onClick: () {
+                              showDeleteRoomGroupDialog(
+                                context,
+                                roomObj,
+                                _deleteRoomGroup,
+                              );
+                            },
+                    ) : new Container(),
                   ],
                 ),
               ),

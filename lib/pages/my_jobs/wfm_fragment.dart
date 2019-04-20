@@ -7,6 +7,7 @@ import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/data/wfm_manager.dart';
 import 'package:k2e/model/jobheader.dart';
 import 'package:k2e/pages/my_jobs/wfm_job_card.dart';
+import 'package:k2e/widgets/common_widgets.dart';
 
 // This page lists all your current jobs
 // From here you can click on the Fab Menu to add more jobs
@@ -75,16 +76,7 @@ class _WfmFragmentState extends State<WfmFragment> {
           padding: new EdgeInsets.all(8.0),
           child: new Stack(children: <Widget>[
             _isLoading
-                ? new Center(
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                        new CircularProgressIndicator(),
-                        Container(
-                            alignment: Alignment.center,
-                            height: 64.0,
-                            child: Text('Loading jobs from WorkflowMax...'))
-                      ]))
+                ? LoadingPage(loadingText: 'Loading jobs from WorkflowMax...')
                 : new Container(),
             Column(children: <Widget>[
               new TextField(

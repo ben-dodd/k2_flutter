@@ -248,7 +248,7 @@ class DayPicker extends StatelessWidget {
         assert(displayedMonth != null),
         assert(dragStartBehavior != null),
         assert(!firstDate.isAfter(lastDate)),
-        assert(selectedDates.first.isAfter(firstDate) || selectedDates.first.isAtSameMomentAs(firstDate)),
+//        assert(selectedDates.first.isAfter(firstDate) || selectedDates.first.isAtSameMomentAs(firstDate)),
         super(key: key);
 
   /// The currently selected date.
@@ -412,7 +412,7 @@ class DayPicker extends StatelessWidget {
         BoxDecoration decoration;
         TextStyle itemStyle = themeData.textTheme.body1;
 
-        final bool isSelectedDay = selectedDates.firstWhere((selectedDate) => selectedDate.year == year && selectedDate.month == month && selectedDate.day == day, orElse: null) != null;
+        final bool isSelectedDay = selectedDates.firstWhere((selectedDate) => selectedDate.year == year && selectedDate.month == month && selectedDate.day == day, orElse: () => null) != null;
         if (isSelectedDay) {
           // The selected day gets a circle background highlight, and a contrasting text color.
           itemStyle = themeData.accentTextTheme.body2;
@@ -553,7 +553,7 @@ class _MonthPickerState extends State<MonthPicker> with SingleTickerProviderStat
   void initState() {
     super.initState();
     // Initially display the pre-selected date.
-    final int monthPage = _monthDelta(widget.selectedDates.first, widget.selectedDates.last);
+    final int monthPage = _monthDelta(widget.firstDate, widget.selectedDates.last);
     _dayPickerController = PageController(initialPage: monthPage);
     _handleMonthPageChanged(monthPage);
     _updateCurrentDate();
@@ -606,8 +606,8 @@ class _MonthPickerState extends State<MonthPicker> with SingleTickerProviderStat
   }
 
   static int _monthDelta(DateTime startDate, DateTime endDate) {
-    return 400;
-//    return (endDate.year - startDate.year) * 12 + endDate.month - startDate.month;
+//    return 400;
+    return (endDate.year - startDate.year) * 12 + endDate.month - startDate.month;
   }
 
   /// Add months to a month truncated date.
@@ -688,7 +688,7 @@ class _MonthPickerState extends State<MonthPicker> with SingleTickerProviderStat
                 },
                 child: PageView.builder(
                   dragStartBehavior: widget.dragStartBehavior,
-                  key: ValueKey<DateTime>(widget.selectedDates.last),
+                  key: ValueKey<DateTime>(widget.firstDate),
                   controller: _dayPickerController,
                   scrollDirection: Axis.horizontal,
                   itemCount: _monthDelta(widget.firstDate, widget.lastDate) + 1,
@@ -830,7 +830,7 @@ class _YearPickerState extends State<YearPicker> {
       itemCount: widget.lastDate.year - widget.firstDate.year + 1,
       itemBuilder: (BuildContext context, int index) {
         final int year = widget.firstDate.year + index;
-        final bool isSelected = widget.selectedDates.firstWhere((selectedDate) => year == selectedDate.year, orElse: null) != null;
+        final bool isSelected = widget.selectedDates.firstWhere((selectedDate) => year == selectedDate.year, orElse: () => null) != null;
         final TextStyle itemStyle = isSelected
             ? themeData.textTheme.headline.copyWith(color: themeData.accentColor)
             : style;
@@ -934,14 +934,17 @@ class _DatePickerDialogState extends State<_DatePickerDialog> {
       return;
     _vibrate();
     List<DateTime> _newSelectedDates = _selectedDates;
-    if (_selectedDates.contains(value)) {
+    print(_newSelectedDates.toString());
+    if (_selectedDates.firstWhere((selectedDate) => selectedDate.year == value.year && selectedDate.month == value.month && selectedDate.day == value.day, orElse: () => null) != null) {
       _newSelectedDates.remove(value);
+      print('Date removed');
     } else {
       _newSelectedDates.add(value);
-      setState(() {
-        _selectedDates = _newSelectedDates;
-      });
+      print('Date added');
     }
+    setState(() {
+      _selectedDates = _newSelectedDates;
+    });
 //
 //    _vibrate();
 //    setState(() {
@@ -951,12 +954,19 @@ class _DatePickerDialogState extends State<_DatePickerDialog> {
   }
 
   void _handleDayChanged(DateTime value) {
-    _vibrate();
-    List<DateTime> _newSelectedDates = _selectedDates;
-    if (_selectedDates.contains(value)) {
-      _newSelectedDates.remove(value);
+    List<DateTime> _newSelectedDates = List.from(_selectedDates);
+    print(_newSelectedDates.toString());
+    if (_newSelectedDates.firstWhere((selectedDate) => selectedDate.year == value.year && selectedDate.month == value.month && selectedDate.day == value.day, orElse: () => null) != null) {
+      print('Date removed');
+      if (_newSelectedDates.length > 1) _newSelectedDates.removeWhere((selectedDate) => selectedDate.year == value.year && selectedDate.month == value.month && selectedDate.day == value.day);
+      print(_newSelectedDates);
+      if (_newSelectedDates == null) {
+        print('is null');
+        _newSelectedDates = new List();
+      }
     } else {
       _newSelectedDates.add(value);
+      print('Date added');
     }
     setState(() {
       _selectedDates = _newSelectedDates;
@@ -1152,7 +1162,7 @@ class _DatePickerDialogState extends State<_DatePickerDialog> {
 ///    picking a month.
 ///  * [YearPicker], which displays a scrollable list of years to allow picking
 ///    a year.
-Future<DateTime> showMultiDatePicker({
+Future<List<DateTime>> showMultiDatePicker({
   @required BuildContext context,
   @required List<DateTime> initialDates,
   @required DateTime firstDate,
@@ -1163,6 +1173,7 @@ Future<DateTime> showMultiDatePicker({
   TextDirection textDirection,
   TransitionBuilder builder,
 }) async {
+  if (initialDates.length == 0) initialDates = [DateTime.now()];
   assert(initialDates != null);
   assert(firstDate != null);
   assert(lastDate != null);
@@ -1200,7 +1211,7 @@ Future<DateTime> showMultiDatePicker({
     );
   }
 
-  return await showDialog<DateTime>(
+  return await showDialog<List<DateTime>>(
     context: context,
     builder: (BuildContext context) {
       return builder == null ? child : builder(context, child);
