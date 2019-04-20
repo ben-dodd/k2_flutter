@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:k2e/theme.dart';
 import 'package:k2e/utils/flutter_typeahead.dart';
 
 class CustomTypeAhead extends StatelessWidget {
@@ -48,7 +49,12 @@ class CustomTypeAhead extends StatelessWidget {
           onSaved(controller.text);
           nextFocus.hasListeners ? FocusScope.of(context).requestFocus(nextFocus) : null;
         },
-        decoration: InputDecoration(labelText: label, hintText: hint, hintMaxLines: 3),
+        style: new TextStyle(fontSize: 14.0),
+        cursorColor: CompanyColors.accent,
+        cursorWidth: 1.0,
+        maxLines: null,
+        keyboardType: TextInputType.multiline,
+        decoration: InputDecoration(labelText: label, hintText: hint, hintMaxLines: 10, hintStyle: new TextStyle(fontSize: 10.0)),
       ),
       suggestionsCallback: (pattern) {
         List itemList = suggestions

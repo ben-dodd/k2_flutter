@@ -7,6 +7,7 @@ import 'package:k2e/pages/my_jobs/tasks/acm/edit_sample_asbestos_air.dart';
 import 'package:k2e/pages/my_jobs/tasks/acm/meth_samples_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/check/check_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/coc/coc_tab.dart';
+import 'package:k2e/pages/my_jobs/tasks/coc/edit_coc.dart';
 import 'package:k2e/pages/my_jobs/tasks/details/details_tab.dart';
 import 'package:k2e/pages/my_jobs/tasks/map/edit_map.dart';
 import 'package:k2e/pages/my_jobs/tasks/map/maps_tab.dart';
@@ -49,6 +50,12 @@ class _JobPageState extends State<JobPage> {
       builder: (context) => EditMap(map: null),
     ));
   }
+//
+//  void _addCoc() async {
+//    Navigator.of(context).push(new MaterialPageRoute(
+//      builder: (context) => EditCoc(coc: null),
+//    ));
+//  }
 
   void _addRoom() async {
     Navigator.of(context).push(new MaterialPageRoute(
@@ -103,6 +110,14 @@ class _JobPageState extends State<JobPage> {
         },
         text: "Map",
       ),
+//      new SpeedDialerButton(
+//        backgroundColor: CompanyColors.accentRippled,
+//        icon: Icons.table_chart,
+//        onPressed: () {
+//          _addCoc();
+//        },
+//        text: "Chain of Custody",
+//      ),
       new SpeedDialerButton(
         backgroundColor: CompanyColors.accentRippled,
         icon: Icons.business,

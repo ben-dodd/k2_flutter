@@ -580,6 +580,7 @@ class _EditRoomState extends State<EditRoom> {
         alignment: Alignment.topLeft,
         padding: EdgeInsets.only(
           right: 14.0,
+          left: 8.0,
         ),
 //          child: new Text(item["label"], style: Styles.label,),
         child: CustomTypeAhead(
@@ -618,7 +619,10 @@ class _EditRoomState extends State<EditRoom> {
               ? _focusNodes[((index + 1) * 2) + 3]
               : _focusNodes[((index + 1) * 2) + 2],
         ),
-      )
+      ),
+      new Container(
+        width: 8.0
+      ),
     ]);
     return widget;
   }

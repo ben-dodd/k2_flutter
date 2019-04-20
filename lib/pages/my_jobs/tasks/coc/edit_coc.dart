@@ -1,15 +1,13 @@
-import 'package:calendarro/date_utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/widgets/custom_auto_complete.dart';
 import 'package:k2e/widgets/custom_typeahead.dart';
+import 'package:k2e/widgets/date_picker.dart';
 import 'package:k2e/widgets/dialogs.dart';
 import 'package:k2e/widgets/loading.dart';
-import 'package:flutter_calendar/flutter_calendar.dart';
-import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart';
-import 'package:calendarro/calendarro.dart';
 import 'package:uuid/uuid.dart';
 
 class EditCoc extends StatefulWidget {
@@ -88,6 +86,18 @@ class _EditCocState extends State<EditCoc> {
     super.initState();
   }
 
+  Future<Null> _selectDate(BuildContext context) async {
+    final DateTime picked = await showMultiDatePicker(
+        context: context,
+        initialDates: datesSelected,
+        firstDate: DateTime(2015, 8),
+        lastDate: DateTime(2101));
+    if (picked != null)
+      setState(() {
+        cocObj['dates'] = picked;
+      });
+  }
+
   Widget build(BuildContext context) {
     print(samples.toString());
     if (cocObj['currentVersion'] == null)
@@ -156,15 +166,21 @@ class _EditCocState extends State<EditCoc> {
                           style: Styles.label,
                         ),
                       ),
-                      Calendarro(
-//                  startDate: DateUtils.getFirstDayOfMonth(new DateTime.now().month - 2),
-//                  endDate: DateUtils.getLastDayOfNextMonth(),
-                        selectionMode: SelectionMode.MULTI,
-                        displayMode: DisplayMode.WEEKS,
-//                  dayTileBuilder: ,
-                        selectedDates: datesSelected,
-//                  selectedDates: cocObj['dates'].map((date) { return new DateTime(date); } ).toList(),
+                      new Text(datesSelected != null ? datesSelected.map((date) => new DateFormat.yMMMMd().format(date)).join(", ") : 'No dates selected'),
+                      SizedBox(height: 20.0),
+                      RaisedButton(
+                        onPressed: () => _selectDate(context),
+                        child: Text('Select date'),
                       ),
+//                      Calendarro(
+////                  startDate: DateUtils.getFirstDayOfMonth(new DateTime.now().month - 2),
+////                  endDate: DateUtils.getLastDayOfNextMonth(),
+//                        selectionMode: SelectionMode.MULTI,
+//                        displayMode: DisplayMode.WEEKS,
+////                  dayTileBuilder: ,
+//                        selectedDates: datesSelected,
+////                  selectedDates: cocObj['dates'].map((date) { return new DateTime(date); } ).toList(),
+//                      ),
                       new Container(
                         alignment: Alignment.topLeft,
                         padding: EdgeInsets.only(
@@ -347,7 +363,13 @@ class _EditCocState extends State<EditCoc> {
     if (coc == null) {
       _title = "Add New Chain of Custody";
       cocObj['deleted'] = false;
-
+      if (cocObj['dates'] != null) {
+        cocObj['dates'].forEach((d) {
+          datesSelected.add(d.toDate());
+        });
+      } else {
+        datesSelected.add(new DateTime.now());
+      }
       // New room requires us to create a path so it doesn't need internet to get one from Firestore
       cocObj['path'] = new Uuid().v1();
 
@@ -371,6 +393,7 @@ class _EditCocState extends State<EditCoc> {
           setState(() {
             cocObj = doc.data;
             samples = sample_temp;
+
             print(cocObj['samples'].toString());
             if (cocObj['personnel'] != null) {
               cocObj['personnel'].forEach((p) {
