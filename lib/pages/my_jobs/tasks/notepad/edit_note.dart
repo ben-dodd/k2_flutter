@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
+import 'package:k2e/utils/common_functions.dart';
 import 'package:k2e/widgets/buttons.dart';
 import 'package:k2e/widgets/common_widgets.dart';
 import 'package:uuid/uuid.dart';
@@ -156,7 +157,16 @@ class _EditNoteState extends State<EditNote> {
                     widget.note != null
                         ? FunctionButton(
                       text: "Delete Note",
-                      onClick: _deleteDialog
+                        onClick: () => deleteDialog(
+                          title: 'Delete Note',
+                          query: 'Are you sure you wish to delete this note?',
+                          docPath: Firestore.instance
+                              .document(DataManager.get().currentJobPath)
+                              .collection('notes')
+                              .document(widget.note),
+                          imagePath: noteObj['storage_ref'] != null ? FirebaseStorage.instance.ref().child(noteObj['storage_ref']) : null,
+                          context: context,
+                        )
                     ) : new Container(),
                   ],
                 ),
@@ -174,48 +184,6 @@ class _EditNoteState extends State<EditNote> {
           .document(widget.note);
     _loadNote();
     super.initState();
-  }
-
-  void _deleteDialog() {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: new Text('Delete Note'),
-            content: new Text('Are you sure you wish to delete this note?'),
-            actions: <Widget>[
-              new FlatButton(
-                child: new Text('Cancel',
-                    style: new TextStyle(color: Colors.black)),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-              new FlatButton(
-                  child: new Text('Delete'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    _deleteNote();
-                  }),
-            ],
-          );
-        });
-  }
-
-  void _deleteNote() {
-    // Remove images
-    if (noteObj['storage_ref'] != null)
-      FirebaseStorage.instance.ref().child(noteObj['storage_ref']).delete();
-    print('Deleting: ' + noteObj.toString());
-    // Remove note
-    Firestore.instance
-        .document(DataManager.get().currentJobPath)
-        .collection('notes')
-        .document(widget.note)
-        .delete();
-
-    // Pop
-    Navigator.pop(context);
   }
 
   void _handleImageUpload(File image) async {

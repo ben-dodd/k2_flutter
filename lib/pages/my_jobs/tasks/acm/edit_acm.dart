@@ -13,6 +13,7 @@ import 'package:k2e/styles.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/tooltips.dart';
 import 'package:k2e/utils/camera.dart';
+import 'package:k2e/utils/common_functions.dart';
 import 'package:k2e/utils/firebase_conversion_functions.dart';
 import 'package:k2e/utils/sample_painter.dart';
 import 'package:k2e/widgets/buttons.dart';
@@ -499,56 +500,16 @@ class _EditACMState extends State<EditACM> {
                           initiallyExpanded: true,
                           children: <Widget>[
                             // Accessibility Section
-                            new Container(
-                                alignment: Alignment.bottomLeft,
-                                height: 25.0,
-                                margin:
-                                    EdgeInsets.only(left: 12.0, bottom: 2.0),
-                                child: new Text(
-                                  'Accessibility',
-                                  style: Styles.h3,
-                                )),
-                            new Row(
-                              children: <Widget>[
-                                Expanded(child: ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          acmObj["accessibility"] == 1 ? acmObj["accessibility"] = null : acmObj["accessibility"] = 1;
-                                        });
-                                      },
-                                      selected: acmObj['accessibility'] == 1,
-                                      score: 1,
-                                      text: 'Easy',
-                                      tooltip: Tip.accessibility_easy),
-                                ),
-                                Expanded(child: ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          acmObj["accessibility"] == 2 ? acmObj["accessibility"] = null : acmObj["accessibility"] = 2;
-                                        });
-                                      },
-                                      selected: acmObj['accessibility'] == 2,
-                                      score: 2,
-                                      text: 'Medium',
-                                      tooltip: Tip.accessibility_medium),
-                                ),
-                                Expanded(child: ScoreButton(
-                                      onClick: () {
-                                        // firestore change score
-                                        setState(() {
-                                          acmObj["accessibility"] == 2
-                                              ? acmObj["accessibility"] = null
-                                              : acmObj["accessibility"] = 2;
-                                        });
-                                      },
-                                      selected: acmObj['accessibility'] == 3,
-                                      score: 3,
-                                      text: 'Difficult',
-                                      tooltip: Tip.accessibility_difficult),
-                                ),
-                              ],
+                            HeaderText(text: 'Accessibility'),
+                            _getScoreSet(
+                              acmObjVar: 'accessibility',
+                              tooltip0: Tip.accessibility_easy,
+                              tooltip1: Tip.accessibility_medium,
+                              tooltip3: Tip.accessibility_difficult,
+                              text1: 'Easy',
+                              text2: 'Medium',
+                              text3: 'Difficult',
+                              hiddenZero: true,
                             ),
 
                             // Material Section
@@ -820,57 +781,20 @@ class _EditACMState extends State<EditACM> {
                       widget.acm != null
                           ? FunctionButton(
                         text: "Delete ACM",
-                        onClick: _deleteDialog
+                        onClick: () => deleteDialog(
+                          title: 'Delete ACM',
+                          query: 'Are you sure you wish to delete this ACM (' + acmObj['description'] + ' ' + acmObj['material'] + ')?',
+                          docPath: Firestore.instance
+                              .document(DataManager.get().currentJobPath)
+                              .collection('acm')
+                              .document(widget.acm),
+                          imagePath: acmObj['storage_ref'] != null ? FirebaseStorage.instance.ref().child(acmObj['storage_ref']) : null,
+                          context: context,
+                        )
                       ) : new Container(),
                     ],
                   ))),
     );
-  }
-
-  void _deleteDialog() {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: new Text('Delete ACM'),
-            content: new Text('Are you sure you wish to delete this ACM (' +
-                acmObj['description'] +
-                ' ' +
-                acmObj['material'] +
-                ')?'),
-            actions: <Widget>[
-              new FlatButton(
-                child: new Text('Cancel',
-                    style: new TextStyle(color: Colors.black)),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-              new FlatButton(
-                  child: new Text('Delete'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    _deleteACM();
-                  }),
-            ],
-          );
-        });
-  }
-
-  void _deleteACM() {
-    // Remove images
-    if (acmObj['storage_ref'] != null)
-      FirebaseStorage.instance.ref().child(acmObj['storage_ref']).delete();
-
-    // Remove ACM
-    Firestore.instance
-        .document(DataManager.get().currentJobPath)
-        .collection('acm')
-        .document(widget.acm)
-        .delete();
-
-    // Pop
-    Navigator.pop(context);
   }
 
   void _loadACM() async {
@@ -1069,25 +993,27 @@ class _EditACMState extends State<EditACM> {
     });
   }
 
-  Widget _getScoreSet({acmObjVar, tooltip0, tooltip1, tooltip2, tooltip3, disabledZero: false}) {
+  Widget _getScoreSet({acmObjVar, tooltip0, tooltip1, tooltip2, tooltip3, disabledZero: false, hiddenZero: false, text1, text2, text3}) {
     return Row(
       children: <Widget>[
-        disabledZero ?
-        AsbestosScoreButton(
-          onClick: (val) {},
-          val: null,
-          // -1 = disabled button
-          score: -1,
-        ) :
-        AsbestosScoreButton(
-          onClick: (val) {
-            // firestore change score
-            setState(() { acmObj[acmObjVar] = val;});
-          },
-          val: acmObj[acmObjVar],
-          score: 0,
-          tooltip: tooltip0,
-        ),
+        hiddenZero ?
+          disabledZero ?
+          AsbestosScoreButton(
+            onClick: (val) {},
+            val: null,
+            // -1 = disabled button
+            score: -1,
+          ) :
+          AsbestosScoreButton(
+            onClick: (val) {
+              // firestore change score
+              setState(() { acmObj[acmObjVar] = val;});
+            },
+            val: acmObj[acmObjVar],
+            score: 0,
+            tooltip: tooltip0,
+          )
+        : new Container(),
         AsbestosScoreButton(
           onClick: (val) {
             setState(() {
@@ -1096,6 +1022,7 @@ class _EditACMState extends State<EditACM> {
           },
           val: acmObj[acmObjVar],
           score: 1,
+          text: text1,
           tooltip: tooltip1,
         ),
         AsbestosScoreButton(
@@ -1107,6 +1034,7 @@ class _EditACMState extends State<EditACM> {
             });
           },
           val: acmObj[acmObjVar],
+          text: text2,
           score: 2,
           tooltip: tooltip2,
         ),
@@ -1119,6 +1047,7 @@ class _EditACMState extends State<EditACM> {
             });
           },
           val: acmObj[acmObjVar],
+          text: text3,
           score: 3,
           tooltip: tooltip3,
         ),

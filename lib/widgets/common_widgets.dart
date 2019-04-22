@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/styles.dart';
 
@@ -106,3 +107,90 @@ class ErrorPage extends StatelessWidget {
         ));
   }
 }
+//
+//class ItemList extends StatelessWidget {
+//  ItemList({Key key, @required this.stream, @required this.context, @required this.snapshot, @required this.itemdesc, @required this.card}) : super(key: key);
+//
+//  final Stream<dynamic> stream;
+//  final BuildContext context;
+//  final QuerySnapshot snapshot;
+//  final String itemdesc;
+//  final Widget card;
+//
+//  @override
+//  Widget build(context) {
+//    return new StreamBuilder(
+//        stream: stream,
+//        builder: (context, snapshot) {
+//          if (!snapshot.hasData)
+//            return Container(
+//                padding: EdgeInsets.only(top: 16.0),
+//                alignment: Alignment.center,
+//                color: Colors.white,
+//                child: Column(
+//                    mainAxisAlignment:
+//                    MainAxisAlignment.center,
+//                    children: <Widget>[
+//                      new CircularProgressIndicator(),
+//                      Container(
+//                          alignment:
+//                          Alignment.center,
+//                          height: 64.0,
+//                          child: Text(
+//                              "Loading " + itemdesc + "..."))
+//                    ]));
+//          if (snapshot.data.documents.length == 0)
+//            return EmptyList(
+//                text: 'This job has no ' + itemdesc + '.'
+//            );
+//          return ListView.builder(
+//              shrinkWrap: true,
+//              physics:
+//              NeverScrollableScrollPhysics(),
+//              itemCount:
+//              snapshot.data.documents.length,
+//              itemBuilder: (context, index) {
+//                var doc = snapshot
+//                    .data.documents[index].data;
+//                doc['path'] = snapshot.data
+//                    .documents[index].documentID;
+//                return card(
+//                  doc: snapshot
+//                      .data.documents[index],
+//                  onCardClick: () async {
+//                    if (snapshot.data
+//                        .documents[index]
+//                    ['sampletype'] ==
+//                        'air') {
+//                      Navigator.of(context).push(
+//                        new MaterialPageRoute(
+//                            builder: (context) =>
+//                                EditSampleAsbestosAir(
+//                                    sample: snapshot
+//                                        .data
+//                                        .documents[
+//                                    index]
+//                                        .documentID)),
+//                      );
+//                    } else {
+//                      Navigator.of(context).push(
+//                        new MaterialPageRoute(
+//                            builder: (context) =>
+//                                EditACM(
+//                                    acm: snapshot
+//                                        .data
+//                                        .documents[
+//                                    index]
+//                                        .documentID)),
+//                      );
+//                    }
+//                  },
+//                  onCardLongPress: () {
+//                    // Delete
+//                    // Bulk add /clone etc.
+//                  },
+//                );
+//              });
+//        })
+//  }
+//}

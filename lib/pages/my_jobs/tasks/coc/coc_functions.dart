@@ -17,8 +17,8 @@ void addHistoricCoc(BuildContext context) {
 }
 
 void addNewCoc(BuildContext context) {
-  String docID =
-      DataManager.get().currentJobNumber + '-' + Uuid().v1().toString();
+//  String docID =
+//      DataManager.get().currentJobNumber + '-' + Uuid().v1().toString();
   Map<String, dynamic> currentJob;
   Firestore.instance
       .document(DataManager.get().currentJobPath)
@@ -33,14 +33,15 @@ void addNewCoc(BuildContext context) {
       'personnel': [],
       'type': 'Asbestos - Bulk ID',
       'jobNumber': DataManager.get().currentJobNumber,
-      'uid': docID,
+      'uid': null,
+      'dueDate': currentJob['dueDate'],
       'address': currentJob['address'],
       'client': currentJob['clientname'],
       'deleted': false,
     };
     Navigator.of(context).push(new MaterialPageRoute(
         builder: (context) => EditCoc(
-          coc: docID,
+          coc: null,
           cocObj: newCoc,
         )));
   });

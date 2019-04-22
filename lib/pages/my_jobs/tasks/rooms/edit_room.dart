@@ -12,6 +12,7 @@ import 'package:k2e/pages/my_jobs/tasks/acm/edit_sample_asbestos_air.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
+import 'package:k2e/utils/common_functions.dart';
 import 'package:k2e/widgets/buttons.dart';
 import 'package:k2e/widgets/common_widgets.dart';
 import 'package:k2e/widgets/custom_auto_complete.dart';
@@ -275,8 +276,6 @@ class _EditRoomState extends State<EditRoom> {
                                             isEqualTo: widget.room)
                                         .snapshots(),
                                     builder: (context, snapshot) {
-                                      print("Room object : " +
-                                          widget.room.toString());
                                       if (!snapshot.hasData)
                                         return Container(
                                             padding: EdgeInsets.only(top: 16.0),
@@ -409,7 +408,19 @@ class _EditRoomState extends State<EditRoom> {
                       widget.room != null
                           ? FunctionButton(
                         text: "Delete Room",
-                        onClick: _deleteDialog
+                          onClick: () => deleteDialog(
+                            title: 'Delete Room',
+                            query: 'Are you sure you wish to delete this room (' +
+                                roomObj['name'] +
+                                ')?\nNote: This will not delete any ACM linked to this room.',
+                            actions: _removeRoomRefs,
+                            docPath: Firestore.instance
+                                .document(DataManager.get().currentJobPath)
+                                .collection('rooms')
+                                .document(widget.room),
+                            imagePath: roomObj['storage_ref'] != null ? FirebaseStorage.instance.ref().child(roomObj['storage_ref']) : null,
+                            context: context,
+                          )
                       ) : new Container(),
                     ]),
               ),
@@ -417,35 +428,7 @@ class _EditRoomState extends State<EditRoom> {
     );
   }
 
-  void _deleteDialog() {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: new Text('Delete Room'),
-            content: new Text('Are you sure you wish to delete this room (' +
-                roomObj['name'] +
-                ')?\nNote: This will not delete any ACM linked to this room.'),
-            actions: <Widget>[
-              new FlatButton(
-                child: new Text('Cancel',
-                    style: new TextStyle(color: Colors.black)),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-              new FlatButton(
-                  child: new Text('Delete'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    _deleteRoom();
-                  }),
-            ],
-          );
-        });
-  }
-
-  void _deleteRoom() {
+  void _removeRoomRefs() {
     // Remove from room group
     var initRoomGroup = roomObj['roomgrouppath'];
     roomObj['roomgrouppath'] = null;
@@ -469,21 +452,6 @@ class _EditRoomState extends State<EditRoom> {
         }, merge: true);
       });
     });
-
-    // Remove images
-    if (roomObj['storage_ref'] != null) {
-      FirebaseStorage.instance.ref().child(roomObj['storage_ref']).delete();
-    }
-
-    // Remove room
-    Firestore.instance
-        .document(DataManager.get().currentJobPath)
-        .collection('rooms')
-        .document(widget.room)
-        .delete();
-
-    // Pop
-    Navigator.pop(context);
   }
 
   buildBuildingMaterials(index) {

@@ -83,8 +83,6 @@ class _EditCocState extends State<EditCoc> {
     rooms = constants['roomsuggestions'];
     items = constants['buildingitems'];
     materials = constants['buildingmaterials'];
-    print('Job number');
-    print(cocObj['jobNumber']);
     super.initState();
   }
 
@@ -124,6 +122,7 @@ class _EditCocState extends State<EditCoc> {
                 icon: const Icon(Icons.check),
                 onPressed: () {
                   if (_formKey.currentState.validate()) {
+                    _handleCocSubmit();
                     _formKey.currentState.save();
                     cocObj['personnel'] = personnelSelected;
                     cocObj['dates'] = datesSelected;
@@ -251,7 +250,6 @@ class _EditCocState extends State<EditCoc> {
   buildSamples(index) {
     var i = index.toString();
     var item = samples[i];
-    print(item.toString());
     if (item == null) {
       samples[i] = {
         'description': '',
@@ -319,22 +317,19 @@ class _EditCocState extends State<EditCoc> {
     return widget;
   }
 
-  void applyTemplate(cocObj) {
-    this.setState(() {
-      cocObj = cocObj;
-    });
-  }
-
   void _loadCoc() async {
+    print('new coc');
+    print(coc.toString());
 //    print("Loading room");
     if (coc == null) {
       _title = "Add New Chain of Custody";
       if (widget.cocObj == null) {
         cocObj['deleted'] = false;
         // New room requires us to create a path so it doesn't need internet to get one from Firestore
-        cocObj['path'] = new Uuid().v1();
+        cocObj['uid'] = new Uuid().v1();
       } else {
         cocObj = widget.cocObj;
+        cocObj['uid'] = cocObj['jobNumber'] + '_' + cocObj['client'] + '-' + Uuid().v1().toString();
       }
 
       setState(() {
@@ -382,4 +377,77 @@ class _EditCocState extends State<EditCoc> {
     }
 //    print(_title.toString());
   }
+
+  void _handleCocSubmit() {
+    print(samples.toString());
+//    if (samples.length > 0) {
+//      samples.forEach((Map<String, dynamic> sample) => {
+//
+//      });
+//    }
+  }
+
+
+//  export const handleCocSubmit = ({ doc, docid }) => dispatch => {
+//  console.log(doc.samples);
+//  let samplelist = [];
+//  if (doc.samples) {
+//  Object.keys(doc.samples).forEach(sample => {
+//  if (!doc.samples[sample].uid) {
+//  let datestring = new Intl.DateTimeFormat("en-GB", {
+//  year: "2-digit",
+//  month: "2-digit",
+//  day: "2-digit",
+//  hour: "2-digit",
+//  minute: "2-digit",
+//  second: "2-digit"
+//  })
+//      .format(new Date())
+//      .replace(/[.:/,\s]/g, "_");
+//  let uid = `${
+//  doc.jobNumber
+//  }-SAMPLE-${sample}-CREATED-${datestring}-${Math.round(
+//  Math.random() * 1000
+//  )}`;
+//  console.log(`UID for new sample is ${uid}`);
+//  doc.samples[sample].uid = uid;
+//  samplelist.push(uid);
+//  } else {
+//  samplelist.push(doc.samples[sample].uid);
+//  }
+//  if (
+//  (doc.samples[sample].description || doc.samples[sample].material) &&
+//  !doc.samples[sample].disabled &&
+//  (doc.samples[sample].cocUid === undefined ||
+//  doc.samples[sample].cocUid === doc.uid)
+//  ) {
+//  console.log(`Submitting sample ${sample} to ${docid}`);
+//  let sample2 = doc.samples[sample];
+//  if (sample2.description)
+//  sample2.description =
+//  sample2.description.charAt(0).toUpperCase() +
+//  sample2.description.slice(1);
+//  if (doc.type === "air") {
+//  sample2.isAirSample = true;
+//  sample2.material = "Air Sample";
+//  }
+//  sample2.jobNumber = doc.jobNumber;
+//  sample2.cocUid = docid;
+//  sample2.samplenumber = parseInt(sample, 10);
+//  if ("disabled" in sample2) delete sample2.disabled;
+//  console.log("Sample 2");
+//  console.log(sample2);
+//  asbestosSamplesRef.doc(doc.samples[sample].uid).set(sample2);
+//  }
+//  });
+//  }
+//  let doc2 = doc;
+//  if ("samples" in doc2) delete doc2.samples;
+//  doc2.uid = docid;
+//  doc2.samplelist = samplelist;
+//  console.log(doc2);
+//  cocsRef.doc(docid).set(doc2);
+//  dispatch({ type: RESET_MODAL });
+//  };
+
 }
