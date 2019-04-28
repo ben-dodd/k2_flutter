@@ -84,7 +84,7 @@ class CustomTypeAhead extends StatelessWidget {
       },
       hideOnEmpty: true,
       suggestionsBoxDecoration: SuggestionsBoxDecoration(
-          elevation: 2.0, constraints: BoxConstraints(maxHeight: 400.0)),
+          elevation: 2.0, constraints: BoxConstraints(maxHeight: 400.0, minHeight: 400.0)),
       validator: validator,
       onSaved: onSaved,
     );

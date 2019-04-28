@@ -30,6 +30,8 @@ class _EditCocState extends State<EditCoc> {
   List<Map<String, String>> roomgrouplist = new List();
   final Map constants = DataManager.get().constants;
   GlobalKey key = new GlobalKey<AutoCompleteTextFieldState<String>>();
+  TextEditingController labelController;
+  TextEditingController materialController;
 
 //  final controllerRoomCode = TextEditingController();
   final _roomCodeController = TextEditingController();
@@ -263,9 +265,9 @@ class _EditCocState extends State<EditCoc> {
       };
     }
 
-    TextEditingController labelController =
+    labelController =
         TextEditingController(text: item == null ? '' : item['description']);
-    TextEditingController materialController =
+    materialController =
         TextEditingController(text: item == null ? '' : item['material']);
     Widget widget = new Row(children: <Widget>[
       new Container(
