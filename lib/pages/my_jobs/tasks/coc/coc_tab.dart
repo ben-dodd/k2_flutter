@@ -34,6 +34,7 @@ class _CocTabState extends State<CocTab> {
           ),
           new StreamBuilder(
               stream: Firestore.instance
+                  .collection('lab').document('asbestosbulk').collection('labs').document('k2environmental')
                   .collection('cocs')
                   .where('jobNumber',
                       isEqualTo: DataManager.get().currentJobNumber)

@@ -5,6 +5,7 @@
 // Loads new job from remote, including all samples etc.
 
 import 'package:camera/camera.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:k2e/model/jobheader.dart';
 import 'package:k2e/utils/timesheet.dart';
 
@@ -16,12 +17,15 @@ class DataManager {
       new List(); // this holds all jobs gathered from the last WFM api request
 
   List<CameraDescription> cameras;
-  String user;
+  FirebaseUser user;
+  FirebaseUser currentUser;
+  Map<String, dynamic> me;
+  List<String> staffNames;
+  List<Map<String, dynamic>> staff;
   String currentJobPath;
   String currentJobNumber;
   List<Map<String, String>> currentJobSamples;
   TimeCounter currentTimeCounter;
-  List<Map<String, String>> staff;
 
   // Current State
   String currentRoom;
@@ -29,9 +33,6 @@ class DataManager {
 
   // Autocompletes
   Map constants;
-  List<String> asbestosmaterials;
-  List<String> buildingitems;
-  List<String> buildingmaterials;
 
   // Job templates
   List roomGroupTemplates = [

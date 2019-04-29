@@ -53,7 +53,7 @@ class _MyJobsPageState extends State<MyJobsPage> {
             // ignore: ambiguous_import
             stream: Firestore.instance
                 .collection('users')
-                .document(DataManager.get().user)
+                .document(DataManager.get().user.uid)
                 .collection('myjobs')
                 .snapshots(),
             builder: (context, snapshot) {
@@ -70,7 +70,7 @@ class _MyJobsPageState extends State<MyJobsPage> {
                         onDismissed: (direction) async {
                           await Firestore.instance
                               .collection('users')
-                              .document(DataManager.get().user)
+                              .document(DataManager.get().user.uid)
                               .collection('myjobs')
                               .document(
                                   snapshot.data.documents[index].documentID)
@@ -120,7 +120,7 @@ class _MyJobsPageState extends State<MyJobsPage> {
         .setData(newJob);
     Firestore.instance
         .collection('users')
-        .document(DataManager.get().user)
+        .document(DataManager.get().user.uid)
         .collection('myjobs')
         .document(newJob['path'])
         .setData(newJob)

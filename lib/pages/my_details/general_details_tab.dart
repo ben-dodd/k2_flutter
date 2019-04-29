@@ -22,7 +22,7 @@ class _GeneralDetailsTabState extends State<GeneralDetailsTab> {
   void initState() {
     fireStream = Firestore.instance
         .collection('users')
-        .document(DataManager.get().user)
+        .document(DataManager.get().user.uid)
         .snapshots();
     controllerDisplayName.addListener(_updateDisplayName);
     controllerEmail.addListener(_updateEmail);
@@ -33,21 +33,21 @@ class _GeneralDetailsTabState extends State<GeneralDetailsTab> {
   _updateDisplayName() {
     Firestore.instance
         .collection('users')
-        .document(DataManager.get().user)
+        .document(DataManager.get().user.uid)
         .setData({"displayName": controllerDisplayName.text}, merge: true);
   }
 
   _updateEmail() {
     Firestore.instance
         .collection('users')
-        .document(DataManager.get().user)
+        .document(DataManager.get().user.uid)
         .setData({"email": controllerEmail.text}, merge: true);
   }
 
   _updatePhone() {
     Firestore.instance
         .collection('users')
-        .document(DataManager.get().user)
+        .document(DataManager.get().user.uid)
         .setData({"phone": int.tryParse(controllerPhone.text)}, merge: true);
   }
 

@@ -974,7 +974,7 @@ class _DatePickerDialogState extends State<_DatePickerDialog> {
   }
 
   void _handleCancel() {
-    Navigator.pop(context);
+    Navigator.pop(context, null);
   }
 
   void _handleOk() {
@@ -1173,7 +1173,7 @@ Future<List<DateTime>> showMultiDatePicker({
   TextDirection textDirection,
   TransitionBuilder builder,
 }) async {
-  if (initialDates.length == 0) initialDates = [DateTime.now()];
+  if (initialDates == null || initialDates.length == 0) initialDates = [DateTime.now()];
   assert(initialDates != null);
   assert(firstDate != null);
   assert(lastDate != null);

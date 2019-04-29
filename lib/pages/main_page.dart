@@ -44,7 +44,9 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  FirebaseUser currentUser;
+  FirebaseUser _currentUser;
+  List<String> _staffNames;
+  List<Map<String,dynamic>> _staff;
   bool _isLoading = false;
   bool _isSignedIn = false;
   String _signInError = null;
@@ -54,6 +56,8 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
+    _staffNames = new List<String>();
+    _staff = new List<Map<String, dynamic>>();
     _testSignInWithGoogle();
   }
 
@@ -84,30 +88,46 @@ class _MainPageState extends State<MainPage> {
                 'The account ' + user.email + ' is not registered with K2.';
             _isLoading = false;
             _isSignedIn = false;
-            currentUser = null;
+            _currentUser = null;
             _googleSignIn.signOut();
           });
         } else {
           setState(() {
-            DataManager.get().user = user.uid;
+            DataManager.get().user = user;
             _signInError = null;
             _isLoading = false;
             _selectedDrawerIndex = 0;
             print('user is ' + user.toString());
-            currentUser = user;
+            _currentUser = user;
             _isSignedIn = true;
             Firestore.instance
                 .collection('appsettings')
                 .document('constants')
                 .get()
                 .then((DocumentSnapshot doc) {
-              DataManager.get().constants = Map<String, dynamic>.from(doc.data);
-              //          DataManager.get().buildingmaterials = doc.data["buildingmaterials"].map((bm) => bm["label"].toString()).toList();
-              //          DataManager.get().asbestosmaterials = doc.data["asbestosmaterials"].map((bm) => bm["label"].toString()).toList();
-              //          DataManager.get().buildingitems = doc.data["buildingitems"].map((bm) => bm["label"].toString()).toList();
-              //          print(DataManager.get().buildingmaterials);
+                  DataManager.get().constants = Map<String, dynamic>.from(doc.data);
+              });
+
+            Firestore.instance
+                .collection('state')
+                .document('staff')
+                .get()
+                .then((doc) {
+                  doc.data.forEach((key, value) => _staff.add({
+                    'name': value['name'],
+                    'uid': value['uid'],
+                  }));
+                  doc.data.forEach((key, value) => _staffNames.add(value['name'].toString()));
+                  _staffNames.sort((a, b) {
+                    return a.compareTo(b);
+                  });
+                  DataManager.get().staffNames = _staffNames;
+                  DataManager.get().staff = _staff;
+                  print(_staff.toString());
+                  print(_staffNames.toString());
+                  DataManager.get().me = _staff.firstWhere((el) => el['uid'] == user.uid, orElse: null);
+                });
             });
-          });
         }
       });
     } catch (e) {
@@ -115,7 +135,7 @@ class _MainPageState extends State<MainPage> {
       setState(() {
         _isLoading = false;
         _isSignedIn = false;
-        currentUser = null;
+        _currentUser = null;
         _googleSignIn.signOut();
       });
     }
@@ -133,7 +153,7 @@ class _MainPageState extends State<MainPage> {
         return new GeneralDetailsTab();
 //      case 3:
 //        return new TrainingFragment();
-      case 5:
+      case 1:
         _signOut();
         break;
 
@@ -143,11 +163,11 @@ class _MainPageState extends State<MainPage> {
   }
 
   void _signOut() async {
-    print(currentUser.displayName + ' signing out.');
+    print(_currentUser.displayName + ' signing out.');
     await _googleSignIn.signOut();
     await _auth.signOut();
     setState(() {
-      currentUser = null;
+      _currentUser = null;
       _isSignedIn = false;
       print('Signed out');
     });
@@ -193,9 +213,9 @@ class _MainPageState extends State<MainPage> {
                   UserAccountsDrawerHeader(
                     currentAccountPicture: CircleAvatar(
                         backgroundImage:
-                            new NetworkImage(currentUser.photoUrl)),
-                    accountName: Text(currentUser.displayName),
-                    accountEmail: Text(currentUser.email),
+                            new NetworkImage(_currentUser.photoUrl)),
+                    accountName: Text(_currentUser.displayName),
+                    accountEmail: Text(_currentUser.email),
                   ),
                   new SingleChildScrollView(
                     child: Container(

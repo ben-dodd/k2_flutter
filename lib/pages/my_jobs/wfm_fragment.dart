@@ -131,7 +131,7 @@ class _WfmFragmentState extends State<WfmFragment> {
           // Check if job in user's jobs first
           var job = await Firestore.instance
               .collection('users')
-              .document(DataManager.get().user)
+              .document(DataManager.get().user.uid)
               .collection('myjobs')
               .where('jobnumber', isEqualTo: jobHeader.jobnumber)
               .getDocuments();
@@ -161,7 +161,7 @@ class _WfmFragmentState extends State<WfmFragment> {
                   .then((doc) {
                 Firestore.instance
                     .collection('users')
-                    .document(DataManager.get().user)
+                    .document(DataManager.get().user.uid)
                     .collection('myjobs')
                     .document(jobPath)
                     .setData(dataMap)
@@ -176,7 +176,7 @@ class _WfmFragmentState extends State<WfmFragment> {
                   query.documents.elementAt(0).reference.documentID;
               await Firestore.instance
                   .collection('users')
-                  .document(DataManager.get().user)
+                  .document(DataManager.get().user.uid)
                   .collection('myjobs')
                   .document(dataMap['path'])
                   .setData(dataMap);

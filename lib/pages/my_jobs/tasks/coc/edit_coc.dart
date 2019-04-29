@@ -29,6 +29,9 @@ class _EditCocState extends State<EditCoc> {
   bool localPhoto = false;
   List<Map<String, String>> roomgrouplist = new List();
   final Map constants = DataManager.get().constants;
+  final List staffNames = DataManager.get().staffNames;
+  final List staff = DataManager.get().staff;
+  final Map<String, dynamic> me = DataManager.get().me;
   GlobalKey key = new GlobalKey<AutoCompleteTextFieldState<String>>();
   TextEditingController labelController;
   TextEditingController materialController;
@@ -40,9 +43,8 @@ class _EditCocState extends State<EditCoc> {
   List rooms;
   List items;
   List materials;
-  List staff;
   List<String> personnelSelected = <String>[];
-  List<DateTime> datesSelected = <DateTime>[];
+  List<DateTime> datesSelected = <DateTime>[new DateTime.now()];
   Map<String, dynamic> samples = new Map<String, dynamic>();
   int samplesLength = 10;
 
@@ -60,23 +62,7 @@ class _EditCocState extends State<EditCoc> {
 
   @override
   void initState() {
-    staff = [];
-    if (DataManager.get().staff == null) {
-      Firestore.instance
-          .collection('state')
-          .document('staff')
-          .get()
-          .then((doc) {
-        doc.data.forEach((key, value) => staff.add(value['name'].toString()));
-        staff.sort((a, b) {
-          return a.compareTo(b);
-        });
-        print(staff.toString());
-      });
-    } else {
-      staff = DataManager.get().staff;
-    }
-
+    print(staffNames.toString());
     coc = widget.coc;
 //    controllerRoomCode.addListener(_updateRoomCode);
     _loadCoc();
@@ -94,11 +80,12 @@ class _EditCocState extends State<EditCoc> {
         initialDates: datesSelected,
         firstDate: DateTime(2000),
         lastDate: DateTime.now().add(new Duration(days: 365)));
-    if (picked != null)
+    if (picked != null) {
       picked.sort();
       setState(() {
         datesSelected = picked;
       });
+    }
   }
 
   Widget build(BuildContext context) {
@@ -109,8 +96,8 @@ class _EditCocState extends State<EditCoc> {
       version = 'Latest version: ' + cocObj['currentVersion'].toString();
       if (!cocObj['versionUpToDate']) version = version + ' (needs reissue)';
     }
-    print(personnelSelected.toString());
-    print(datesSelected.toString());
+    print('Personnel = ' + personnelSelected.toString());
+    print('Dates = ' + datesSelected.toString());
     return new Scaffold(
 //        resizeToAvoidBottomPadding: false,
       appBar: new AppBar(
@@ -124,14 +111,32 @@ class _EditCocState extends State<EditCoc> {
                 icon: const Icon(Icons.check),
                 onPressed: () {
                   if (_formKey.currentState.validate()) {
-                    _handleCocSubmit();
                     _formKey.currentState.save();
+                    if (coc == null) cocObj['uid'] = cocObj['jobNumber'] + '_' + cocObj['client'] + '-' + Uuid().v1().toString();
                     cocObj['personnel'] = personnelSelected;
                     cocObj['dates'] = datesSelected;
-                    Firestore.instance
-                        .collection('cocs')
-                        .document(coc)
-                        .setData(cocObj);
+                    if (cocObj['cocLog'] != null) {
+                      var cocLog = new List();
+                      var log = {
+                        'type': 'Edit',
+                        'log': 'Details modified.',
+                        'date': new DateTime.now(),
+                        'username': me['name'],
+                        'user': me['uid'],
+                      };
+                      cocLog.add(log);
+                      cocObj['cocLog'] = cocLog;
+                    } else {
+                      cocObj['cocLog'] = [{
+                        'type': 'Edit',
+                        'log': 'Chain of Custody created.',
+                        'date': new DateTime.now(),
+                        'username': me['name'],
+                        'user': me['uid'],
+                      }];
+                    }
+                    print(cocObj.toString());
+                    _handleCocSubmit();
                     Navigator.pop(context);
                   }
                 })
@@ -170,7 +175,7 @@ class _EditCocState extends State<EditCoc> {
                           style: Styles.label,
                         ),
                       ),
-                      Text(datesSelected.length > 0 ? datesSelected.map((date) => new DateFormat('d MMMM yyyy').format(date)).join("\n") : 'No dates selected'),
+                      Text(datesSelected != null && datesSelected.length > 0 ? datesSelected.map((date) => new DateFormat('d MMMM yyyy').format(date)).join("\n") : 'No dates selected'),
                       FunctionButton(
                         text: "Select Dates",
                         onClick: () => _selectDate(context)
@@ -192,7 +197,7 @@ class _EditCocState extends State<EditCoc> {
                               ? null
                               : personnelSelected.last,
                           iconSize: 24.0,
-                          items: staff.map((staff) {
+                          items: staffNames.map((staff) {
                             return new DropdownMenuItem<String>(
                               value: staff,
                               child: Row(
@@ -325,8 +330,9 @@ class _EditCocState extends State<EditCoc> {
 //    print("Loading room");
     if (coc == null) {
       _title = "Add New Chain of Custody";
+      cocObj['deleted'] = false;
+      cocObj['personnel'] = [me['name']];
       if (widget.cocObj == null) {
-        cocObj['deleted'] = false;
         // New room requires us to create a path so it doesn't need internet to get one from Firestore
         cocObj['uid'] = new Uuid().v1();
       } else {
@@ -336,18 +342,23 @@ class _EditCocState extends State<EditCoc> {
 
       setState(() {
         isLoading = false;
+        personnelSelected = [me['name']];
       });
     } else {
 //      print('Edit room is ' + room.toString());
       _title = "Edit Chain of Custody";
       Map<String, dynamic> sample_temp = new Map<String, dynamic>();
-      Firestore.instance.collection('cocs').document(coc).get().then((doc) {
+      Firestore.instance
+          .collection('lab').document('asbestosbulk').collection('labs').document('k2environmental')
+          .collection('cocs')
+          .document(coc).get().then((doc) {
         Firestore.instance
-            .collection('samplesasbestos')
+            .collection('lab').document('asbestosbulk').collection('labs').document('k2environmental')
+            .collection('samples')
             .where('jobNumber', isEqualTo: doc.data['jobNumber'])
             .getDocuments()
             .then((docList) {
-          docList.documents.forEach(
+              docList.documents.forEach(
                   (doc) => sample_temp[doc.data['samplenumber'].toString()] = doc.data);
 
           print('Edit coc');
@@ -360,6 +371,9 @@ class _EditCocState extends State<EditCoc> {
               cocObj['personnel'].forEach((p) {
                 personnelSelected.add(p);
               });
+            } else {
+              cocObj['personnel'] = [me['name']];
+              personnelSelected = [me['name']];
             }
             if (cocObj['dates'] != null) {
               cocObj['dates'].forEach((d) {
@@ -381,75 +395,46 @@ class _EditCocState extends State<EditCoc> {
   }
 
   void _handleCocSubmit() {
+    print('Handle COC Submit');
     print(samples.toString());
-//    if (samples.length > 0) {
-//      samples.forEach((Map<String, dynamic> sample) => {
-//
-//      });
-//    }
+    var sampleList = new List();
+    if (samples != null) {
+      samples.forEach((number, sample) {
+        if ((sample['cocUid'] == cocObj['uid'] || sample['cocUid'] == null) && ((sample['description'] != null && sample['description'].trim() != '') || (sample['material'] != null && sample['description'].trim() != ''))) {
+          if (sample['uid'] == null) {
+            var dateString = new DateFormat('dd_MM_yy_HH_mm').format(DateTime.now());
+            var uid = cocObj['jobNumber'] + '-SAMPLE-' + number + '-CREATED-' + dateString + Uuid().v1().toString();
+            print('UID for new sample is ' + uid);
+            sample['uid'] = uid;
+          }
+          sampleList.add(sample['uid']);
+          if (sample['description'] != null && sample['description'].trim() != '') {
+            if (sample['description'].trim().length > 1) {
+              sample['description'] = sample['description'][0].toUpperCase() + sample['description'].trim().substring(1);
+            } else {
+              sample['description'] = sample['description'].toUpperCase().trim();
+            }
+          } else {
+            sample['description'] = 'No description';
+          }
+          sample['cocUid'] = cocObj['uid'];
+          sample['jobNumber'] = cocObj['jobNumber'];
+          sample['sampleNumber'] = number;
+          Firestore.instance
+            .collection('lab').document('asbestosbulk').collection('labs').document('k2environmental')
+            .collection('samples')
+            .document(sample['uid'])
+            .setData(sample);
+        }
+      });
+    }
+
+    cocObj['sampleList'] = sampleList;
+
+    Firestore.instance
+        .collection('lab').document('asbestosbulk').collection('labs').document('k2environmental')
+        .collection('cocs')
+        .document(coc)
+        .setData(cocObj);
   }
-
-
-//  export const handleCocSubmit = ({ doc, docid }) => dispatch => {
-//  console.log(doc.samples);
-//  let samplelist = [];
-//  if (doc.samples) {
-//  Object.keys(doc.samples).forEach(sample => {
-//  if (!doc.samples[sample].uid) {
-//  let datestring = new Intl.DateTimeFormat("en-GB", {
-//  year: "2-digit",
-//  month: "2-digit",
-//  day: "2-digit",
-//  hour: "2-digit",
-//  minute: "2-digit",
-//  second: "2-digit"
-//  })
-//      .format(new Date())
-//      .replace(/[.:/,\s]/g, "_");
-//  let uid = `${
-//  doc.jobNumber
-//  }-SAMPLE-${sample}-CREATED-${datestring}-${Math.round(
-//  Math.random() * 1000
-//  )}`;
-//  console.log(`UID for new sample is ${uid}`);
-//  doc.samples[sample].uid = uid;
-//  samplelist.push(uid);
-//  } else {
-//  samplelist.push(doc.samples[sample].uid);
-//  }
-//  if (
-//  (doc.samples[sample].description || doc.samples[sample].material) &&
-//  !doc.samples[sample].disabled &&
-//  (doc.samples[sample].cocUid === undefined ||
-//  doc.samples[sample].cocUid === doc.uid)
-//  ) {
-//  console.log(`Submitting sample ${sample} to ${docid}`);
-//  let sample2 = doc.samples[sample];
-//  if (sample2.description)
-//  sample2.description =
-//  sample2.description.charAt(0).toUpperCase() +
-//  sample2.description.slice(1);
-//  if (doc.type === "air") {
-//  sample2.isAirSample = true;
-//  sample2.material = "Air Sample";
-//  }
-//  sample2.jobNumber = doc.jobNumber;
-//  sample2.cocUid = docid;
-//  sample2.samplenumber = parseInt(sample, 10);
-//  if ("disabled" in sample2) delete sample2.disabled;
-//  console.log("Sample 2");
-//  console.log(sample2);
-//  asbestosSamplesRef.doc(doc.samples[sample].uid).set(sample2);
-//  }
-//  });
-//  }
-//  let doc2 = doc;
-//  if ("samples" in doc2) delete doc2.samples;
-//  doc2.uid = docid;
-//  doc2.samplelist = samplelist;
-//  console.log(doc2);
-//  cocsRef.doc(docid).set(doc2);
-//  dispatch({ type: RESET_MODAL });
-//  };
-
 }
