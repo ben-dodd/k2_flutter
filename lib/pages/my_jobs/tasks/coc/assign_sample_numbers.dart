@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_jobs/tasks/coc/coc_functions.dart';
 import 'package:k2e/pages/my_jobs/tasks/coc/coc_card.dart';
+import 'package:k2e/pages/my_jobs/tasks/coc/coc_header.dart';
 import 'package:k2e/pages/my_jobs/tasks/coc/edit_coc.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/widgets/buttons.dart';
@@ -50,6 +51,7 @@ class _AssignSampleNumbersState extends State<AssignSampleNumbers> {
             children: <Widget>[
               new StreamBuilder(
                   stream: Firestore.instance
+                      .collection('lab').document('asbestosbulk').collection('labs').document('k2environmental')
                       .collection('cocs')
                       .where('jobNumber',
                           isEqualTo: DataManager.get().currentJobNumber)
@@ -64,15 +66,8 @@ class _AssignSampleNumbersState extends State<AssignSampleNumbers> {
                         physics: NeverScrollableScrollPhysics(),
                         itemCount: snapshot.data.documents.length,
                         itemBuilder: (context, index) {
-                          return CocCard(
-                            doc: snapshot.data.documents[index],
-                            onCardClick: () {
-                              Navigator.of(context).push(new MaterialPageRoute(
-                                  builder: (context) => EditCoc(
-                                      cocObj: snapshot
-                                          .data.documents[index].documentID)));
-                            },
-                            onCardLongPress: null,
+                          return CocHeader(
+                            doc: snapshot.data.documents[index]
                           );
                         });
                   }),
