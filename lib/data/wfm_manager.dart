@@ -48,13 +48,13 @@ Future<ParsedResponse<List<JobHeader>>> getAllWfmJobs() async {
 }
 
 /// Fetches WFM job by JobNumber (may include Completed jobs etc.)
-Future<ParsedResponse<JobHeader>> getWfmJobByJobNumber(String jobnumber) async {
+Future<ParsedResponse<JobHeader>> getWfmJobByJobNumber(String jobNumber) async {
   //http request, catching error like no internet connection.
   //If no internet is available for example response is
   http.Response response = await http
       .get(Strings.apiRoot +
           'wfm/job.php?job=' +
-          jobnumber +
+          jobNumber +
           '?apiKey=' +
           Strings.apiKey)
       .catchError((resp) {});

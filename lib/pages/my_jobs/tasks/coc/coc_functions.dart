@@ -28,7 +28,7 @@ void addNewCoc(BuildContext context) {
     // and User Name
     currentJob = doc.data;
     Map<String, dynamic> newCoc = {
-      'dates': [new DateTime.now()],
+      'dates': [],
       'samples': {},
       'personnel': [],
       'type': 'Asbestos - Bulk ID',
@@ -36,12 +36,11 @@ void addNewCoc(BuildContext context) {
       'uid': null,
       'dueDate': currentJob['dueDate'],
       'address': currentJob['address'],
-      'client': currentJob['clientname'],
+      'client': currentJob['clientName'],
       'deleted': false,
     };
     Navigator.of(context).push(new MaterialPageRoute(
         builder: (context) => EditCoc(
-          coc: null,
           cocObj: newCoc,
         )));
   });

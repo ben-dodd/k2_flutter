@@ -72,7 +72,7 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
   //
 
   _updateSampleNumber() {
-    sample.setData({"samplenumber": int.tryParse(controllerSampleNumber.text)},
+    sample.setData({"sampleNumber": int.tryParse(controllerSampleNumber.text)},
         merge: true);
   }
 
@@ -259,9 +259,9 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
     if (widget.sample == null) {
       _title = "Add New Sample";
       Map<String, dynamic> dataMap = new Map();
-      dataMap['jobnumber'] = DataManager.get().currentJobNumber;
+      dataMap['jobNumber'] = DataManager.get().currentJobNumber;
       //      sample.sampleNumber = DataManager.get().getHighestSampleNumber(DataManager.get().currentJob) + 1;
-      dataMap['samplenumber'] = null;
+      dataMap['sampleNumber'] = null;
       dataMap['description'] = null;
       dataMap['material'] = null;
       dataMap['path_local'] = null;
@@ -280,10 +280,10 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
       _title = "Edit Sample";
 
       sample.get().then((doc) {
-        if (doc.data['samplenumber'].toString() == 'null') {
+        if (doc.data['sampleNumber'].toString() == 'null') {
           controllerSampleNumber.text = '';
         } else
-          controllerSampleNumber.text = doc.data['samplenumber'].toString();
+          controllerSampleNumber.text = doc.data['sampleNumber'].toString();
 
         controllerDescription.text = doc.data['description'];
         controllerMaterial.text = doc.data['material'];

@@ -64,15 +64,15 @@ class _CocTabState extends State<CocTab> {
                     shrinkWrap: true,
                     physics: NeverScrollableScrollPhysics(),
                     itemBuilder: (context, index) {
-                      print(snapshot.data.documents[index]['jobnumber']);
+                      print(snapshot.data.documents[index]['jobNumber']);
                       return CocCard(
                         doc: snapshot.data.documents[index],
                         onCardClick: () async {
                           Navigator.of(context).push(
                             new MaterialPageRoute(
                                 builder: (context) => EditCoc(
-                                    coc: snapshot
-                                        .data.documents[index].documentID)),
+                                    cocObj: snapshot
+                                        .data.documents[index].data)),
                           );
                         },
                         onCardLongPress: () {

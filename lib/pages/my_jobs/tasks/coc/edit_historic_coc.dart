@@ -354,7 +354,7 @@ class _EditHistoricCocState extends State<EditHistoricCoc> {
             .getDocuments()
             .then((docList) {
           docList.documents.forEach(
-                  (doc) => sample_temp[doc.data['samplenumber'].toString()] = doc.data);
+                  (doc) => sample_temp[doc.data['sampleNumber'].toString()] = doc.data);
 
           print('Edit coc');
           setState(() {

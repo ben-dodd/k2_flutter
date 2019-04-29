@@ -21,7 +21,7 @@ class AcmCard extends StatefulWidget {
 }
 
 class _AcmCardState extends State<AcmCard> {
-  String jobnumber;
+  String jobNumber;
   String sampletype;
   String description;
   String material;
@@ -45,21 +45,21 @@ class _AcmCardState extends State<AcmCard> {
       if (widget.doc['historic'] != null) {
         symbol = 'H';
         subtitle = 'Historic sample: ' + widget.doc['historic'];
-      } else if (widget.doc['samplenumber'] != null) {
-        symbol = widget.doc['samplenumber'].toString();
-        subtitle = widget.doc['jobnumber'] + '-' + widget.doc['samplenumber'];
+      } else if (widget.doc['sampleNumber'] != null) {
+        symbol = widget.doc['sampleNumber'].toString();
+        subtitle = widget.doc['jobNumber'] + '-' + widget.doc['sampleNumber'];
       } else {
         symbol = 'I*';
         subtitle = 'Sample number not assigned';
       }
     } else if (widget.doc['idkey'] == 's') {
       color = CompanyColors.strongPresume;
-      if (widget.doc['samplenumber'] != null) {
+      if (widget.doc['sampleNumber'] != null) {
         symbol = 'S*';
         subtitle = 'Strongly presumed as sample ' +
-            widget.doc['jobnumber'] +
+            widget.doc['jobNumber'] +
             '-' +
-            widget.doc['samplenumber'];
+            widget.doc['sampleNumber'];
       } else if (widget.doc['historic'] != null) {
         symbol = 'S*';
         subtitle =
@@ -117,10 +117,10 @@ class _AcmCardState extends State<AcmCard> {
     if (widget.doc['endtime'] != null) {
       isComplete = true;
     }
-    if (widget.doc['jobnumber'] == null) {
-      jobnumber = 'AS******';
+    if (widget.doc['jobNumber'] == null) {
+      jobNumber = 'AS******';
     } else {
-      jobnumber = widget.doc['jobnumber'];
+      jobNumber = widget.doc['jobNumber'];
     }
     if (widget.doc['sampletype'] == null) {
       sampletype = 'bulk';

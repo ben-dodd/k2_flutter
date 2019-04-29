@@ -50,7 +50,7 @@ class _MapsTabState extends State<MapsTab> {
                       physics: NeverScrollableScrollPhysics(),
                       itemCount: snapshot.data.documents.length,
                       itemBuilder: (context, index) {
-                        print(snapshot.data.documents[index]['jobnumber']);
+                        print(snapshot.data.documents[index]['jobNumber']);
                         return MapCard(
                           map: snapshot.data.documents[index],
                           onCardClick: () async {

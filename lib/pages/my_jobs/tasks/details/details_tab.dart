@@ -96,7 +96,7 @@ class _DetailsTabState extends State<DetailsTab> {
                         child: Column(children: <Widget>[
                           Container(
                               alignment: Alignment.topLeft,
-                              child: Text(snapshot.data['clientname'],
+                              child: Text(snapshot.data['clientName'],
                                   style: Styles.h1)),
                           Container(
                             alignment: Alignment.topLeft,

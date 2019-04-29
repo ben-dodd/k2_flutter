@@ -18,7 +18,7 @@ class SampleAsbestosAirCard extends StatefulWidget {
 }
 
 class _SampleAsbestosAirCardState extends State<SampleAsbestosAirCard> {
-  String jobnumber;
+  String jobNumber;
   String sampleNumber;
   String location;
   String pumpID;
@@ -29,15 +29,15 @@ class _SampleAsbestosAirCardState extends State<SampleAsbestosAirCard> {
   @override
   Widget build(BuildContext context) {
     // todo is there a better way to assert this stuff
-    if (widget.doc['jobnumber'] == null) {
-      jobnumber = 'AS******';
+    if (widget.doc['jobNumber'] == null) {
+      jobNumber = 'AS******';
     } else {
-      jobnumber = widget.doc['jobnumber'];
+      jobNumber = widget.doc['jobNumber'];
     }
-    if (widget.doc['samplenumber'] == null) {
+    if (widget.doc['sampleNumber'] == null) {
       sampleNumber = '0';
     } else {
-      sampleNumber = widget.doc['samplenumber'].toString();
+      sampleNumber = widget.doc['sampleNumber'].toString();
     }
     if (widget.doc['location'] == null) {
       location = 'Location not specified';

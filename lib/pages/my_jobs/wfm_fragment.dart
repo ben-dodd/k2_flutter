@@ -92,11 +92,11 @@ class _WfmFragmentState extends State<WfmFragment> {
                         return filter == null || filter == ""
                             ? getWfmJobCard(_jobs[index])
                             : _jobs[index]
-                                        .jobnumber
+                                        .jobNumber
                                         .toLowerCase()
                                         .contains(filter.toLowerCase()) ||
                                     _jobs[index]
-                                        .clientname
+                                        .clientName
                                         .toLowerCase()
                                         .contains(filter.toLowerCase()) ||
                                     _jobs[index]
@@ -124,16 +124,16 @@ class _WfmFragmentState extends State<WfmFragment> {
         onCardClick: () async {
           String message;
           Map<String, String> dataMap = new Map();
-          dataMap['jobnumber'] = jobHeader.jobnumber;
+          dataMap['jobNumber'] = jobHeader.jobNumber;
           dataMap['type'] = jobHeader.type;
           dataMap['address'] = jobHeader.address;
-          dataMap['clientname'] = jobHeader.clientname;
+          dataMap['clientName'] = jobHeader.clientName;
           // Check if job in user's jobs first
           var job = await Firestore.instance
               .collection('users')
               .document(DataManager.get().user.uid)
               .collection('myjobs')
-              .where('jobnumber', isEqualTo: jobHeader.jobnumber)
+              .where('jobNumber', isEqualTo: jobHeader.jobNumber)
               .getDocuments();
           // Check if job in firestore first
           if (job.documents.length == 0) {
@@ -142,15 +142,15 @@ class _WfmFragmentState extends State<WfmFragment> {
             // First check if job has been moved from WFM into firestore
             var query = await Firestore.instance
                 .collection('jobs')
-                .where('jobnumber', isEqualTo: jobHeader.jobnumber)
+                .where('jobNumber', isEqualTo: jobHeader.jobNumber)
                 .getDocuments();
             if (query.documents.length == 0) {
               // Job has not been imported from WFM, add
-              String jobPath = (jobHeader.jobnumber +
+              String jobPath = (jobHeader.jobNumber +
                       '-' +
                       jobHeader.type +
                       '-' +
-                      jobHeader.clientname +
+                      jobHeader.clientName +
                       Random().nextInt(99).toString())
                   .replaceAll(new RegExp(r"\s+|\/+|\\"), "");
               dataMap['path'] = jobPath;
@@ -166,7 +166,7 @@ class _WfmFragmentState extends State<WfmFragment> {
                     .document(jobPath)
                     .setData(dataMap)
                     .then((myDoc) {
-                  message = jobHeader.jobnumber + ' added to your jobs.';
+                  message = jobHeader.jobNumber + ' added to your jobs.';
                 });
               });
             } else {
@@ -180,10 +180,10 @@ class _WfmFragmentState extends State<WfmFragment> {
                   .collection('myjobs')
                   .document(dataMap['path'])
                   .setData(dataMap);
-              message = jobHeader.jobnumber + ' added to your jobs.';
+              message = jobHeader.jobNumber + ' added to your jobs.';
             }
           } else {
-            message = jobHeader.jobnumber + ' is already in your jobs.';
+            message = jobHeader.jobNumber + ' is already in your jobs.';
           }
 
           Navigator.pop(context, message);

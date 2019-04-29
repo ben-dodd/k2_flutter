@@ -177,11 +177,11 @@ class _EditACMState extends State<EditACM> {
                                     new Container(
                                         padding: new EdgeInsets.only(top: 14.0),
                                         child: new Text(
-                                          acmObj['samplenumber'] != null
+                                          acmObj['sampleNumber'] != null
                                               ? 'Sample ' +
-                                                  acmObj['samplenumber']
+                                                  acmObj['sampleNumber']
                                               : 'Sample Number Not Assigned',
-                                          style: Styles.samplenumber,
+                                          style: Styles.sampleNumber,
                                         )),
                                     new Container(
                                       alignment: Alignment.center,
@@ -213,10 +213,10 @@ class _EditACMState extends State<EditACM> {
                                 children: <Widget>[
                                   new Expanded(
                                       child: new Column(children: <Widget>[
-                                    acmObj['samplenumber'] != null
+                                    acmObj['sampleNumber'] != null
                                         ? new Container(
                                             child: new Text('Sample as ' +
-                                                acmObj['samplenumber']))
+                                                acmObj['sampleNumber']))
                                         : new Container(),
                                     new Container(
                                       alignment: Alignment.center,
@@ -813,10 +813,10 @@ class _EditACMState extends State<EditACM> {
     QuerySnapshot sampleSnapshot = await Firestore.instance
         .collection('samplesasbestos')
         .where('jobNumber', isEqualTo: DataManager.get().currentJobNumber)
-        .orderBy("samplenumber")
+        .orderBy("sampleNumber")
         .getDocuments();
     sampleSnapshot.documents.forEach((doc) => samplelist.add({
-          "name": doc.data['samplenumber'].toString() +
+          "name": doc.data['sampleNumber'].toString() +
               ': ' +
               doc.data['description'],
           "path": doc.documentID
@@ -835,7 +835,7 @@ class _EditACMState extends State<EditACM> {
         _room = {"path": room, "name": ''};
       }
 
-      acmObj['jobnumber'] = DataManager.get().currentJobNumber;
+      acmObj['jobNumber'] = DataManager.get().currentJobNumber;
       //      sample.sampleNumber = DataManager.get().getHighestSampleNumber(DataManager.get().currentJob) + 1;
       acmObj['sample'] = null;
       acmObj['idkey'] = 'p';

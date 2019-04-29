@@ -141,7 +141,7 @@ class _SetUpJobState extends State<SetUpJob> {
             'material': acm['material'],
             'roomname': room['name'],
             'roompath': newRoom['path'],
-            'jobnumber': DataManager.get().currentJobNumber,
+            'jobNumber': DataManager.get().currentJobNumber,
           };
           Firestore.instance
               .document(DataManager.get().currentJobPath)

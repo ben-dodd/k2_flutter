@@ -266,7 +266,7 @@ class _JobPageState extends State<JobPage> {
               child: Scaffold(
                 appBar: new AppBar(
                   title: Text(
-                      snapshot.data['jobnumber'] + ': ' + snapshot.data['type'],
+                      snapshot.data['jobNumber'] + ': ' + snapshot.data['type'],
                       overflow: TextOverflow.ellipsis),
                   bottom: tabBar,
                 ),

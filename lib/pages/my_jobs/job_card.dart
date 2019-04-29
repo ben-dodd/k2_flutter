@@ -50,12 +50,12 @@ class _JobCardState extends State<JobCard> {
           leading: icon,
           title: Row(children: <Widget>[
             Text(
-              widget.doc['jobnumber'] + ': ',
+              widget.doc['jobNumber'] + ': ',
               style: Styles.h2,
             ),
             Flexible(
                 child: Text(
-              ' ' + widget.doc['clientname'],
+              ' ' + widget.doc['clientName'],
               overflow: TextOverflow.ellipsis,
             ))
           ]),

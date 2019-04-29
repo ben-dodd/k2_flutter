@@ -87,7 +87,7 @@ class _MyJobsPageState extends State<MyJobsPage> {
                             DataManager.get().currentJobPath = 'jobs/' +
                                 snapshot.data.documents[index]['path'];
                             DataManager.get().currentJobNumber =
-                                snapshot.data.documents[index]['jobnumber'];
+                                snapshot.data.documents[index]['jobNumber'];
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -108,11 +108,11 @@ class _MyJobsPageState extends State<MyJobsPage> {
   void _createNewJob() {
     String jobNumber = 'ASXX' + Random().nextInt(9999).toString();
     var newJob = {
-      'jobnumber': jobNumber,
+      'jobNumber': jobNumber,
       'path': jobNumber + Uuid().v1(),
       'type': 'Asbestos - Survey',
       'address': 'Not specified',
-      'clientname': 'Client Not Assigned',
+      'clientName': 'Client Not Assigned',
     };
     Firestore.instance
         .collection('jobs')

@@ -69,7 +69,7 @@ class _AssignSampleNumbersState extends State<AssignSampleNumbers> {
                             onCardClick: () {
                               Navigator.of(context).push(new MaterialPageRoute(
                                   builder: (context) => EditCoc(
-                                      coc: snapshot
+                                      cocObj: snapshot
                                           .data.documents[index].documentID)));
                             },
                             onCardLongPress: null,

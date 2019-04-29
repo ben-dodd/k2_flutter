@@ -23,7 +23,7 @@ class Styles {
     fontSize: 16.0,
   );
 
-  static TextStyle samplenumber = new TextStyle(
+  static TextStyle sampleNumber = new TextStyle(
     fontWeight: FontWeight.bold,
     color: CompanyColors.accent,
     fontSize: 16.0,

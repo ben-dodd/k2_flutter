@@ -8,6 +8,7 @@ class CustomTypeAhead extends StatelessWidget {
   TextCapitalization capitalization;
   String label;
   String hint;
+  bool enabled;
   FocusNode focusNode;
   FocusNode nextFocus;
   List suggestions;
@@ -24,6 +25,7 @@ class CustomTypeAhead extends StatelessWidget {
     this.focusNode,
     this.nextFocus,
     this.capitalization,
+    this.enabled,
     this.textInputAction,
     this.label,
     this.hint,
@@ -41,6 +43,7 @@ class CustomTypeAhead extends StatelessWidget {
         textCapitalization: capitalization,
         controller: controller,
         focusNode: focusNode,
+        enabled: enabled,
         onChanged: (text) {
           onSaved(controller.text);
         },
@@ -49,7 +52,7 @@ class CustomTypeAhead extends StatelessWidget {
           onSaved(controller.text);
           nextFocus.hasListeners ? FocusScope.of(context).requestFocus(nextFocus) : null;
         },
-        style: new TextStyle(fontSize: 14.0),
+        style: enabled ? new TextStyle(fontSize: 14.0) : new TextStyle(fontSize: 14.0, color: Colors.grey),
         cursorColor: CompanyColors.accent,
         cursorWidth: 1.0,
         maxLines: null,

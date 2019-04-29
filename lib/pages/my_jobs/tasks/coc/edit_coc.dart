@@ -11,9 +11,9 @@ import 'package:k2e/widgets/date_picker.dart';
 import 'package:uuid/uuid.dart';
 
 class EditCoc extends StatefulWidget {
-  EditCoc({Key key, this.coc, this.cocObj}) : super(key: key);
-  final String coc;
-  Map<String, dynamic> cocObj;
+  EditCoc({Key key, this.cocObj}) : super(key: key);
+  final Map<String, dynamic> cocObj;
+//  Map<String, dynamic> cocObj;
   @override
   _EditCocState createState() => new _EditCocState();
 }
@@ -24,7 +24,7 @@ class _EditCocState extends State<EditCoc> {
   Map<String, dynamic> cocObj = new Map<String, dynamic>();
 
   // images
-  String coc;
+//  String coc;
   String version;
   bool localPhoto = false;
   List<Map<String, String>> roomgrouplist = new List();
@@ -44,7 +44,7 @@ class _EditCocState extends State<EditCoc> {
   List items;
   List materials;
   List<String> personnelSelected = <String>[];
-  List<DateTime> datesSelected = <DateTime>[new DateTime.now()];
+  List<DateTime> datesSelected = <DateTime>[];
   Map<String, dynamic> samples = new Map<String, dynamic>();
   int samplesLength = 10;
 
@@ -63,7 +63,7 @@ class _EditCocState extends State<EditCoc> {
   @override
   void initState() {
     print(staffNames.toString());
-    coc = widget.coc;
+    cocObj = widget.cocObj;
 //    controllerRoomCode.addListener(_updateRoomCode);
     _loadCoc();
     _scrollController = ScrollController();
@@ -112,7 +112,7 @@ class _EditCocState extends State<EditCoc> {
                 onPressed: () {
                   if (_formKey.currentState.validate()) {
                     _formKey.currentState.save();
-                    if (coc == null) cocObj['uid'] = cocObj['jobNumber'] + '_' + cocObj['client'] + '-' + Uuid().v1().toString();
+                    if (widget.cocObj['uid'] == null) cocObj['uid'] = cocObj['jobNumber'].toString().toUpperCase() + '_' + cocObj['client'].toString().toUpperCase() + '-' + Uuid().v1().toString();
                     cocObj['personnel'] = personnelSelected;
                     cocObj['dates'] = datesSelected;
                     if (cocObj['cocLog'] != null) {
@@ -294,6 +294,7 @@ class _EditCocState extends State<EditCoc> {
           controller: labelController,
           capitalization: TextCapitalization.sentences,
           textInputAction: TextInputAction.next,
+          enabled: samples[i]["cocUid"] == null || samples[i]["cocUid"] == cocObj["uid"],
 //          label: 'Item',
           suggestions: items,
           onSaved: (value) => samples[i]["description"] = value.trim(),
@@ -307,6 +308,7 @@ class _EditCocState extends State<EditCoc> {
           controller: materialController,
           capitalization: TextCapitalization.none,
           textInputAction: TextInputAction.next,
+          enabled: samples[i]["cocUid"] == null || samples[i]["cocUid"] == cocObj["uid"],
 //            label: 'Material',
           suggestions: materials,
           onSaved: (value) => samples[i]["material"] = value.trim(),
@@ -325,19 +327,18 @@ class _EditCocState extends State<EditCoc> {
   }
 
   void _loadCoc() async {
-    print('new coc');
-    print(coc.toString());
-//    print("Loading room");
-    if (coc == null) {
+    if (cocObj == null) {
       _title = "Add New Chain of Custody";
       cocObj['deleted'] = false;
       cocObj['personnel'] = [me['name']];
       if (widget.cocObj == null) {
         // New room requires us to create a path so it doesn't need internet to get one from Firestore
+        print('Making random uid...');
         cocObj['uid'] = new Uuid().v1();
       } else {
         cocObj = widget.cocObj;
-        cocObj['uid'] = cocObj['jobNumber'] + '_' + cocObj['client'] + '-' + Uuid().v1().toString();
+        print('Making uid out of information...');
+        cocObj['uid'] = cocObj['jobNumber'].toString().toUpperCase() + '_' + cocObj['client'].toString().toUpperCase() + '-' + Uuid().v1().toString();
       }
 
       setState(() {
@@ -348,22 +349,18 @@ class _EditCocState extends State<EditCoc> {
 //      print('Edit room is ' + room.toString());
       _title = "Edit Chain of Custody";
       Map<String, dynamic> sample_temp = new Map<String, dynamic>();
-      Firestore.instance
-          .collection('lab').document('asbestosbulk').collection('labs').document('k2environmental')
-          .collection('cocs')
-          .document(coc).get().then((doc) {
         Firestore.instance
             .collection('lab').document('asbestosbulk').collection('labs').document('k2environmental')
             .collection('samples')
-            .where('jobNumber', isEqualTo: doc.data['jobNumber'])
+            .where('jobNumber', isEqualTo: cocObj['jobNumber'])
             .getDocuments()
             .then((docList) {
               docList.documents.forEach(
-                  (doc) => sample_temp[doc.data['samplenumber'].toString()] = doc.data);
+                  (doc) => sample_temp[doc.data['sampleNumber'].toString()] = doc.data);
 
           print('Edit coc');
           setState(() {
-            cocObj = doc.data;
+//            cocObj = doc.data;
             samples = sample_temp;
 
             print(cocObj['samples'].toString());
@@ -377,6 +374,7 @@ class _EditCocState extends State<EditCoc> {
             }
             if (cocObj['dates'] != null) {
               cocObj['dates'].forEach((d) {
+                print(d.toString());
                 datesSelected.add(d.toDate());
               });
 //            } else {
@@ -389,13 +387,14 @@ class _EditCocState extends State<EditCoc> {
           print(samples);
         });
         // image
-      });
+//      });
     }
 //    print(_title.toString());
   }
 
   void _handleCocSubmit() {
     print('Handle COC Submit');
+    print(cocObj['uid']);
     print(samples.toString());
     var sampleList = new List();
     if (samples != null) {
@@ -434,7 +433,7 @@ class _EditCocState extends State<EditCoc> {
     Firestore.instance
         .collection('lab').document('asbestosbulk').collection('labs').document('k2environmental')
         .collection('cocs')
-        .document(coc)
+        .document(cocObj['uid'])
         .setData(cocObj);
   }
 }

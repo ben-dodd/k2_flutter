@@ -42,12 +42,12 @@ class _WfmJobState extends State<WfmJobCard> {
         leading: icon,
         title: Row(children: <Widget>[
           Text(
-            widget.jobHeader.jobnumber + ': ',
+            widget.jobHeader.jobNumber + ': ',
             style: Styles.h2,
           ),
           Flexible(
               child: Text(
-            ' ' + widget.jobHeader.clientname,
+            ' ' + widget.jobHeader.clientName,
             overflow: TextOverflow.ellipsis,
           ))
         ]),

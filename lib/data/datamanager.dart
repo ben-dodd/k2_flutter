@@ -410,19 +410,19 @@ class DataManager {
 //    await Firestore.instance.document(firePath).get().then((fireMap) {
 //      jobHeader = JobHeader.fromMap(fireMap.data);
 //    });
-//    print(job.jobHeader.jobnumber);
+//    print(job.jobHeader.jobNumber);
 //
 //    // Get all samples for this job from firestore
-//    await Firestore.instance.collection('samplesasbestosbulk').where('jobnumber',isEqualTo: jobHeader.jobnumber).getDocuments().then((fireSamples) {
+//    await Firestore.instance.collection('samplesasbestosbulk').where('jobNumber',isEqualTo: jobHeader.jobNumber).getDocuments().then((fireSamples) {
 //      for (DocumentSnapshot samples in fireSamples.documents){
 //        job.asbestosBulkSamples.add(new SampleAsbestosBulk().fromMap(samples.data));
 //      }
 //    });
 //    print('List length: ' + job.asbestosBulkSamples.length.toString());
-////    job.asbestosBulkSamples = await sampleAsbestosBulkRepo.getSamplesByJobNumber(jobHeader.jobnumber);
+////    job.asbestosBulkSamples = await sampleAsbestosBulkRepo.getSamplesByJobNumber(jobHeader.jobNumber);
 //    if (job.asbestosBulkSamples == null) { job.asbestosBulkSamples = []; }
-////    job.rooms = await roomRepo.getRoomsByJobNumber(jobHeader.jobnumber);
-////    job.superRooms = await superRoomRepo.getSuperRoomsByJobNumber(jobHeader.jobnumber);
+////    job.rooms = await roomRepo.getRoomsByJobNumber(jobHeader.jobNumber);
+////    job.superRooms = await superRoomRepo.getSuperRoomsByJobNumber(jobHeader.jobNumber);
 //    job.highestSampleNumber = getHighestSampleNumber(job);
 //    currentJob = job;
 //    return;
@@ -472,7 +472,7 @@ class DataManager {
 //      for (JobHeader job in jobs) {
 //        // Add updating message that indicates how the syncing is going
 //        // Iterate through all jobs and add data first, then go through them again and update images
-//        jobHeaderRepo.getRemoteJobModifiedDate(job.jobnumber).then((response) {
+//        jobHeaderRepo.getRemoteJobModifiedDate(job.jobNumber).then((response) {
 //          // check if modified date on server is newer than this job
 //        });
 //      }

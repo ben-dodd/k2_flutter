@@ -326,7 +326,7 @@ class _EditRoomGroupState extends State<EditRoomGroup> {
             'material': acm['material'],
             'roomname': room['name'],
             'roompath': newRoom['path'],
-            'jobnumber': DataManager.get().currentJobNumber,
+            'jobNumber': DataManager.get().currentJobNumber,
           };
           Firestore.instance
               .document(DataManager.get().currentJobPath)
