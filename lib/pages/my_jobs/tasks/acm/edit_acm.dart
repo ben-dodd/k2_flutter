@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_jobs/tasks/acm/acm_widgets.dart';
-import 'package:k2e/pages/my_jobs/tasks/coc/assign_sample_numbers.dart';
+import 'package:k2e/pages/my_jobs/tasks/coc/assign_sample_number.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/tooltips.dart';
@@ -195,7 +195,7 @@ class _EditACMState extends State<EditACM> {
                                             Navigator.of(context).push(
                                               new MaterialPageRoute(
                                                   builder: (context) =>
-                                                      AssignSampleNumbers(
+                                                      AssignSampleNumber(
                                                           acm: acmObj)),
                                             );
                                           }),
@@ -230,7 +230,7 @@ class _EditACMState extends State<EditACM> {
                                             Navigator.of(context).push(
                                               new MaterialPageRoute(
                                                   builder: (context) =>
-                                                      AssignSampleNumbers(
+                                                      AssignSampleNumber(
                                                           acm: acmObj)),
                                             );
                                           }),

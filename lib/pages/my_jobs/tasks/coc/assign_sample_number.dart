@@ -2,22 +2,20 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/pages/my_jobs/tasks/coc/coc_functions.dart';
-import 'package:k2e/pages/my_jobs/tasks/coc/coc_card.dart';
 import 'package:k2e/pages/my_jobs/tasks/coc/coc_header.dart';
-import 'package:k2e/pages/my_jobs/tasks/coc/edit_coc.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/widgets/buttons.dart';
 import 'package:k2e/widgets/common_widgets.dart';
 
-class AssignSampleNumbers extends StatefulWidget {
-  AssignSampleNumbers({Key key, this.acm}) : super(key: key);
+class AssignSampleNumber extends StatefulWidget {
+  AssignSampleNumber({Key key, this.acm}) : super(key: key);
   final Map<String, dynamic> acm;
   @override
-  _AssignSampleNumbersState createState() => new _AssignSampleNumbersState();
+  _AssignSampleNumberState createState() => new _AssignSampleNumberState();
 }
 
-class _AssignSampleNumbersState extends State<AssignSampleNumbers> {
-  String _title = "Assign Sample Numbers";
+class _AssignSampleNumberState extends State<AssignSampleNumber> {
+  String _title = "Assign Sample Number";
 
   Map<String, dynamic> acm = new Map<String, dynamic>();
   // images
