@@ -9,6 +9,7 @@ import 'package:k2e/data/datamanager.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
+import 'package:k2e/widgets/buttons.dart';
 import 'package:k2e/widgets/common_widgets.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
@@ -182,6 +183,22 @@ class _DetailsTabState extends State<DetailsTab> {
                           new Container(
                             child: new Text("Documents", style: Styles.h2),
                           ),
+                          FunctionButton(
+                              text: "Prepare Report",
+                              onClick: _prepareReport,
+                          ),
+                          FunctionButton(
+                              text: "Download Report",
+                              onClick: _getReport,
+                          ),
+                          FunctionButton(
+                            text: "Download Chain of Custody",
+                            onClick: _getCoc,
+                          ),
+                          FunctionButton(
+                            text: "Download Lab Report",
+                            onClick: _getLabReport,
+                          ),
                         ]),
                       ),
                     ),
@@ -231,5 +248,21 @@ class _DetailsTabState extends State<DetailsTab> {
         });
       }
     });
+  }
+
+  void _prepareReport() {
+    //
+  }
+
+  void _getReport() {
+
+  }
+
+  void _getCoc() {
+
+  }
+
+  void _getLabReport() {
+
   }
 }

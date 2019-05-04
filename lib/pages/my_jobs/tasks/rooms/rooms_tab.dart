@@ -48,8 +48,8 @@ class _RoomsTabState extends State<RoomsTab> {
                     .snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData)
-                    LoadingPage(loadingText: _loadingText);
-                  if (snapshot.data.documents.length == 0)
+                    return LoadingPage(loadingText: _loadingText);
+                  else if (snapshot.data.documents.length == 0)
                     return EmptyList(
                       text: 'This job has no rooms',
                       action: FunctionButton(

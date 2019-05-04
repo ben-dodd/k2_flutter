@@ -503,13 +503,13 @@ class _EditACMState extends State<EditACM> {
                             HeaderText(text: 'Accessibility'),
                             _getScoreSet(
                               acmObjVar: 'accessibility',
-                              tooltip0: Tip.accessibility_easy,
-                              tooltip1: Tip.accessibility_medium,
+                              tooltip1: Tip.accessibility_easy,
+                              tooltip2: Tip.accessibility_medium,
                               tooltip3: Tip.accessibility_difficult,
                               text1: 'Easy',
                               text2: 'Medium',
                               text3: 'Difficult',
-                              hiddenZero: true,
+                              showZero: false,
                             ),
 
                             // Material Section
@@ -882,7 +882,7 @@ class _EditACMState extends State<EditACM> {
             stronglyPresumed = false;
           }
         }
-        _room = {"path": acmObj['roompath'], "name": acmObj['roomname']};
+        if (acmObj['roompath'] != null && acmObj['roomname'] != null) _room = {"path": acmObj['roompath'], "name": acmObj['roomname']}; else _room = null;
 
         showMaterialRisk = acmObj['mRisk'] == true;
         showPriorityRisk = acmObj['pRisk'] == true;
@@ -993,10 +993,10 @@ class _EditACMState extends State<EditACM> {
     });
   }
 
-  Widget _getScoreSet({acmObjVar, tooltip0, tooltip1, tooltip2, tooltip3, disabledZero: false, hiddenZero: false, text1, text2, text3}) {
+  Widget _getScoreSet({acmObjVar, tooltip0, tooltip1, tooltip2, tooltip3, disabledZero: false, showZero: true, text1, text2, text3}) {
     return Row(
       children: <Widget>[
-        hiddenZero ?
+        showZero ?
           disabledZero ?
           AsbestosScoreButton(
             onClick: (val) {},

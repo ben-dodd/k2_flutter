@@ -6,6 +6,8 @@ import 'package:k2e/pages/my_jobs/tasks/coc/coc_header.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/widgets/buttons.dart';
 import 'package:k2e/widgets/common_widgets.dart';
+import 'package:numberpicker/numberpicker.dart';
+
 
 class AssignSampleNumber extends StatefulWidget {
   AssignSampleNumber({Key key, this.acm}) : super(key: key);
@@ -16,8 +18,10 @@ class AssignSampleNumber extends StatefulWidget {
 
 class _AssignSampleNumberState extends State<AssignSampleNumber> {
   String _title = "Assign Sample Number";
-
+  int _currentSampleNumber = 1;
   Map<String, dynamic> acm = new Map<String, dynamic>();
+  Widget sampleNumberPicker;
+
   // images
 
   @override
@@ -28,6 +32,15 @@ class _AssignSampleNumberState extends State<AssignSampleNumber> {
   }
 
   Widget build(BuildContext context) {
+    sampleNumberPicker = new Container(
+        width: 80.0, child: NumberPicker.integer(
+          initialValue: _currentSampleNumber,
+          minValue: 1,
+          maxValue: 500,
+          step: 1,
+          onChanged: (value) => setState(() => _currentSampleNumber = value),
+      ),
+    );
     return new Scaffold(
         appBar: new AppBar(
             title: Text(_title),
@@ -47,6 +60,7 @@ class _AssignSampleNumberState extends State<AssignSampleNumber> {
           child: new ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             children: <Widget>[
+//              sampleNumberPicker,
               new StreamBuilder(
                   stream: Firestore.instance
                       .collection('lab').document('asbestosbulk').collection('labs').document('k2environmental')
@@ -59,15 +73,19 @@ class _AssignSampleNumberState extends State<AssignSampleNumber> {
                       return LoadingPage(loadingText: 'Loading Chains of Custody');
                     if (snapshot.data.documents.length == 0)
                       return EmptyList(text: 'This job has no Chains of Custody.');
-                    return ListView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: snapshot.data.documents.length,
-                        itemBuilder: (context, index) {
-                          return CocHeader(
-                            doc: snapshot.data.documents[index]
-                          );
-                        });
+                    return new Row(
+                        children: <Widget>[
+                          sampleNumberPicker,
+                          new Container(width: 260.0, child: ListView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount: snapshot.data.documents.length,
+                            itemBuilder: (context, index) {
+                              return CocHeader(
+                                doc: snapshot.data.documents[index]
+                              );
+                            }))
+                        ]);
                   }),
               FunctionButton(
                 text: "Add New Chain of Custody",

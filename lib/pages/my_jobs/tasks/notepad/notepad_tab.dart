@@ -40,7 +40,7 @@ class _NotepadTabState extends State<NotepadTab> {
                     .snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData)
-                    LoadingPage(loadingText: _loadingText);
+                    return LoadingPage(loadingText: _loadingText);
                   if (snapshot.data.documents.length == 0)
                     return EmptyList(text: 'This job has no notes.');
                   return ListView.builder(

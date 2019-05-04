@@ -52,7 +52,7 @@ class CustomTypeAhead extends StatelessWidget {
           onSaved(controller.text);
           nextFocus.hasListeners ? FocusScope.of(context).requestFocus(nextFocus) : null;
         },
-        style: enabled ? new TextStyle(fontSize: 14.0) : new TextStyle(fontSize: 14.0, color: Colors.grey),
+        style: enabled != false ? new TextStyle(fontSize: 14.0) : new TextStyle(fontSize: 14.0, color: Colors.grey),
         cursorColor: CompanyColors.accent,
         cursorWidth: 1.0,
         maxLines: null,
