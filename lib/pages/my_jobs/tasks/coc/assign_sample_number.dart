@@ -18,9 +18,12 @@ class AssignSampleNumber extends StatefulWidget {
 
 class _AssignSampleNumberState extends State<AssignSampleNumber> {
   String _title = "Assign Sample Number";
+  String sampleText;
   int _currentSampleNumber = 1;
+  Map<String, String> samples = new Map<String, String>();
   Map<String, dynamic> acm = new Map<String, dynamic>();
   Widget sampleNumberPicker;
+  Widget sampleDisplay;
 
   // images
 
@@ -41,6 +44,22 @@ class _AssignSampleNumberState extends State<AssignSampleNumber> {
           onChanged: (value) => setState(() => _currentSampleNumber = value),
       ),
     );
+
+    print(_currentSampleNumber.toString());
+
+    sampleText = (samples[_currentSampleNumber.toString()] == null) ? 'Unassigned Sample' : samples[_currentSampleNumber.toString()];
+
+    sampleDisplay = new Column(children: <Widget>[
+      new Text(
+        acm['jobNumber'] + '-' + _currentSampleNumber.toString(),
+        style: Styles.sampleNumber,
+      ),
+      new Text(
+        sampleText,
+        style: Styles.h3,
+      ),
+    ]);
+
     return new Scaffold(
         appBar: new AppBar(
             title: Text(_title),
@@ -60,6 +79,7 @@ class _AssignSampleNumberState extends State<AssignSampleNumber> {
           child: new ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             children: <Widget>[
+              sampleDisplay,
 //              sampleNumberPicker,
               new StreamBuilder(
                   stream: Firestore.instance
@@ -67,6 +87,8 @@ class _AssignSampleNumberState extends State<AssignSampleNumber> {
                       .collection('cocs')
                       .where('jobNumber',
                           isEqualTo: DataManager.get().currentJobNumber)
+                      .where('deleted',
+                        isEqualTo: false)
                       .snapshots(),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData)
@@ -139,18 +161,23 @@ class _AssignSampleNumberState extends State<AssignSampleNumber> {
 
   void _loadSampleNumbers() {
     Firestore.instance
-        .collection('cocs')
+        .collection('lab').document('asbestosbulk').collection('labs').document('k2environmental')
+        .collection('samples')
         .where('jobNumber', isEqualTo: DataManager.get().currentJobNumber)
+        .where('deleted', isEqualTo: false)
         .getDocuments()
         .then((doc) {
       if (doc.documents.length == 0) {
         // No COC
-        print('No COC for this job');
+        print('No samples for this job');
       } else {
         // Get samples from CoCs
         doc.documents.forEach((doc) {
+          samples[doc.data['sampleNumber'].toString()] = doc.data['description'] + ' (' + doc.data['material'] + ')';
           print(doc.data.toString());
         });
+        this.setState(() {});
+        print(samples);
       }
     });
   }
