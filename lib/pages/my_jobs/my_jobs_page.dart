@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:k2e/data/datamanager.dart';
+import 'package:k2e/pages/my_jobs/edit_site.dart';
 import 'package:k2e/pages/my_jobs/job_card.dart';
 import 'package:k2e/pages/my_jobs/tasks/job_page.dart';
 import 'package:k2e/pages/my_jobs/wfm_fragment.dart';
@@ -42,6 +43,13 @@ class _MyJobsPageState extends State<MyJobsPage> {
             _addWfmJob();
           },
           text: "Add Job from WFM"),
+      new SpeedDialerButton(
+          backgroundColor: CompanyColors.accentRippled,
+          icon: Icons.add,
+          onPressed: () {
+            _addSite();
+          },
+          text: "Add New Site"),
     ];
 
 //    FabDialer _fabDialer = new FabDialer(_fabMiniMenuItemList, CompanyColors.accent, Icon(Icons.add),);
@@ -135,6 +143,18 @@ class _MyJobsPageState extends State<MyJobsPage> {
   void _addWfmJob() async {
     String result = await Navigator.of(context).push(
       new MaterialPageRoute(builder: (_) => new WfmFragment()),
+    );
+    setState(() {
+      if (result != null) {
+        Scaffold.of(context)
+            .showSnackBar(new SnackBar(content: new Text(result)));
+      }
+    });
+  }
+
+  void _addSite() async {
+    String result = await Navigator.of(context).push(
+      new MaterialPageRoute(builder: (_) => new EditSite()),
     );
     setState(() {
       if (result != null) {

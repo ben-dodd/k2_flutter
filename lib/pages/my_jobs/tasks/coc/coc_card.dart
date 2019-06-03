@@ -100,6 +100,7 @@ class _CocCardState extends State<CocCard> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
                     //TODO: Add icons for if issued etc. or how many samples, dates
+                    // ToDO: Change to expandable card with all the samples shown below (base on react version)
                   ],
                 ))));
   }

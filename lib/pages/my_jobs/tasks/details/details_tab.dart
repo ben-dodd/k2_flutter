@@ -11,6 +11,9 @@ import 'package:k2e/theme.dart';
 import 'package:k2e/utils/camera.dart';
 import 'package:k2e/widgets/buttons.dart';
 import 'package:k2e/widgets/common_widgets.dart';
+import 'package:weather/weather.dart';
+
+import '../../../../strings.dart';
 
 // The base page for any type of job. Shows address, has cover photo,
 
@@ -27,8 +30,12 @@ class _DetailsTabState extends State<DetailsTab> {
   DocumentReference details;
   Stream detailsStream;
   Timer _debounce;
+  WeatherStation weatherStation = new WeatherStation(Strings.weatherApi);
   final controllerAddress = TextEditingController();
   final controllerDescription = TextEditingController();
+  final controllerScope = TextEditingController();
+  final controllerTemp = TextEditingController();
+  final controllerWeather = TextEditingController();
 
   // IMAGES
   String path_local;
@@ -40,6 +47,7 @@ class _DetailsTabState extends State<DetailsTab> {
   void initState() {
     controllerAddress.addListener(_updateAddress);
     controllerDescription.addListener(_updateDescription);
+    controllerScope.addListener(_updateScope);
     _loadDetails();
 
     super.initState();
@@ -64,6 +72,22 @@ class _DetailsTabState extends State<DetailsTab> {
     });
   }
 
+  _updateScope() {
+    details.setData({"scope": controllerScope.text}, merge: true);
+  }
+
+  _handleSurveyTypeClick(type) {
+    details.setData({"surveyType": type}, merge: true);
+  }
+
+  _handleManagementPlanClick(value) {
+    if (value == true) {
+      details.setData({"doManagementPlan": false}, merge: true);
+    } else {
+      details.setData({"doManagementPlan": true}, merge: true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -81,6 +105,7 @@ class _DetailsTabState extends State<DetailsTab> {
                   if (controllerAddress.text == '') {
                     controllerAddress.text = snapshot.data['address'];
                     controllerDescription.text = snapshot.data['description'];
+                    controllerScope.text = snapshot.data['scope'];
                   }
                   if (snapshot.data['path_local'] != null)
                     print('local path: ' + snapshot.data['path_local']);
@@ -99,6 +124,55 @@ class _DetailsTabState extends State<DetailsTab> {
                               alignment: Alignment.topLeft,
                               child: Text(snapshot.data['clientName'],
                                   style: Styles.h1)),
+                          Container(
+                            // todo change these to dropdown?
+                            alignment: Alignment.topLeft,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                RadioLabel(
+                                  value: 'management',
+                                  groupValue: snapshot.data['surveyType'],
+                                  text: 'Mgmt',
+                                  onClick: (_) => _handleSurveyTypeClick('management'),
+                                ),
+                                RadioLabel(
+                                  value: 'refurbishment',
+                                  groupValue: snapshot.data['surveyType'],
+                                  text: 'Refurb',
+                                  onClick: (_) => _handleSurveyTypeClick('refurbishment'),
+                                ),
+//                              ]
+//                            ),
+//                          ),
+//                          Container(
+//                            alignment: Alignment.topCenter,
+//                            child: Row(
+//                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//                              children: <Widget>[
+                                RadioLabel(
+                                  value: 'demolition',
+                                  groupValue: snapshot.data['surveyType'],
+                                  text: 'Demo',
+                                  onClick: (_) => _handleSurveyTypeClick('demolition'),
+                                ),
+                                RadioLabel(
+                                  value: 'combination',
+                                  groupValue: snapshot.data['surveyType'],
+                                  text: 'Combo',
+                                  onClick: (_) => _handleSurveyTypeClick('combination'),
+                                ),
+                              ],
+                            )
+                          ),
+                          Container(
+                            alignment: Alignment.topLeft,
+                            child: CheckLabel(
+                                value: snapshot.data['doManagementPlan'],
+                                text: "Prepare Management Plan",
+                                onClick: (_) => _handleManagementPlanClick(snapshot.data['doManagementPlan']),
+                            ),
+                          ),
                           Container(
                             alignment: Alignment.topLeft,
                             child: TextField(
@@ -181,24 +255,41 @@ class _DetailsTabState extends State<DetailsTab> {
                               ]),
                           new Divider(),
                           new Container(
-                            child: new Text("Documents", style: Styles.h2),
+                            child: new Text("General Survey Information", style: Styles.h2),
                           ),
-                          FunctionButton(
-                              text: "Prepare Report",
-                              onClick: _prepareReport,
+                          Container(
+                            alignment: Alignment.topLeft,
+                            child: TextField(
+                                decoration: const InputDecoration(
+                                    labelText: "Scope"),
+                                autocorrect: false,
+                                controller: controllerScope,
+                                keyboardType: TextInputType.multiline,
+                                maxLines: null),
                           ),
-                          FunctionButton(
-                              text: "Download Report",
-                              onClick: _getReport,
+                          FunctionButton(onClick: _getWeather, text: 'Get Current Weather Information'),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              TextLabel(
+                                value: snapshot.data['weatherDescription'] != null ? snapshot.data['weatherDescription'] : 'N/A',
+                                text: 'Description',
+                              ),
+                              Container(
+                                child: snapshot.data['weatherIcon'] != null ?
+                                Image.network('http://openweathermap.org/img/w/' + snapshot.data['weatherIcon'] + '.png')
+                                    : Container(),
+                              ),
+                            ],
                           ),
-                          FunctionButton(
-                            text: "Download Chain of Custody",
-                            onClick: _getCoc,
+                          TextLabel(
+                            value: snapshot.data['weatherTemp'] != null ? snapshot.data['weatherTemp'].toStringAsFixed(1) + '\u00B0C' : 'N/A',
+                            text: 'Temperature',
                           ),
-                          FunctionButton(
-                            text: "Download Lab Report",
-                            onClick: _getLabReport,
-                          ),
+
+                          // Add evidence of refurbishment, age of property,
+                          // knowledge of any previous asbestos removal etc. etc.
+
                         ]),
                       ),
                     ),
@@ -250,19 +341,19 @@ class _DetailsTabState extends State<DetailsTab> {
     });
   }
 
-  void _prepareReport() {
-    //
-  }
-
-  void _getReport() {
-
-  }
-
-  void _getCoc() {
-
-  }
-
-  void _getLabReport() {
-
+  void _getWeather() async {
+    weatherStation.currentWeather().then((weather) {
+      details.setData({
+        "weatherDescription": weather.weatherMain + ' (' + weather.weatherDescription + ')',
+        "weatherTemp": weather.temperature.celsius,
+        "weatherHumidity": weather.humidity,
+        "weatherPressure": weather.pressure,
+        "weatherCloudiness": weather.cloudiness,
+        "weatherIcon": weather.weatherIcon,
+        "weatherDate": weather.date,
+        "weatherWindSpeed": weather.windSpeed,
+        "weatherWindDegree": weather.windDegree,
+      }, merge: true);
+    });
   }
 }

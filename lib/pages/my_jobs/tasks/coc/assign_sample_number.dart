@@ -7,7 +7,8 @@ import 'package:k2e/styles.dart';
 import 'package:k2e/widgets/buttons.dart';
 import 'package:k2e/widgets/common_widgets.dart';
 import 'package:numberpicker/numberpicker.dart';
-
+import 'package:async/async.dart';
+import 'dart:async';
 
 class AssignSampleNumber extends StatefulWidget {
   AssignSampleNumber({Key key, this.acm}) : super(key: key);
@@ -24,6 +25,8 @@ class _AssignSampleNumberState extends State<AssignSampleNumber> {
   Map<String, dynamic> acm = new Map<String, dynamic>();
   Widget sampleNumberPicker;
   Widget sampleDisplay;
+  StreamController streamController;
+  List<dynamic> dataList;
 
   // images
 
@@ -31,10 +34,60 @@ class _AssignSampleNumberState extends State<AssignSampleNumber> {
   void initState() {
     acm = widget.acm;
     _loadSampleNumbers();
+    streamController = StreamController.broadcast();
+    setupData();
     super.initState();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    streamController?.close();
+    streamController = null;
+  }
+
+  Future<Stream> getData() async {
+    Stream stream1 = Firestore.instance
+        .collection('lab').document('asbestos')
+        .collection('cocs')
+        .where('jobNumber',
+        isEqualTo: DataManager.get().currentJobNumber)
+        .where('deleted',
+        isEqualTo: false)
+        .snapshots();
+    Stream stream2 = Firestore.instance
+        .collection('lab').document('asbestos')
+        .collection('cocs')
+        .where('linkedJobNumbers',
+        arrayContains: DataManager.get().currentJobNumber)
+        .where('deleted',
+        isEqualTo: false)
+        .snapshots();
+    return StreamZip(([stream1, stream2])).asBroadcastStream();
+  }
+
+  setupData() async {
+    Stream stream = await getData()..asBroadcastStream();
+    stream.listen((snapshot) {
+      setState(() {
+        //Empty the list to avoid repetitions when the users updates the
+        //data in the snapshot
+        dataList =[];
+        List<DocumentSnapshot> list;
+        for(int i=0; i < snapshot.length; i++){
+          list = snapshot[i].documents;
+          for (var item in list){
+            dataList.add(item);
+            samples[item.data['sampleNumber'].toString()] = item.data['description'] + ' (' + item.data['material'] + ')';
+          }
+        }
+      });
+    });
+  }
+
   Widget build(BuildContext context) {
+    // todo make horizontal numberpicker, select active chain of custody
+    // todo set up chain of custodies in the coc tab only
     sampleNumberPicker = new Container(
         width: 80.0, child: NumberPicker.integer(
           initialValue: _currentSampleNumber,
@@ -83,7 +136,7 @@ class _AssignSampleNumberState extends State<AssignSampleNumber> {
 //              sampleNumberPicker,
               new StreamBuilder(
                   stream: Firestore.instance
-                      .collection('lab').document('asbestosbulk').collection('labs').document('k2environmental')
+                      .collection('lab').document('asbestos')
                       .collection('cocs')
                       .where('jobNumber',
                           isEqualTo: DataManager.get().currentJobNumber)
@@ -115,6 +168,7 @@ class _AssignSampleNumberState extends State<AssignSampleNumber> {
               ),
               Divider(),
               Container(
+//                TODO: Change this so it only shows the blurb and Add Button by default
                   padding: EdgeInsets.fromLTRB(32.0, 16.0, 32.0, 16.0),
                   child: Text(
                       'Add historic samples if there have been any samples previously tested by K2 Environmental or any other testing lab.',

@@ -79,6 +79,7 @@ class _SetUpJobState extends State<SetUpJob> {
                   style: Styles.label,
                 ),
               ),
+              // TODO Change from dropdown to just a list view
               new DropdownButton<String>(
                   value: templateName,
                   iconSize: 24.0,
@@ -153,7 +154,7 @@ class _SetUpJobState extends State<SetUpJob> {
 //        if (roomObj['children'].length > 0) {
 //          childList = new List.from(roomObj['children'])
 //            ..addAll(childList);
-//        }
+//        }     sz
 //        print(childList.toString());
 //        Firestore.instance.document(DataManager
 //            .get()

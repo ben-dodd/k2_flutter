@@ -399,6 +399,7 @@ class _EditCocState extends State<EditCoc> {
     var sampleList = new List();
     if (samples != null) {
       samples.forEach((number, sample) {
+        //todo Change samples to list of cards that can be clicked on
         if ((sample['cocUid'] == cocObj['uid'] || sample['cocUid'] == null) && ((sample['description'] != null && sample['description'].trim() != '') || (sample['material'] != null && sample['description'].trim() != ''))) {
           if (sample['uid'] == null) {
             var dateString = new DateFormat('dd_MM_yy_HH_mm').format(DateTime.now());
@@ -431,7 +432,7 @@ class _EditCocState extends State<EditCoc> {
     cocObj['sampleList'] = sampleList;
 
     Firestore.instance
-        .collection('lab').document('asbestosbulk').collection('labs').document('k2environmental')
+        .collection('lab').document('asbestos')
         .collection('cocs')
         .document(cocObj['uid'])
         .setData(cocObj);

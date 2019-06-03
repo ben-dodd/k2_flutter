@@ -13,7 +13,7 @@ Future<File> compressImage(imageFile, compression) async {
 
   Im.Image image = Im.decodeImage(imageFile.readAsBytesSync());
   Im.Image smallerImage = Im.copyResize(
-      image, 500); // choose the size here, it will maintain aspect ratio
+      image, width: 500); // choose the size here, it will maintain aspect ratio
 
   var compressedImage = new File('$path/img_$rand.jpg')
     ..writeAsBytesSync(Im.encodeJpg(image, quality: compression));

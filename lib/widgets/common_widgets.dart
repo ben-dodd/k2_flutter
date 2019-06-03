@@ -33,6 +33,65 @@ class CheckLabel extends StatelessWidget {
   }
 }
 
+class RadioLabel extends StatelessWidget {
+  RadioLabel(
+      {@required this.value,
+        @required this.text,
+        @required this.onClick,
+        @required this.groupValue,
+      });
+  final dynamic value;
+  final dynamic groupValue;
+  final ValueChanged onClick;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(children: <Widget>[
+      new Container(
+          alignment: Alignment.topLeft,
+          child: Radio(
+            value: value,
+            groupValue: groupValue,
+            onChanged: onClick,
+          )),
+      new Container(
+        alignment: Alignment.topLeft,
+        child: new Text(text,
+          style: Styles.label,
+        ),
+      ),
+    ]);
+  }
+}
+
+class TextLabel extends StatelessWidget {
+  TextLabel(
+      {@required this.value,
+        @required this.text,
+      });
+  final dynamic value;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+      new Container(
+        alignment: Alignment.topLeft,
+        child: new Text(text, style: Styles.label),
+      ),
+      new Container(
+          alignment: Alignment.topLeft,
+          margin: EdgeInsets.only(bottom: 12.0),
+          child: Text(value, style: Styles.body),
+      ),
+    ]);
+  }
+}
+
 
 class EmptyList extends StatelessWidget {
   EmptyList(

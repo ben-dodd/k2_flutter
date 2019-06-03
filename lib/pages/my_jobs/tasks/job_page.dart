@@ -181,10 +181,10 @@ class _JobPageState extends State<JobPage> {
                     // Asbestos Samples
                     Tab(icon: Icon(Icons.table_chart)),
                     // Chain of Custody
-                    Tab(icon: Icon(Icons.photo_library)),
-                    // Notes and photos
                     Tab(icon: Icon(Icons.map)),
                     // Map
+                    Tab(icon: Icon(Icons.photo_library)),
+                    // Notes and photos
                     Tab(icon: Icon(Icons.check_circle)),
                     // Check
 //                  Tab(icon: Icon(Icons.file_download)), // Download documents
@@ -212,11 +212,11 @@ class _JobPageState extends State<JobPage> {
                     Tab(icon: Icon(Icons.domain)),
                     // Rooms
                     Tab(icon: Icon(Icons.lightbulb_outline)),
-                    // Swabs
-                    Tab(icon: Icon(Icons.photo_library)),
-                    // Notes and photos
+                    // Samples
                     Tab(icon: Icon(Icons.map)),
                     // Map
+                    Tab(icon: Icon(Icons.photo_library)),
+                    // Notes and photos
                     Tab(icon: Icon(Icons.check_circle)),
                     // Check
 //                  Tab(icon: Icon(Icons.file_download)), // Download documents

@@ -811,7 +811,11 @@ class _EditACMState extends State<EditACM> {
 
     // Load samples from job
     QuerySnapshot sampleSnapshot = await Firestore.instance
-        .collection('samplesasbestos')
+        .collection('lab')
+        .document('asbestos')
+        .collection('labs')
+        .document('k2environmental')
+        .collection('samples')
         .where('jobNumber', isEqualTo: DataManager.get().currentJobNumber)
         .orderBy("sampleNumber")
         .getDocuments();
