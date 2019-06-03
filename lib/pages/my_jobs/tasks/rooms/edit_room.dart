@@ -314,7 +314,7 @@ class _EditRoomState extends State<EditRoom> {
                                               onCardClick: () async {
                                                 if (snapshot.data
                                                             .documents[index]
-                                                        ['sampletype'] ==
+                                                        ['sampleType'] ==
                                                     'air') {
                                                   Navigator.of(context).push(
                                                     new MaterialPageRoute(
@@ -350,6 +350,7 @@ class _EditRoomState extends State<EditRoom> {
                           ]),
 //                    new Container(padding: EdgeInsets.only(top: 14.0)),
 //                    new Divider(),
+                    // TODO ok for now but there should be a quicker way to add b.m.s for room. Possibly a screen you select all the materials and swipe left or right for ACM or no? Or just a list of common materials that you can click on grouped in 3 layers, e.g. top coat, main layer, substrate
                       ExpansionTile(
                         initiallyExpanded: true,
                         title: new Text(

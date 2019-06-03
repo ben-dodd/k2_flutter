@@ -34,55 +34,7 @@ class _AssignSampleNumberState extends State<AssignSampleNumber> {
   void initState() {
     acm = widget.acm;
     _loadSampleNumbers();
-    streamController = StreamController.broadcast();
-    setupData();
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    streamController?.close();
-    streamController = null;
-  }
-
-  Future<Stream> getData() async {
-    Stream stream1 = Firestore.instance
-        .collection('lab').document('asbestos')
-        .collection('cocs')
-        .where('jobNumber',
-        isEqualTo: DataManager.get().currentJobNumber)
-        .where('deleted',
-        isEqualTo: false)
-        .snapshots();
-    Stream stream2 = Firestore.instance
-        .collection('lab').document('asbestos')
-        .collection('cocs')
-        .where('linkedJobNumbers',
-        arrayContains: DataManager.get().currentJobNumber)
-        .where('deleted',
-        isEqualTo: false)
-        .snapshots();
-    return StreamZip(([stream1, stream2])).asBroadcastStream();
-  }
-
-  setupData() async {
-    Stream stream = await getData()..asBroadcastStream();
-    stream.listen((snapshot) {
-      setState(() {
-        //Empty the list to avoid repetitions when the users updates the
-        //data in the snapshot
-        dataList =[];
-        List<DocumentSnapshot> list;
-        for(int i=0; i < snapshot.length; i++){
-          list = snapshot[i].documents;
-          for (var item in list){
-            dataList.add(item);
-            samples[item.data['sampleNumber'].toString()] = item.data['description'] + ' (' + item.data['material'] + ')';
-          }
-        }
-      });
-    });
   }
 
   Widget build(BuildContext context) {
@@ -145,38 +97,49 @@ class _AssignSampleNumberState extends State<AssignSampleNumber> {
                       .snapshots(),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData)
-                      return LoadingPage(loadingText: 'Loading Chains of Custody');
+                      return LoadingPage(loadingText: 'Loading samples');
                     if (snapshot.data.documents.length == 0)
-                      return EmptyList(text: 'This job has no Chains of Custody.');
-                    return new Row(
+                      return Column(children: <Widget>[
+                        EmptyList(text: 'This job has no samples.'),
+                        FunctionButton(
+                        text: "Create Chain of Custody",
+                        onClick: () { addNewCoc(context); },
+                        )
+                      ],);
+                    return new Column(children: <Widget>[
+                      Row(
                         children: <Widget>[
                           sampleNumberPicker,
                           new Container(width: 260.0, child: ListView.builder(
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            itemCount: snapshot.data.documents.length,
-                            itemBuilder: (context, index) {
-                              return CocHeader(
-                                doc: snapshot.data.documents[index]
-                              );
-                            }))
-                        ]);
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemCount: snapshot.data.documents.length,
+                              itemBuilder: (context, index) {
+                                return CocHeader(
+                                    doc: snapshot.data.documents[index]
+                                );
+                              })
+                            )
+                          ]
+                      ),
+                      FunctionButton(
+                        text: "Add New Chain of Custody",
+                        onClick: () { addNewCoc(context); },
+                      ),
+                      Text('Create a new chain of custody if samples have already been sent to the lab. Otherwise, add to the active one.',
+                          style: Styles.comment
+                      ),
+                    ],);
                   }),
-              FunctionButton(
-                text: "Add New Chain of Custody",
-                onClick: () { addNewCoc(context); },
-              ),
               Divider(),
-              Container(
-//                TODO: Change this so it only shows the blurb and Add Button by default
-                  padding: EdgeInsets.fromLTRB(32.0, 16.0, 32.0, 16.0),
-                  child: Text(
-                      'Add historic samples if there have been any samples previously tested by K2 Environmental or any other testing lab.',
-                      style: Styles.comment)),
               new StreamBuilder(
                   stream: Firestore.instance
-                      .document(DataManager.get().currentJobPath)
-                      .collection('historicsamples')
+                      .collection('lab').document('asbestos')
+                      .collection('cocs')
+                      .where('linkedJobNumbers',
+                      arrayContains: DataManager.get().currentJobNumber)
+                      .where('deleted',
+                      isEqualTo: false)
                       .snapshots(),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData)
@@ -194,20 +157,38 @@ class _AssignSampleNumberState extends State<AssignSampleNumber> {
                                     child: Text('Loading Historic Samples'))
                               ]));
                     if (snapshot.data.documents.length == 0)
-                      return EmptyList(text: 'This job has no historic samples.');
-                    return ListView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: snapshot.data.documents.length,
-                        itemBuilder: (context, index) {
-                          return Text(
-                              snapshot.data.documents[index]['jobNumber']);
-                        });
+//                      return EmptyList(text: 'This job has no historic samples.');
+                      return Column(children: <Widget>[
+                        FunctionButton(
+                          text: "Add Historic Chain of Custody",
+                          onClick: () { addHistoricCoc(context); },
+                        ),
+                        Container(
+                            padding: EdgeInsets.fromLTRB(32.0, 16.0, 32.0, 16.0),
+                            child: Text(
+                                'Add historic samples if there have been any samples previously tested by K2 Environmental or any other testing lab.',
+                                style: Styles.comment)),
+                      ],);
+                    return Column(children: <Widget>[
+                      ListView.builder(
+                      shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: snapshot.data.documents.length,
+                          itemBuilder: (context, index) {
+                            return Text(
+                                snapshot.data.documents[index]['jobNumber']);
+                          }),
+                      FunctionButton(
+                        text: "Add Historic Chain of Custody",
+                        onClick: () { addHistoricCoc(context); },
+                      ),
+                      Container(
+                          padding: EdgeInsets.fromLTRB(32.0, 16.0, 32.0, 16.0),
+                          child: Text(
+                              'Add historic samples if there have been any samples previously tested by K2 Environmental or any other testing lab.',
+                              style: Styles.comment)),
+                    ],);
                   }),
-              FunctionButton(
-                text: "Add Historic Chain of Custody",
-                onClick: () { addHistoricCoc(context); },
-              ),
             ],
           ),
         ));

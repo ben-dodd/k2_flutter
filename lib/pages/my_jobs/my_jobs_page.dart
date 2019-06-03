@@ -73,6 +73,7 @@ class _MyJobsPageState extends State<MyJobsPage> {
                   itemCount: snapshot.data.documents.length,
                   itemBuilder: (context, index) {
 //                                  print(snapshot.data.documents[index]['path']);
+                  // TODO dismissible shows "Job deleted" even if dismissed on no job card
                     return Dismissible(
                         key: new Key(snapshot.data.documents[index]['path']),
                         onDismissed: (direction) async {

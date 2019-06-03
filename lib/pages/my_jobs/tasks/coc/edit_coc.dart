@@ -78,7 +78,7 @@ class _EditCocState extends State<EditCoc> {
     final List<DateTime> picked = await showMultiDatePicker(
         context: context,
         initialDates: datesSelected,
-        firstDate: DateTime(2000),
+        firstDate: DateTime.now().subtract(new Duration(days: 3650)),
         lastDate: DateTime.now().add(new Duration(days: 365)));
     if (picked != null) {
       picked.sort();
@@ -327,7 +327,7 @@ class _EditCocState extends State<EditCoc> {
   }
 
   void _loadCoc() async {
-    if (cocObj == null) {
+    if (widget.cocObj['uid'] == null) {
       _title = "Add New Chain of Custody";
       cocObj['deleted'] = false;
       cocObj['personnel'] = [me['name']];
@@ -350,7 +350,7 @@ class _EditCocState extends State<EditCoc> {
       _title = "Edit Chain of Custody";
       Map<String, dynamic> sample_temp = new Map<String, dynamic>();
         Firestore.instance
-            .collection('lab').document('asbestosbulk').collection('labs').document('k2environmental')
+            .collection('lab').document('asbestos')
             .collection('samples')
             .where('jobNumber', isEqualTo: cocObj['jobNumber'])
             .getDocuments()
@@ -421,7 +421,7 @@ class _EditCocState extends State<EditCoc> {
           sample['jobNumber'] = cocObj['jobNumber'];
           sample['sampleNumber'] = number;
           Firestore.instance
-            .collection('lab').document('asbestosbulk').collection('labs').document('k2environmental')
+            .collection('lab').document('asbestos')
             .collection('samples')
             .document(sample['uid'])
             .setData(sample);

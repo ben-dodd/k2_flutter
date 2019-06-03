@@ -219,7 +219,7 @@ class ErrorPage extends StatelessWidget {
 //                  onCardClick: () async {
 //                    if (snapshot.data
 //                        .documents[index]
-//                    ['sampletype'] ==
+//                    ['sampleType'] ==
 //                        'air') {
 //                      Navigator.of(context).push(
 //                        new MaterialPageRoute(

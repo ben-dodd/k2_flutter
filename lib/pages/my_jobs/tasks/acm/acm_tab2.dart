@@ -62,7 +62,7 @@ class _AcmTabState extends State<AcmTab> {
                       return AcmCard(
                         doc: snapshot.data.documents[index],
                         onCardClick: () async {
-                          if (snapshot.data.documents[index]['sampletype'] ==
+                          if (snapshot.data.documents[index]['sampleType'] ==
                               'air') {
                             Navigator.of(context).push(
                               new MaterialPageRoute(

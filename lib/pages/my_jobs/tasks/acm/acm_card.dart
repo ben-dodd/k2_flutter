@@ -22,7 +22,7 @@ class AcmCard extends StatefulWidget {
 
 class _AcmCardState extends State<AcmCard> {
   String jobNumber;
-  String sampletype;
+  String sampleType;
   String description;
   String material;
   bool hasPhoto;
@@ -122,10 +122,10 @@ class _AcmCardState extends State<AcmCard> {
     } else {
       jobNumber = widget.doc['jobNumber'];
     }
-    if (widget.doc['sampletype'] == null) {
-      sampletype = 'bulk';
+    if (widget.doc['sampleType'] == null) {
+      sampleType = 'bulk';
     } else {
-      sampletype = widget.doc['sampletype'];
+      sampleType = widget.doc['sampleType'];
     }
     if (widget.doc['description'] == null) {
       description = 'No description';
@@ -147,7 +147,7 @@ class _AcmCardState extends State<AcmCard> {
         photoSynced = true;
       }
     }
-    if (sampletype == 'bulk') {
+    if (sampleType == 'bulk') {
       return new Container(
 //          margin: EdgeInsets.symmetric(vertical: 4.0),
           padding: EdgeInsets.fromLTRB(8.0, 0.0, 4.0, 0.0),

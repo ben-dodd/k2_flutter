@@ -28,7 +28,6 @@ class _RoomCardState extends State<RoomCard> {
   bool photoSynced;
 
   Widget _roomCard(Map<String, dynamic> doc) {
-    // todo is there a better way to assert this stuff
     if (doc['name'] == null) {
       name = 'No name';
     } else {

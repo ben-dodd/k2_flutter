@@ -25,7 +25,6 @@ class _NoteCardState extends State<NoteCard> {
   bool photoSynced;
   @override
   Widget build(BuildContext context) {
-    // todo is there a better way to assert this stuff
     if (widget.note['title'] == null || widget.note['title'] == '') {
       title = 'Untitled';
     } else {
@@ -75,7 +74,6 @@ class _NoteCardState extends State<NoteCard> {
           onTap: widget.onCardClick,
           // Long tap -> add options to sync or delete
 //        onLongPress: widget.onCardLongPress,
-          // TODO: Icons display whether sample has photo or not
           trailing: hasPhoto
               ? photoSynced
                   ? Icon(

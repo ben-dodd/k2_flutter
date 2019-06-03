@@ -24,7 +24,6 @@ class _MapCardState extends State<MapCard> {
   bool photoSynced;
   @override
   Widget build(BuildContext context) {
-    // todo is there a better way to assert this stuff
     if (widget.map['title'] == null || widget.map['title'] == '') {
       title = 'Untitled';
     } else {

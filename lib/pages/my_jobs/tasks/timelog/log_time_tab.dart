@@ -24,7 +24,7 @@ class _LogTimeTabState extends State<LogTimeTab> {
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
-
+  // TODO current pulsecard needs to be sent to users firestore so it is still going if app closes
     return new Scaffold(
         body: new Container(
             padding: new EdgeInsets.all(24.0),

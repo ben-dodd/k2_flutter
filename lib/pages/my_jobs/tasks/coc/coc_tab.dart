@@ -8,6 +8,9 @@ import 'package:k2e/styles.dart';
 import 'package:k2e/widgets/buttons.dart';
 import 'package:k2e/widgets/common_widgets.dart';
 
+import 'edit_historic_coc.dart';
+import 'historic_coc_card.dart';
+
 class CocTab extends StatefulWidget {
   CocTab() : super();
 
@@ -34,7 +37,7 @@ class _CocTabState extends State<CocTab> {
           ),
           new StreamBuilder(
               stream: Firestore.instance
-                  .collection('lab').document('asbestosbulk').collection('labs').document('k2environmental')
+                  .collection('lab').document('asbestos')
                   .collection('cocs')
                   .where('jobNumber',
                       isEqualTo: DataManager.get().currentJobNumber)
@@ -86,6 +89,58 @@ class _CocTabState extends State<CocTab> {
             text: "Add New Chain of Custody",
             onClick: () { addNewCoc(context); },
           ),
+          // TODO usually addHistoricCoc would go to Search screen to look up old coc's but since it's new just go straight to make a new one for now
+
+          new StreamBuilder(
+              stream: Firestore.instance
+                  .collection('lab').document('asbestos')
+                  .collection('cocs')
+                  .where('linkedJobNumbers',
+                  arrayContains: DataManager.get().currentJobNumber)
+                  .where('deleted', isEqualTo: false)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData)
+                  return Container(
+                      padding: EdgeInsets.only(top: 16.0),
+                      alignment: Alignment.center,
+                      color: Colors.white,
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            new CircularProgressIndicator(),
+                            Container(
+                                alignment: Alignment.center,
+                                height: 64.0,
+                                child: Text(_loadingText))
+                          ]));
+                if (snapshot.data.documents.length == 0)
+                  return EmptyList(
+                      text: 'This job has no asbestos samples.'
+                  );
+                return ListView.builder(
+                    itemCount: snapshot.data.documents.length,
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      print(snapshot.data.documents[index]['jobNumber']);
+                      return HistoricCocCard(
+                        doc: snapshot.data.documents[index],
+                        onCardClick: () async {
+                          Navigator.of(context).push(
+                            new MaterialPageRoute(
+                                builder: (context) => EditHistoricCoc(
+                                    cocObj: snapshot
+                                        .data.documents[index].data)),
+                          );
+                        },
+                        onCardLongPress: () {
+                          // Delete
+                          // Bulk add /clone etc.
+                        },
+                      );
+                    });
+              }),
           FunctionButton(
             text: "Add Historic Chain of Custody",
             onClick: () { addHistoricCoc(context); },

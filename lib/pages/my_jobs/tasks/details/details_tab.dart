@@ -63,7 +63,6 @@ class _DetailsTabState extends State<DetailsTab> {
   }
 
   _updateDescription() {
-    // TODO: Send update to WFM debounced
     details.setData({"description": controllerDescription.text}, merge: true);
     if (_debounce?.isActive ?? false) _debounce.cancel();
     _debounce = Timer(const Duration(milliseconds: 3000), () {
@@ -123,47 +122,46 @@ class _DetailsTabState extends State<DetailsTab> {
                           Container(
                               alignment: Alignment.topLeft,
                               child: Text(snapshot.data['clientName'],
-                                  style: Styles.h1)),
-                          Container(
-                            // todo change these to dropdown?
-                            alignment: Alignment.topLeft,
-                            child: Row(
+                                  style: Styles.h1),
+                          ),
+                          Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: <Widget>[
-                                RadioLabel(
-                                  value: 'management',
-                                  groupValue: snapshot.data['surveyType'],
-                                  text: 'Mgmt',
-                                  onClick: (_) => _handleSurveyTypeClick('management'),
-                                ),
-                                RadioLabel(
-                                  value: 'refurbishment',
-                                  groupValue: snapshot.data['surveyType'],
-                                  text: 'Refurb',
-                                  onClick: (_) => _handleSurveyTypeClick('refurbishment'),
-                                ),
-//                              ]
-//                            ),
-//                          ),
-//                          Container(
-//                            alignment: Alignment.topCenter,
-//                            child: Row(
-//                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//                              children: <Widget>[
-                                RadioLabel(
-                                  value: 'demolition',
-                                  groupValue: snapshot.data['surveyType'],
-                                  text: 'Demo',
-                                  onClick: (_) => _handleSurveyTypeClick('demolition'),
-                                ),
-                                RadioLabel(
-                                  value: 'combination',
-                                  groupValue: snapshot.data['surveyType'],
-                                  text: 'Combo',
-                                  onClick: (_) => _handleSurveyTypeClick('combination'),
-                                ),
-                              ],
-                            )
+                              Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                  RadioLabel(
+                                    value: 'management',
+                                    groupValue: snapshot.data['surveyType'],
+                                    text: 'Management',
+                                    onClick: (_) => _handleSurveyTypeClick('management'),
+                                  ),
+                                  RadioLabel(
+                                    value: 'refurbishment',
+                                    groupValue: snapshot.data['surveyType'],
+                                    text: 'Refurbishment',
+                                    onClick: (_) => _handleSurveyTypeClick('refurbishment'),
+                                  ),
+                                ]
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  RadioLabel(
+                                    value: 'demolition',
+                                    groupValue: snapshot.data['surveyType'],
+                                    text: 'Demolition',
+                                    onClick: (_) => _handleSurveyTypeClick('demolition'),
+                                  ),
+                                  RadioLabel(
+                                    value: 'combination',
+                                    groupValue: snapshot.data['surveyType'],
+                                    text: 'Combination',
+                                    onClick: (_) => _handleSurveyTypeClick('combination'),
+                                  ),
+                                ]
+                              ),
+                            ]
                           ),
                           Container(
                             alignment: Alignment.topLeft,

@@ -11,8 +11,7 @@ import 'package:k2e/widgets/date_picker.dart';
 import 'package:uuid/uuid.dart';
 
 class EditHistoricCoc extends StatefulWidget {
-  EditHistoricCoc({Key key, this.coc, this.cocObj}) : super(key: key);
-  final String coc;
+  EditHistoricCoc({Key key, this.cocObj}) : super(key: key);
   Map<String, dynamic> cocObj = new Map<String, dynamic>();
   @override
   _EditHistoricCocState createState() => new _EditHistoricCocState();
@@ -24,21 +23,13 @@ class _EditHistoricCocState extends State<EditHistoricCoc> {
   Map<String, dynamic> cocObj = new Map<String, dynamic>();
 
   // images
-  String coc;
   String version;
-  bool localPhoto = false;
-  List<Map<String, String>> roomgrouplist = new List();
   final Map constants = DataManager.get().constants;
   GlobalKey key = new GlobalKey<AutoCompleteTextFieldState<String>>();
-
-//  final controllerRoomCode = TextEditingController();
-  final _roomCodeController = TextEditingController();
-  final _roomNameController = TextEditingController();
 
   List rooms;
   List items;
   List materials;
-  List staff;
   List<String> personnelSelected = <String>[];
   List<DateTime> datesSelected = <DateTime>[];
   Map<String, dynamic> samples = new Map<String, dynamic>();
@@ -58,33 +49,11 @@ class _EditHistoricCocState extends State<EditHistoricCoc> {
 
   @override
   void initState() {
-    staff = [];
-    if (DataManager.get().staff == null) {
-      Firestore.instance
-          .collection('state')
-          .document('staff')
-          .get()
-          .then((doc) {
-        doc.data.forEach((key, value) => staff.add(value['name'].toString()));
-        staff.sort((a, b) {
-          return a.compareTo(b);
-        });
-        print(staff.toString());
-      });
-    } else {
-      staff = DataManager.get().staff;
-    }
-
-    coc = widget.coc;
-//    controllerRoomCode.addListener(_updateRoomCode);
     _loadCoc();
     _scrollController = ScrollController();
 
-    rooms = constants['roomsuggestions'];
     items = constants['buildingitems'];
     materials = constants['buildingmaterials'];
-    print('Job number');
-    print(cocObj['jobNumber']);
     super.initState();
   }
 
@@ -109,6 +78,7 @@ class _EditHistoricCocState extends State<EditHistoricCoc> {
       version = 'Latest version: ' + cocObj['currentVersion'].toString();
       if (!cocObj['versionUpToDate']) version = version + ' (needs reissue)';
     }
+    // TODO add in text edits to add name of testing company, who it was for, date, type of survey etc. etc.
     print(personnelSelected.toString());
     print(datesSelected.toString());
     return new Scaffold(
@@ -128,8 +98,9 @@ class _EditHistoricCocState extends State<EditHistoricCoc> {
                     cocObj['personnel'] = personnelSelected;
                     cocObj['dates'] = datesSelected;
                     Firestore.instance
+                        .collection('lab').document('asbestos')
                         .collection('cocs')
-                        .document(coc)
+                        .document(cocObj['uid'])
                         .setData(cocObj);
                     Navigator.pop(context);
                   }
@@ -153,7 +124,7 @@ class _EditHistoricCocState extends State<EditHistoricCoc> {
                   height: 16.0,
                 ),
                 Text(
-                  cocObj['jobNumber'] + ': ' + cocObj['client'],
+                  cocObj['client'],
                   style: Styles.h2,
                 ),
                 Text(
@@ -184,44 +155,7 @@ class _EditHistoricCocState extends State<EditHistoricCoc> {
                     style: Styles.label,
                   ),
                 ),
-                new Container(
-                  alignment: Alignment.topLeft,
-                  child: DropdownButton<String>(
-                    value: personnelSelected.isEmpty
-                        ? null
-                        : personnelSelected.last,
-                    iconSize: 24.0,
-                    items: staff.map((staff) {
-                      return new DropdownMenuItem<String>(
-                        value: staff,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Icon(
-                              Icons.check,
-                              color: personnelSelected.contains(staff)
-                                  ? null
-                                  : Colors.transparent,
-                            ),
-                            SizedBox(width: 16),
-                            Text(staff),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                    hint: Text("-"),
-                    onChanged: (String newValue) {
-                      setState(() {
-                        print(personnelSelected.toString());
-                        print(newValue);
-                        if (personnelSelected.contains(newValue))
-                          personnelSelected.remove(newValue);
-                        else
-                          personnelSelected.add(newValue);
-                      });
-                    },
-                  ),
-                ),
+
                 ExpansionTile(
                   initiallyExpanded: true,
                   title: new Text(
@@ -326,19 +260,18 @@ class _EditHistoricCocState extends State<EditHistoricCoc> {
   }
 
   void _loadCoc() async {
-//    print("Loading room");
-    if (coc == null) {
+    if (widget.cocObj['uid'] == null) {
       _title = "Add New Chain of Custody";
       cocObj['deleted'] = false;
-      if (cocObj['dates'] != null) {
-        cocObj['dates'].forEach((d) {
-          datesSelected.add(d.toDate());
-        });
-//      } else {
-//        datesSelected = [];
+      if (widget.cocObj == null) {
+        // New room requires us to create a path so it doesn't need internet to get one from Firestore
+        print('Making random uid...');
+        cocObj['uid'] = 'HISTORIC_' + new Uuid().v1();
+      } else {
+        cocObj = widget.cocObj;
+        print('Making uid out of information...');
+        cocObj['uid'] = 'HISTORIC_' + cocObj['client'].toString().toUpperCase() + '-' + Uuid().v1().toString();
       }
-      // New room requires us to create a path so it doesn't need internet to get one from Firestore
-      cocObj['path'] = new Uuid().v1();
 
       setState(() {
         isLoading = false;
@@ -347,42 +280,76 @@ class _EditHistoricCocState extends State<EditHistoricCoc> {
 //      print('Edit room is ' + room.toString());
       _title = "Edit Chain of Custody";
       Map<String, dynamic> sample_temp = new Map<String, dynamic>();
-      Firestore.instance.collection('cocs').document(coc).get().then((doc) {
-        Firestore.instance
-            .collection('samplesasbestos')
-            .where('jobNumber', isEqualTo: doc.data['jobNumber'])
-            .getDocuments()
-            .then((docList) {
-          docList.documents.forEach(
-                  (doc) => sample_temp[doc.data['sampleNumber'].toString()] = doc.data);
+      Firestore.instance
+          .collection('lab').document('asbestos')
+          .collection('samples')
+          .where('jobNumber', isEqualTo: cocObj['jobNumber'])
+          .getDocuments()
+          .then((docList) {
+        docList.documents.forEach(
+                (doc) => sample_temp[doc.data['sampleNumber'].toString()] = doc.data);
 
-          print('Edit coc');
-          setState(() {
-            cocObj = doc.data;
-            samples = sample_temp;
+        print('Edit coc');
+        setState(() {
+          samples = sample_temp;
 
-            print(cocObj['samples'].toString());
-            if (cocObj['personnel'] != null) {
-              cocObj['personnel'].forEach((p) {
-                personnelSelected.add(p);
-              });
-            }
-            if (cocObj['dates'] != null) {
-              cocObj['dates'].forEach((d) {
-                datesSelected.add(d.toDate());
-              });
-//            } else {
-//              datesSelected.add(new DateTime.now());
-            }
-            _roomNameController.text = cocObj['name'];
-            _roomCodeController.text = cocObj['roomcode'];
-            isLoading = false;
-          });
-          print(samples);
+          if (cocObj['dates'] != null) {
+            cocObj['dates'].forEach((d) {
+              print(d.toString());
+              datesSelected.add(d.toDate());
+            });
+          }
+          isLoading = false;
         });
-        // image
       });
+      // image
+//      });
     }
 //    print(_title.toString());
+  }
+
+
+  void _handleCocSubmit() {
+    print(samples.toString());
+    var sampleList = new List();
+    if (samples != null) {
+      samples.forEach((number, sample) {
+        //todo Change samples to list of cards that can be clicked on
+        if ((sample['cocUid'] == cocObj['uid'] || sample['cocUid'] == null) && ((sample['description'] != null && sample['description'].trim() != '') || (sample['material'] != null && sample['description'].trim() != ''))) {
+          if (sample['uid'] == null) {
+            var dateString = new DateFormat('dd_MM_yy_HH_mm').format(DateTime.now());
+            var uid = 'HISTORIC-SAMPLE-' + number + '-CREATED-' + dateString + Uuid().v1().toString();
+            print('UID for new sample is ' + uid);
+            sample['uid'] = uid;
+          }
+          sampleList.add(sample['uid']);
+          if (sample['description'] != null && sample['description'].trim() != '') {
+            if (sample['description'].trim().length > 1) {
+              sample['description'] = sample['description'][0].toUpperCase() + sample['description'].trim().substring(1);
+            } else {
+              sample['description'] = sample['description'].toUpperCase().trim();
+            }
+          } else {
+            sample['description'] = 'No description';
+          }
+          sample['cocUid'] = cocObj['uid'];
+          sample['jobNumber'] = 'HISTORIC';
+          sample['sampleNumber'] = number;
+          Firestore.instance
+              .collection('lab').document('asbestos')
+              .collection('samples')
+              .document(sample['uid'])
+              .setData(sample);
+        }
+      });
+    }
+
+    cocObj['sampleList'] = sampleList;
+
+    Firestore.instance
+        .collection('lab').document('asbestos')
+        .collection('cocs')
+        .document(cocObj['uid'])
+        .setData(cocObj);
   }
 }

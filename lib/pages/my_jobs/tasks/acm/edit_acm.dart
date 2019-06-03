@@ -797,6 +797,8 @@ class _EditACMState extends State<EditACM> {
     );
   }
 
+  // TODO hide "Total Risk" and "Priority risk" if no management plan
+
   void _loadACM() async {
     // Load rooms from job
     QuerySnapshot roomSnapshot = await Firestore.instance

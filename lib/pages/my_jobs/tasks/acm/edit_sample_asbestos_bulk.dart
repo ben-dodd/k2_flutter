@@ -225,7 +225,6 @@ class _EditSampleAsbestosBulkState extends State<EditSampleAsbestosBulk> {
                                   maxLines: null,
                                 ),
                               ),
-                              // TODO Collate lab notes from all analyses
                               Container(
                                 alignment: Alignment.topLeft,
                                 child: TextField(

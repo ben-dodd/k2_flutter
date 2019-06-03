@@ -6,8 +6,8 @@ import 'package:k2e/pages/my_jobs/tasks/notepad/note_card.dart';
 import 'package:k2e/styles.dart';
 import 'package:k2e/widgets/common_widgets.dart';
 
-// The base page for any type of job. Shows address, has cover photo,
-
+// TODO if there is going to be a notes tab it needs to be structured way better
+// Should be able to add folders of photos etc. Notes, sketches, sound recordings etc.
 class NotepadTab extends StatefulWidget {
   NotepadTab() : super();
   @override

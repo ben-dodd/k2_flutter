@@ -229,7 +229,6 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
                                   maxLines: null,
                                 ),
                               ),
-                              // TODO Collate lab notes from all analyses
                               Container(
                                 alignment: Alignment.topLeft,
                                 child: TextField(
@@ -266,7 +265,7 @@ class _EditSampleAsbestosAirState extends State<EditSampleAsbestosAir> {
       dataMap['material'] = null;
       dataMap['path_local'] = null;
       dataMap['path_remote'] = null;
-      dataMap['sampletype'] = 'air';
+      dataMap['sampleType'] = 'air';
       path_local = null;
       Firestore.instance.collection('samplesasbestos').add(dataMap).then((ref) {
         sample = Firestore.instance

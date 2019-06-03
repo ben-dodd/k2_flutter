@@ -20,7 +20,7 @@ class HistoricCocCard extends StatefulWidget {
 
 class _HistoricCocCardState extends State<HistoricCocCard> {
   String jobNumber;
-  String sampletype;
+  String sampleType;
   String description;
   String material;
   bool hasPhoto;
