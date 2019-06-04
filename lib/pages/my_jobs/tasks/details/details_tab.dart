@@ -255,17 +255,82 @@ class _DetailsTabState extends State<DetailsTab> {
                           new Container(
                             child: new Text("General Survey Information", style: Styles.h2),
                           ),
-                          Container(
-                            alignment: Alignment.topLeft,
-                            child: TextField(
-                                decoration: const InputDecoration(
-                                    labelText: "Scope"),
-                                autocorrect: false,
-                                controller: controllerScope,
-                                keyboardType: TextInputType.multiline,
-                                maxLines: null),
+                          GestureDetector(
+                            onLongPress: () {
+                              // Show tool tip dialog offering suggestions
+                            },
+                            child: Container(
+                              alignment: Alignment.topLeft,
+                              child: TextField(
+                                  decoration: const InputDecoration(
+                                      labelText: "Scope"),
+                                  autocorrect: false,
+                                  controller: controllerScope,
+                                  keyboardType: TextInputType.multiline,
+                                  maxLines: null),
+                            ),
                           ),
-                          FunctionButton(onClick: _getWeather, text: 'Get Current Weather Information'),
+                          // TODO: Details fields
+                          // If management survey, who is responsible for the plan? Get contacts
+
+                          // If combination, what is being refurbished, what is management
+                          // Scope of refurbishment, extent of fire or other damage
+                          // Building age, source?
+                          // Use of the property (industrial, office, retail, domestic)
+                          // Number of buildings: age, type, construction
+                          // Number of rooms
+                          // Any unusual features or underground sections
+                          // Any installed plant or equipment?
+                          // Is the site a listed building, conservation area etc.
+                          // Are the surrounding ground and associated buildings or structures included in the survey scope?
+                          // Are the premises occupied or vacant?
+                          // Are there underground ducts or shafts?
+                          // Any restrictions on access?
+                          // Responsibility and arrangement for access?
+                          // Special requirements or instructions
+                          // Power on?
+                          // Gas on?
+                          // Is working machinery made safe?
+                          // Any restrictions on photos? -> this could be moved to the rooms tab
+                          // Any repairs to ACM?
+                          // Any previous buildings demolished?
+
+                          // Building age should relate to help, e.g. say what to look for in this type of building
+
+                          // Building info (perhaps have dialog this can be made with, number of outbuildings, main cladding etc.)
+                          // Dialog can also direct them to add more detail about construction type, e.g. foundations etc.
+
+                          // Previous renovations at property
+                          // Extensions
+                          // New structures
+                          // Has the property ever had asbestos removed? Reports upload? Description
+                          // Have any other asbestos surveys or sampling been done at this property? Reports upload? Description
+                          // Site visit log with sample ids etc.
+                          // Any inaccessible areas
+                          // Restrictions to demolition survey? Occupied areas etc.
+                          // Any areas that are unsafe to enter?
+                          // Force procedure, periphery -> inwards, roof to basement
+                          // Internal areas, downwards from roof to basement, clockwise from the entry door, inspect each component inside each compartment
+                          // 1. ceiling, 2. walls, 3. floor, 4. fixtures and fittings, 5. equipment and services
+                          // Client requests re: sampling
+                          // Check all photos and map is complete
+                          // Re-check areas which are complex or have many items
+                          // Do a final walk-through
+
+                          // SCOPE
+                          // Any external areas for inclusion?
+                          // Any excluded areas?
+                          // Type of survey
+                          // Possible or known asbestos not to be included in the survey
+
+                          // SURVEY
+                          // Anticipated number of samples
+
+                          new Container(
+                            child: new Text("Weather", style: Styles.h3),
+                          ),
+                          FunctionButton(onClick: _getWeather, text: 'Log Current Weather Information'),
+                          // TODO Change this so its a dismissable card that can be swiped to remove
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[

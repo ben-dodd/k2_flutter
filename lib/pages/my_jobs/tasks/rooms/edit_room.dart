@@ -77,6 +77,12 @@ class _EditRoomState extends State<EditRoom> {
     super.initState();
   }
 
+  // TODO: Room details
+  // If combination survey, select the method for this room
+  // If refurbishment, detail planned works? Any sampling restrictions?
+  // If demo, detail if there are any restrictions, e.g. room occupied
+  // TODO: Add room type
+
   Widget build(BuildContext context) {
     return new Scaffold(
 //        resizeToAvoidBottomPadding: false,
